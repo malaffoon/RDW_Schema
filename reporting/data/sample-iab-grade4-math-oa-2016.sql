@@ -1,6 +1,8 @@
 /**
  **  Sample data parsed from ETS provided TRT-like XML
  */
+use reporting;
+
 INSERT INTO asmt (id, natural_id, grade_id,type_id, subject_id, academic_year, name, label, version) VALUES
   (2, '(SBAC)SBAC-IAB-FIXED-G4M-OA-MATH-4-Winter-2016-2017', 4, 2, 1, 2016, 'SBAC-IAB-FIXED-G4M-OA-MATH-4', 'MTH IAB G4 OperationsAlgebraicThinking', '9835');
 
@@ -36,8 +38,8 @@ INSERT IGNORE INTO school (id, district_id, name, natural_id) VALUES
 INSERT IGNORE INTO state (code) VALUES
   ('SM');
 
-INSERT INTO student (id, ssid, last_or_surname, first_name, middle_name, gender_id, ethnicity_id, first_entry_into_us_school_at, lep_entry_at, lep_exit_at, is_demo, birthday) VALUES
-  (2, '2222222222', 'LastName2', 'FirstName2', 'MiddleName2', 1, 3, '2012-08-14', '2012-11-13', null, false, '2000-01-01');
+INSERT INTO student (id, ssid, last_or_surname, first_name, middle_name, gender_id, ethnicity_id, first_entry_into_us_school_at, lep_entry_at, lep_exit_at, birthday) VALUES
+  (2, '2222222222', 'LastName2', 'FirstName2', 'MiddleName2', 1, 3, '2012-08-14', '2012-11-13', null, '2000-01-01');
 
 INSERT INTO roster (id, created_by, school_id, name, exam_from, exam_to, subject_id) VALUES
   (2, 'dwtest@example.com', 1, 'Test Student Group 2', null, '2017-08-01', 1);
@@ -51,8 +53,8 @@ INSERT INTO user_roster (roster_id, user_login) VALUES
 INSERT INTO iab_exam_student (id, grade_id, student_id, school_id, iep, lep, section504, economic_disadvantage, migrant_status, eng_prof_lvl, t3_program_type, language_code, prim_disability_type) VALUES
   (2, 4, 2, 1, null, null, null, null, 0, 'EL', null,'VIE', null);
 
-INSERT INTO iab_exam (id, iab_exam_student_id, asmt_id, asmt_version, opportunity, status, validity, completeness, administration_condition_id, session_id, claim_id, claim_scale_score, claim_scale_score_std_err, claim_level, asmt_session_location_id) VALUES
-  (1, 2, 2, null, 0, 'completed', 1, 1, 1, 'CA-3ACF-69', 5, 2412.74552705744, 30.4087233385275, 1, null);
+INSERT INTO iab_exam (id, iab_exam_student_id, asmt_id, asmt_version, opportunity, status, validity, completeness, administration_condition_id, session_id, claim_id, claim_scale_score, claim_scale_score_std_err, claim_level) VALUES
+  (1, 2, 2, null, 0, 'completed', 1, 1, 1, 'CA-3ACF-69', 5, 2412.74552705744, 30.4087233385275, 1);
 
 -- TODO: this needs more research.
 -- INSERT INTO exam_available_accommodation (exam_id, accommodation_id) VALUES ...
