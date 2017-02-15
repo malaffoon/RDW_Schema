@@ -1,6 +1,8 @@
 /**
  **  Sample data parsed from ETS provided TRT-like XML
  */
+use reporting;
+
 INSERT INTO asmt (id, natural_id, grade_id,type_id, subject_id, academic_year, name, label, version) VALUES
   (1, 'SBAC)SBAC-ICA-FIXED-G5E-COMBINED-2017-Winter-2016-2017', 5, 1, 2, 2016, 'SBAC-ICA-FIXED-G5E-COMBINED-2017', 'Grade 5 ELA', '9831');
 
@@ -74,8 +76,8 @@ INSERT IGNORE INTO school (id, district_id, name, natural_id) VALUES
 INSERT IGNORE INTO state (code) VALUES
   ('SM');
 
-INSERT INTO student (id, ssid, last_or_surname, first_name, middle_name, gender_id, ethnicity_id, first_entry_into_us_school_at, lep_entry_at, lep_exit_at, is_demo, birthday) VALUES
-  (1, '6666666666', 'LastName6', 'FirstName6', 'MiddleName6', 1, 4, '2015-09-01', null, null, false, '2006-01-01');
+INSERT INTO student (id, ssid, last_or_surname, first_name, middle_name, gender_id, ethnicity_id, first_entry_into_us_school_at, lep_entry_at, lep_exit_at, birthday) VALUES
+  (1, '6666666666', 'LastName6', 'FirstName6', 'MiddleName6', 1, 4, '2015-09-01', null, null, '2006-01-01');
 
 INSERT INTO roster (id, created_by, school_id, name, exam_from, exam_to, subject_id) VALUES
   (1, 'dwtest@example.com', 1, 'Test Student Group', null, '2017-08-01', 2);
@@ -89,8 +91,8 @@ INSERT INTO user_roster (roster_id, user_login) VALUES
 INSERT INTO exam_student (id, grade_id, student_id, school_id, iep, lep, section504, economic_disadvantage, migrant_status, eng_prof_lvl, t3_program_type, language_code, prim_disability_type) VALUES
   (1, 5, 1, 1, null, null, null, null, null, 'EO', null,'ENG', null);
 
-INSERT INTO exam (id, exam_student_id, asmt_id, asmt_version, opportunity, status, validity, completeness, administration_condition_id, session_id, scale_score, scale_score_std_err, achievement_level, asmt_session_location_id) VALUES
-  (1, 1, 1, null, 0, 'completed', 1, 1, 1, 'CA-3ACF-69', 2642.54836495757, 27.6925766459382, 4, null);
+INSERT INTO exam (id, exam_student_id, asmt_id, asmt_version, opportunity, status, validity, completeness, administration_condition_id, session_id, scale_score, scale_score_std_err, achievement_level) VALUES
+  (1, 1, 1, null, 0, 'completed', 1, 1, 1, 'CA-3ACF-69', 2642.54836495757, 27.6925766459382, 4);
 
 -- TODO: this needs more research. There are some mismatched codes and it is not clear what is available and what needs to be stored
 -- INSERT INTO exam_available_accommodation (exam_id, accommodation_id) VALUES ...
