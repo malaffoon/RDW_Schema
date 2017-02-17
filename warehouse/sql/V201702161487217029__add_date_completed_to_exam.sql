@@ -2,7 +2,7 @@
 ** Misc. updates
 **/
 
-USE reporting;
+USE warehouse;
 
 ALTER TABLE iab_exam
   ADD COLUMN completed_at date NOT NULL;
