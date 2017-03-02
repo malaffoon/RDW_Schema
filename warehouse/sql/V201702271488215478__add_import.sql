@@ -18,9 +18,13 @@ CREATE TABLE IF NOT EXISTS import_status (
 );
 
 INSERT INTO import_status (id, name) VALUES
+  (-4, 'UNAUTHORIZED'),
+  (-3, 'BAD_DATA'),
+  (-2, 'BAD_FORMAT'),
   (-1, 'INVALID'),
   (0, 'ACCEPTED'),
-  (1, 'PROCESSED');
+  (1, 'PROCESSED'),
+  (2, 'PUBLISHED');
 
 CREATE TABLE IF NOT EXISTS import (
   id bigint NOT NULL AUTO_INCREMENT PRIMARY KEY,
@@ -30,5 +34,6 @@ CREATE TABLE IF NOT EXISTS import (
   digest varchar(32) NOT NULL,
   batch varchar(250),
   creator varchar(250),
-  created timestamp(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6)
+  created timestamp(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
+  message varchar(500)
 );
