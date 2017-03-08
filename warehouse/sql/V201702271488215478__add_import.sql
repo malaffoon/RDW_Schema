@@ -18,6 +18,7 @@ CREATE TABLE IF NOT EXISTS import_status (
 );
 
 INSERT INTO import_status (id, name) VALUES
+  (-5, 'UNKNOWN_ASMT'),
   (-4, 'UNAUTHORIZED'),
   (-3, 'BAD_DATA'),
   (-2, 'BAD_FORMAT'),
