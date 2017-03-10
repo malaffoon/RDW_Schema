@@ -10,11 +10,11 @@ INSERT INTO asmt_score (asmt_id, cut_point_1, cut_point_2, cut_point_3, min_scor
   (1, 2442, 2502, 2582, 2201, 2701);
 
 -- TODO: where to find min/max score. Also ETS TRT has codes without SBAC?
-INSERT INTO claim (id, asmt_id, min_score, max_score, code) VALUES
-  (1, 1, null, null, 'SBAC-2-W'),
-  (2, 1, null, null, 'SBAC-4-CR'),
-  (3, 1, null, null, 'SOCK_LS'),
-  (4, 1, null, null, 'SOCK_R');
+INSERT INTO claim (id, asmt_id, code) VALUES
+  (1, 1, 'SBAC-2-W'),
+  (2, 1, 'SBAC-4-CR'),
+  (3, 1, 'SOCK_LS'),
+  (4, 1, 'SOCK_R');
 
 -- TODO: currently item to claim assignment is random
 INSERT INTO item (id, claim_id, target_id, item_key, bank_key) VALUES
@@ -97,11 +97,11 @@ INSERT INTO exam (id, exam_student_id, asmt_id, asmt_version, opportunity, statu
 -- TODO: this needs more research. There are some mismatched codes and it is not clear what is available and what needs to be stored
 -- INSERT INTO exam_available_accommodation (exam_id, accommodation_id) VALUES ...
 
-INSERT INTO exam_claim_score (id, exam_id, claim_id, scale_score, scale_score_std_err, category) VALUES
-  (1, 1, 1, 2577.80680893986, 46.7512956510613, 3),
-  (2, 1, 2, 2668.81750838064, 67.885043404398, 3),
-  (3, 1, 3, 2701.23284, 101.838594705009, 3),
-  (4, 1, 4, 2657.87221487352, 42.9833504368907, 3);
+INSERT INTO exam_claim_score (id, exam_id, subject_claim_score_id, scale_score, scale_score_std_err, category) VALUES
+  (1, 1, 4, 2577.80680893986, 46.7512956510613, 3),
+  (2, 1, 5, 2668.81750838064, 67.885043404398, 3),
+  (3, 1, 6, 2701.23284, 101.838594705009, 3),
+  (4, 1, 7, 2657.87221487352, 42.9833504368907, 3);
 
 INSERT INTO exam_item (exam_id, item_key, bank_key, score, score_status, response) VALUES
   (1, 60347, '200', 1, 'SCORED', 'D'),
