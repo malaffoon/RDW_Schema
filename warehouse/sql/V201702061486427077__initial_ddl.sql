@@ -11,6 +11,34 @@ ALTER DATABASE warehouse CHARACTER SET utf8 COLLATE utf8_unicode_ci;
 
 USE warehouse;
 
+CREATE TABLE application_schema_version (
+   major_version int UNIQUE NOT NULL
+);
+
+/** Import **/
+
+CREATE TABLE IF NOT EXISTS import_content (
+  id tinyint NOT NULL PRIMARY KEY,
+  name varchar(20) NOT NULL UNIQUE
+);
+
+CREATE TABLE IF NOT EXISTS import_status (
+  id tinyint NOT NULL PRIMARY KEY,
+  name varchar(20) NOT NULL UNIQUE
+);
+
+CREATE TABLE IF NOT EXISTS import (
+  id bigint NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  status tinyint NOT NULL,
+  content tinyint NOT NULL,
+  contentType varchar(250) NOT NULL,
+  digest varchar(32) NOT NULL,
+  batch varchar(250),
+  creator varchar(250),
+  created timestamp(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
+  message varchar(500)
+);
+
 /** Reference tables **/
 
 CREATE TABLE IF NOT EXISTS subject (
@@ -108,6 +136,13 @@ CREATE TABLE IF NOT EXISTS item (
   CONSTRAINT fk__item__target FOREIGN KEY (target_id) REFERENCES target(id)
 );
 
+
+CREATE TABLE IF NOT EXISTS item_trait_score (
+  id tinyint NOT NULL PRIMARY KEY,
+  dimension varchar(100) NOT NULL UNIQUE
+ );
+
+
 /** Data derived from the exams delivered via TRT **/
 
 CREATE TABLE IF NOT EXISTS district (
@@ -128,11 +163,6 @@ CREATE TABLE IF NOT EXISTS state (
   code varchar(2) NOT NULL UNIQUE
  );
 
-CREATE TABLE IF NOT EXISTS asmt_session_location (
-  id mediumint NOT NULL AUTO_INCREMENT PRIMARY KEY,
-  name varchar(60) NOT NULL,
-  natural_id varchar(40) NOT NULL UNIQUE
-);
 
 /** Student Groups */
 
@@ -148,9 +178,7 @@ CREATE TABLE IF NOT EXISTS student (
   lep_entry_at date,
   lep_exit_at date,
   is_demo tinyint,
-  birthday date NOT NULL,
-  CONSTRAINT fk__student__gender FOREIGN KEY (gender_id) REFERENCES gender(id),
-  CONSTRAINT fk__student__ethnicity FOREIGN KEY (ethnicity_id) REFERENCES ethnicity(id)
+  birthday date NOT NULL
  );
 
 CREATE TABLE IF NOT EXISTS roster (
@@ -194,7 +222,6 @@ CREATE TABLE IF NOT EXISTS iab_exam_student (
   t3_program_type varchar(20),
   language_code varchar(3),
   prim_disability_type varchar(3),
-  CONSTRAINT fk__iab_exam_student__grade FOREIGN KEY (grade_id) REFERENCES grade(id),
   CONSTRAINT fk__iab_exam_student__student FOREIGN KEY (student_id) REFERENCES student(id),
   CONSTRAINT fk__iab_exam_student__school FOREIGN KEY (school_id) REFERENCES school(id)
  );
@@ -207,30 +234,26 @@ CREATE TABLE IF NOT EXISTS iab_exam (
   opportunity int NOT NULL,
   status varchar(50) NOT NULL,
   validity tinyint(1) NOT NULL,
-  completeness varchar(8) NOT NULL,
+  completeness_id tinyint NOT NULL,
   administration_condition_id tinyint NOT NULL,
   session_id varchar(128) NULL,
-  claim_id smallint NOT NULL,
-  claim_scale_score float NOT NULL,
-  claim_scale_score_std_err float NOT NULL,
-  claim_level tinyint NOT NULL,
-  asmt_session_location_id mediumint,
+  category tinyint NOT NULL,
+  scale_score float NOT NULL,
+  scale_score_std_err float NOT NULL,
+  completed_at date NOT NULL,
   CONSTRAINT fk__iab_exam__iab_exam_student FOREIGN KEY (iab_exam_student_id) REFERENCES iab_exam_student(id),
-  CONSTRAINT fk__iab_exam__asmt FOREIGN KEY (asmt_id) REFERENCES asmt(id),
-  CONSTRAINT fk__iab_exam__claim FOREIGN KEY (claim_id) REFERENCES claim(id),
-  CONSTRAINT fk__iab_exam__exam_location FOREIGN KEY (asmt_session_location_id) REFERENCES asmt_session_location(id),
-  CONSTRAINT fk__iab_exam__administration_condition FOREIGN KEY (administration_condition_id) REFERENCES administration_condition(id)
+  CONSTRAINT fk__iab_exam__asmt FOREIGN KEY (asmt_id) REFERENCES asmt(id)
 );
 
 CREATE TABLE IF NOT EXISTS iab_exam_item (
   id bigint NOT NULL AUTO_INCREMENT PRIMARY KEY,
   iab_exam_id bigint NOT NULL,
-  item_id int NOT NULL,
+  item_key bigint NOT NULL,
+  bank_key varchar(40) NOT NULL,
   score float NOT NULL,
   score_status varchar(50),
   response text,
-  CONSTRAINT fk__iab_exam_item__exam FOREIGN KEY (iab_exam_id) REFERENCES iab_exam(id),
-  CONSTRAINT fk__iab_exam_item__item FOREIGN KEY (item_id) REFERENCES item(id)
+  CONSTRAINT fk__iab_exam_item__exam FOREIGN KEY (iab_exam_id) REFERENCES iab_exam(id)
 );
 
 CREATE TABLE IF NOT EXISTS iab_exam_available_accommodation (
@@ -238,6 +261,16 @@ CREATE TABLE IF NOT EXISTS iab_exam_available_accommodation (
   accommodation_id int NOT NULL,
   CONSTRAINT fk__iab_exam_available_accommodation__iab_exam FOREIGN KEY (iab_exam_id) REFERENCES iab_exam(id),
   CONSTRAINT fk__iab_exam_available_accommodation__accomodation FOREIGN KEY (accommodation_id) REFERENCES accommodation(id)
+);
+
+CREATE TABLE IF NOT EXISTS iab_exam_item_trait_score (
+  id bigint NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  iab_exam_item_id bigint NOT NULL,
+  item_trait_score_id tinyint NOT NULL,
+  score float NOT NULL,
+  score_status varchar(50),
+  CONSTRAINT fk__iab_exam_item_trait_score__iab_exam_item FOREIGN KEY (iab_exam_item_id) REFERENCES iab_exam_item(id),
+  CONSTRAINT fk__iab_exam_item_trait_score__item_trait_score FOREIGN KEY (item_trait_score_id) REFERENCES item_trait_score(id)
 );
 
 /** ICA and Summative exams **/
@@ -256,7 +289,6 @@ CREATE TABLE IF NOT EXISTS exam_student (
   t3_program_type varchar(20),
   language_code varchar(3),
   prim_disability_type varchar(3),
-  CONSTRAINT fk__exam_student__grade FOREIGN KEY (grade_id) REFERENCES grade(id),
   CONSTRAINT fk__exam_student__student FOREIGN KEY (student_id) REFERENCES student(id),
   CONSTRAINT fk__exam_student__school FOREIGN KEY (school_id) REFERENCES school(id)
  );
@@ -269,28 +301,26 @@ CREATE TABLE IF NOT EXISTS exam (
   opportunity int NOT NULL,
   status varchar(50) NOT NULL,
   validity tinyint(1) NOT NULL,
-  completeness varchar(8) NOT NULL,
+  completeness_id tinyint NOT NULL,
   administration_condition_id tinyint NOT NULL,
   session_id varchar(128) NULL,
   scale_score float NOT NULL,
   scale_score_std_err float NOT NULL,
   achievement_level tinyint NOT NULL,
-  asmt_session_location_id mediumint,
+  completed_at date NOT NULL,
   CONSTRAINT fk__exam__exam_student FOREIGN KEY (exam_student_id) REFERENCES exam_student(id),
-  CONSTRAINT fk__exam__asmt FOREIGN KEY (asmt_id) REFERENCES asmt(id),
-  CONSTRAINT fk__exam__exam_location FOREIGN KEY (asmt_session_location_id) REFERENCES asmt_session_location(id),
-  CONSTRAINT fk__exam__administration_condition FOREIGN KEY (administration_condition_id) REFERENCES administration_condition(id)
+  CONSTRAINT fk__exam__asmt FOREIGN KEY (asmt_id) REFERENCES asmt(id)
 );
 
 CREATE TABLE IF NOT EXISTS exam_item (
   id bigint NOT NULL AUTO_INCREMENT PRIMARY KEY, 
   exam_id bigint NOT NULL,
-  item_id int NOT NULL, 
-  score float NOT NULL, 
+  item_key bigint NOT NULL,
+  bank_key varchar(40) NOT NULL,
+  score float NOT NULL,
   score_status varchar(50), 
   response text,
-  CONSTRAINT fk__exam_item__exam FOREIGN KEY (exam_id) REFERENCES exam(id),
-  CONSTRAINT fk__exam_item__item FOREIGN KEY (item_id) REFERENCES item(id)
+  CONSTRAINT fk__exam_item__exam FOREIGN KEY (exam_id) REFERENCES exam(id)
 );
 
 CREATE TABLE IF NOT EXISTS exam_available_accommodation (
@@ -306,7 +336,138 @@ CREATE TABLE IF NOT EXISTS exam_claim_score (
   claim_id smallint NOT NULL, 
   scale_score float NOT NULL, 
   scale_score_std_err float NOT NULL, 
-  level tinyint NOT NULL,
+  category tinyint NOT NULL,
   CONSTRAINT fk__exam_claim_score__exam FOREIGN KEY (exam_id) REFERENCES exam(id),
   CONSTRAINT fk__exam_claim_score__claim FOREIGN KEY (claim_id) REFERENCES claim(id)
 );
+
+CREATE TABLE IF NOT EXISTS exam_item_trait_score (
+  id bigint NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  exam_item_id bigint NOT NULL,
+  item_trait_score_id tinyint NOT NULL,
+  score float NOT NULL,
+  score_status varchar(50),
+  CONSTRAINT fk__exam_item_trait_score__exam_item FOREIGN KEY (exam_item_id) REFERENCES exam_item(id),
+  CONSTRAINT fk__exam_item_trait_score__item_trait_score FOREIGN KEY (item_trait_score_id) REFERENCES item_trait_score(id)
+);
+
+/************************************* Stored procedures ***************************************/
+
+/** Student upsert **/
+DROP PROCEDURE IF EXISTS student_upsert;
+
+DELIMITER //
+CREATE PROCEDURE student_upsert (IN  p_ssid                          VARCHAR(40),
+                                IN  p_last_or_surname               VARCHAR(35),
+                                IN  p_first_name                    VARCHAR(35),
+                                IN  p_middle_name                   VARCHAR(35),
+                                IN  p_gender_id                     TINYINT,
+                                IN  p_ethnicity_id                  TINYINT,
+                                IN  p_first_entry_into_us_school_at DATE,
+                                IN  p_lep_entry_at                  DATE,
+                                IN  p_lep_exit_at                   DATE,
+                                IN  p_birthday                      DATE,
+                                OUT p_id                            BIGINT)
+  BEGIN
+
+    DECLARE CONTINUE HANDLER FOR 1062
+    BEGIN
+      SELECT id INTO p_id FROM student WHERE ssid = p_ssid;
+    END;
+
+    SELECT id INTO p_id FROM student WHERE ssid = p_ssid;
+
+    IF (p_id IS NOT NULL)
+    THEN
+      UPDATE student SET
+        last_or_surname               = p_last_or_surname,
+        first_name                    = p_first_name,
+        middle_name                   = p_middle_name,
+        gender_id                     = p_gender_id,
+        ethnicity_id                  = p_ethnicity_id,
+        first_entry_into_us_school_at = p_first_entry_into_us_school_at,
+        lep_entry_at                  = p_lep_entry_at,
+        lep_exit_at                   = p_lep_exit_at,
+        birthday                      = p_birthday
+      WHERE id = p_id;
+    ELSE
+      INSERT INTO student (ssid, last_or_surname, first_name, middle_name, gender_id, ethnicity_id, first_entry_into_us_school_at, lep_entry_at, lep_exit_at, birthday)
+      VALUES (p_ssid, p_last_or_surname, p_first_name, p_middle_name, p_gender_id, p_ethnicity_id, p_first_entry_into_us_school_at, p_lep_entry_at, p_lep_exit_at, p_birthday);
+
+      SELECT id INTO p_id FROM student WHERE ssid = p_ssid;
+    END IF;
+  END; //
+DELIMITER ;
+
+/** District upsert **/
+
+DROP PROCEDURE IF EXISTS district_upsert;
+
+DELIMITER //
+CREATE PROCEDURE district_upsert(IN  p_name       VARCHAR(60),
+                                 IN  p_natural_id VARCHAR(40),
+                                 OUT p_id         MEDIUMINT)
+  BEGIN
+
+    DECLARE CONTINUE HANDLER FOR 1062
+    BEGIN
+      SELECT id INTO p_id FROM district WHERE natural_id = p_natural_id;
+    END;
+
+    SELECT id INTO p_id FROM district WHERE natural_id = p_natural_id;
+
+    IF (p_id IS NOT NULL)
+    THEN
+    -- TODO: this needs to be revisited; afraid it is an overkill to do an update here
+      UPDATE district SET name = p_name WHERE id = p_id;
+    ELSE
+      INSERT INTO district (name, natural_id)
+      VALUES (p_name, p_natural_id);
+
+      SELECT id INTO p_id FROM district WHERE natural_id = p_natural_id;
+    END IF;
+  END; //
+DELIMITER ;
+
+/** School upsert **/
+
+DROP PROCEDURE IF EXISTS school_upsert;
+
+DELIMITER //
+CREATE PROCEDURE school_upsert(IN  p_district_name       VARCHAR(60),
+                               IN  p_district_natural_id VARCHAR(40),
+                               IN  p_name                VARCHAR(60),
+                               IN  p_natural_id          VARCHAR(40),
+                               OUT p_id                  MEDIUMINT)
+  BEGIN
+    DECLARE p_district_id MEDIUMINT;
+
+    DECLARE CONTINUE HANDLER FOR 1062
+    BEGIN
+      SELECT id INTO p_id FROM school WHERE natural_id = p_natural_id;
+    END;
+
+    -- there is no transaction since the worse that could happen a district will be created without a school
+    CALL district_upsert(p_district_name, p_district_natural_id, p_district_id);
+    SELECT p_district_id;
+
+    SELECT id INTO p_id FROM school WHERE natural_id = p_natural_id;
+
+    IF (p_id IS NOT NULL)
+    THEN
+      -- TODO: this needs to be revisited; afraid it is an overkill to do an update here
+      UPDATE school
+      SET
+        name        = p_name,
+        natural_id  = p_natural_id,
+        district_id = p_district_id
+      WHERE id = p_id;
+    ELSE
+      INSERT INTO school (district_id, name, natural_id)
+      VALUES (p_district_id, p_name, p_natural_id);
+
+      SELECT id INTO p_id FROM school WHERE natural_id = p_natural_id;
+
+    END IF;
+  END; //
+DELIMITER ;

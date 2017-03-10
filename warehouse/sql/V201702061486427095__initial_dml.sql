@@ -5,6 +5,8 @@
 
 USE warehouse;
 
+INSERT INTO application_schema_version (major_version) VALUES (0);
+
 INSERT INTO subject (id, name) VALUES
   (1, 'Math'),
   (2, 'ElA');
@@ -129,6 +131,22 @@ INSERT INTO accommodation (code) VALUES
   ('NEA_Calc'), 
   ('NEA_MT'), 
   ('NEA_NumTbl'), 
-  ('NEA_NoiseBuf'); 
+  ('NEA_NoiseBuf');
 
+INSERT INTO item_trait_score (id, dimension) VALUES
+  (1, 'Evidence/Elaboration'),
+  (2, 'Organization/Purpose'),
+  (3, 'Conventions');
 
+INSERT INTO import_content (id, name) VALUES
+  (1, 'EXAM');
+
+INSERT INTO import_status (id, name) VALUES
+  (-5, 'UNKNOWN_ASMT'),
+  (-4, 'UNAUTHORIZED'),
+  (-3, 'BAD_DATA'),
+  (-2, 'BAD_FORMAT'),
+  (-1, 'INVALID'),
+  (0, 'ACCEPTED'),
+  (1, 'PROCESSED'),
+  (2, 'PUBLISHED');
