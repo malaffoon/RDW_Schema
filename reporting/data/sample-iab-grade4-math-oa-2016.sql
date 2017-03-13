@@ -7,8 +7,8 @@ INSERT INTO asmt (id, natural_id, grade_id,type_id, subject_id, academic_year, n
   (2, '(SBAC)SBAC-IAB-FIXED-G4M-OA-MATH-4-Winter-2016-2017', 4, 2, 1, 2016, 'SBAC-IAB-FIXED-G4M-OA-MATH-4', 'MTH IAB G4 OperationsAlgebraicThinking', '9835');
 
 -- TODO: How to find a claim? Does it even exist?
-INSERT INTO claim (id, asmt_id, min_score, max_score, code) VALUES
-  (5, 2, null, null, 'OA');
+INSERT INTO claim (id, asmt_id, code) VALUES
+  (5, 2, 'OA');
 
 -- TODO: should min/max be taken from assmt packge?
 INSERT INTO item (id, claim_id, target_id, item_key, bank_key) VALUES

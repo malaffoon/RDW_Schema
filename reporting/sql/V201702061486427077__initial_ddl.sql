@@ -89,10 +89,17 @@ CREATE TABLE IF NOT EXISTS asmt_score (
 CREATE TABLE IF NOT EXISTS claim (
   id smallint NOT NULL AUTO_INCREMENT PRIMARY KEY,
   asmt_id bigint NOT NULL,
-  min_score float,
-  max_score float,
   code varchar(255) NOT NULL,
   CONSTRAINT fk__claim__asmt FOREIGN KEY (asmt_id) REFERENCES asmt(id)
+);
+
+CREATE TABLE IF NOT EXISTS subject_claim_score (
+  id smallint NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  subject_id tinyint NOT NULL,
+  asmt_type_id tinyint NOT NULL,
+  code varchar(10) NOT NULL,
+  CONSTRAINT fk__subject_claim_score__subject FOREIGN KEY (subject_id) REFERENCES subject(id),
+  CONSTRAINT fk__subject_claim_score__asmt_type FOREIGN KEY (asmt_type_id) REFERENCES asmt_type(id)
 );
 
 CREATE TABLE IF NOT EXISTS target (
@@ -112,12 +119,10 @@ CREATE TABLE IF NOT EXISTS item (
   CONSTRAINT fk__item__target FOREIGN KEY (target_id) REFERENCES target(id)
 );
 
-
 CREATE TABLE IF NOT EXISTS item_trait_score (
   id tinyint NOT NULL PRIMARY KEY,
   dimension varchar(100) NOT NULL UNIQUE
  );
-
 
 /** Data derived from the exams delivered via TRT **/
 
@@ -138,7 +143,6 @@ CREATE TABLE IF NOT EXISTS school (
 CREATE TABLE IF NOT EXISTS state (
   code varchar(2) NOT NULL UNIQUE
  );
-
 
 /** Student Groups */
 
@@ -309,12 +313,11 @@ CREATE TABLE IF NOT EXISTS exam_available_accommodation (
 CREATE TABLE IF NOT EXISTS exam_claim_score (
   id int NOT NULL AUTO_INCREMENT PRIMARY KEY,
   exam_id bigint NOT NULL,
-  claim_id smallint NOT NULL,
+  subject_claim_score_id smallint NOT NULL,
   scale_score float NOT NULL,
   scale_score_std_err float NOT NULL,
   category tinyint NOT NULL,
-  CONSTRAINT fk__exam_claim_score__exam FOREIGN KEY (exam_id) REFERENCES exam(id),
-  CONSTRAINT fk__exam_claim_score__claim FOREIGN KEY (claim_id) REFERENCES claim(id)
+  CONSTRAINT fk__exam_claim_score__exam FOREIGN KEY (exam_id) REFERENCES exam(id)
 );
 
 CREATE TABLE IF NOT EXISTS exam_item_trait_score (

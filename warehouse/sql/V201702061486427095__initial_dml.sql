@@ -38,6 +38,22 @@ INSERT INTO asmt_type (id, code, name) VALUES
   (2, 'iab', 'Interim Assessment Block'),
   (3, 'summative', 'Summative');
 
+INSERT INTO subject_claim_score (subject_id, asmt_type_id, code) VALUES
+  (1, 1, '1'),
+  (1, 1, 'SOCK_2'),
+  (1, 1, '3'),
+  (2, 1, 'SOCK_R'),
+  (2, 1, 'SOCK_LS'),
+  (2, 1, '2-W'),
+  (2, 1, '4-CR'),
+  (1, 3, '1'),
+  (1, 3, 'SOCK_2'),
+  (1, 3, '3'),
+  (2, 3, 'SOCK_R'),
+  (2, 3, 'SOCK_LS'),
+  (2, 3, '2-W'),
+  (2, 3, '4-CR');
+
 INSERT INTO completeness (id, name) VALUES
   (0, 'undefined'),
   (1, 'partial'),
