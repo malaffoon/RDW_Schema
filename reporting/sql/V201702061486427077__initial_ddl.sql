@@ -148,7 +148,7 @@ CREATE TABLE IF NOT EXISTS state (
 
 CREATE TABLE IF NOT EXISTS student (
   id bigint NOT NULL AUTO_INCREMENT PRIMARY KEY,
-  ssid varchar(40) NOT NULL UNIQUE,
+  ssid varchar(65) NOT NULL UNIQUE,
   last_or_surname varchar(35) NOT NULL,
   first_name varchar(35) NOT NULL,
   middle_name varchar(35),
@@ -213,7 +213,6 @@ CREATE TABLE IF NOT EXISTS iab_exam (
   asmt_version varchar(30),
   opportunity int NOT NULL,
   status varchar(50) NOT NULL,
-  validity tinyint(1) NOT NULL,
   completeness_id tinyint NOT NULL,
   administration_condition_id tinyint NOT NULL,
   session_id varchar(128) NULL,
@@ -230,7 +229,7 @@ CREATE TABLE IF NOT EXISTS iab_exam_item (
   iab_exam_id bigint NOT NULL,
   item_key bigint NOT NULL,
   bank_key varchar(40) NOT NULL,
-  score float NOT NULL,
+  score float,
   score_status varchar(50),
   response text,
   CONSTRAINT fk__iab_exam_item__exam FOREIGN KEY (iab_exam_id) REFERENCES iab_exam(id)
@@ -280,7 +279,6 @@ CREATE TABLE IF NOT EXISTS exam (
   asmt_version varchar(30),
   opportunity int NOT NULL,
   status varchar(50) NOT NULL,
-  validity tinyint(1) NOT NULL,
   completeness_id tinyint NOT NULL,
   administration_condition_id tinyint NOT NULL,
   session_id varchar(128) NULL,
@@ -297,7 +295,7 @@ CREATE TABLE IF NOT EXISTS exam_item (
   exam_id bigint NOT NULL,
   item_key bigint NOT NULL,
   bank_key varchar(40) NOT NULL,
-  score float NOT NULL,
+  score float,
   score_status varchar(50),
   response text,
   CONSTRAINT fk__exam_item__exam FOREIGN KEY (exam_id) REFERENCES exam(id)

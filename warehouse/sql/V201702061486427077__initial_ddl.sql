@@ -36,7 +36,7 @@ CREATE TABLE IF NOT EXISTS import (
   batch varchar(250),
   creator varchar(250),
   created timestamp(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
-  message varchar(500)
+  message text
 );
 
 /** Reference tables **/
@@ -176,7 +176,7 @@ CREATE TABLE IF NOT EXISTS state (
 
 CREATE TABLE IF NOT EXISTS student (
   id bigint NOT NULL AUTO_INCREMENT PRIMARY KEY,
-  ssid varchar(40) NOT NULL UNIQUE,
+  ssid varchar(65) NOT NULL UNIQUE,
   last_or_surname varchar(35) NOT NULL,
   first_name varchar(35) NOT NULL,
   middle_name varchar(35),
@@ -241,13 +241,12 @@ CREATE TABLE IF NOT EXISTS iab_exam (
   asmt_version varchar(30),
   opportunity int NOT NULL,
   status varchar(50) NOT NULL,
-  validity tinyint(1) NOT NULL,
   completeness_id tinyint NOT NULL,
   administration_condition_id tinyint NOT NULL,
   session_id varchar(128) NULL,
-  category tinyint NOT NULL,
-  scale_score float NOT NULL,
-  scale_score_std_err float NOT NULL,
+  category tinyint,
+  scale_score float,
+  scale_score_std_err float,
   completed_at date NOT NULL,
   CONSTRAINT fk__iab_exam__iab_exam_student FOREIGN KEY (iab_exam_student_id) REFERENCES iab_exam_student(id),
   CONSTRAINT fk__iab_exam__asmt FOREIGN KEY (asmt_id) REFERENCES asmt(id)
@@ -258,7 +257,7 @@ CREATE TABLE IF NOT EXISTS iab_exam_item (
   iab_exam_id bigint NOT NULL,
   item_key bigint NOT NULL,
   bank_key varchar(40) NOT NULL,
-  score float NOT NULL,
+  score float,
   score_status varchar(50),
   response text,
   CONSTRAINT fk__iab_exam_item__exam FOREIGN KEY (iab_exam_id) REFERENCES iab_exam(id)
@@ -308,13 +307,12 @@ CREATE TABLE IF NOT EXISTS exam (
   asmt_version varchar(30),
   opportunity int NOT NULL,
   status varchar(50) NOT NULL,
-  validity tinyint(1) NOT NULL,
   completeness_id tinyint NOT NULL,
   administration_condition_id tinyint NOT NULL,
   session_id varchar(128) NULL,
-  scale_score float NOT NULL,
-  scale_score_std_err float NOT NULL,
-  achievement_level tinyint NOT NULL,
+  scale_score float,
+  scale_score_std_err float,
+  achievement_level tinyint,
   completed_at date NOT NULL,
   CONSTRAINT fk__exam__exam_student FOREIGN KEY (exam_student_id) REFERENCES exam_student(id),
   CONSTRAINT fk__exam__asmt FOREIGN KEY (asmt_id) REFERENCES asmt(id)
@@ -325,7 +323,7 @@ CREATE TABLE IF NOT EXISTS exam_item (
   exam_id bigint NOT NULL,
   item_key bigint NOT NULL,
   bank_key varchar(40) NOT NULL,
-  score float NOT NULL,
+  score float,
   score_status varchar(50), 
   response text,
   CONSTRAINT fk__exam_item__exam FOREIGN KEY (exam_id) REFERENCES exam(id)
@@ -342,9 +340,9 @@ CREATE TABLE IF NOT EXISTS exam_claim_score (
   id int NOT NULL AUTO_INCREMENT PRIMARY KEY,
   exam_id bigint NOT NULL,
   subject_claim_score_id smallint NOT NULL,
-  scale_score float NOT NULL,
-  scale_score_std_err float NOT NULL,
-  category tinyint NOT NULL,
+  scale_score float,
+  scale_score_std_err float,
+  category tinyint,
   CONSTRAINT fk__exam_claim_score__exam FOREIGN KEY (exam_id) REFERENCES exam(id)
 );
 
@@ -352,7 +350,7 @@ CREATE TABLE IF NOT EXISTS exam_item_trait_score (
   id bigint NOT NULL AUTO_INCREMENT PRIMARY KEY,
   exam_item_id bigint NOT NULL,
   item_trait_score_id tinyint NOT NULL,
-  score float NOT NULL,
+  score float,
   score_status varchar(50),
   CONSTRAINT fk__exam_item_trait_score__exam_item FOREIGN KEY (exam_item_id) REFERENCES exam_item(id),
   CONSTRAINT fk__exam_item_trait_score__item_trait_score FOREIGN KEY (item_trait_score_id) REFERENCES item_trait_score(id)
@@ -364,7 +362,7 @@ CREATE TABLE IF NOT EXISTS exam_item_trait_score (
 DROP PROCEDURE IF EXISTS student_upsert;
 
 DELIMITER //
-CREATE PROCEDURE student_upsert (IN  p_ssid                          VARCHAR(40),
+CREATE PROCEDURE student_upsert (IN  p_ssid                          VARCHAR(65),
                                 IN  p_last_or_surname               VARCHAR(35),
                                 IN  p_first_name                    VARCHAR(35),
                                 IN  p_middle_name                   VARCHAR(35),
