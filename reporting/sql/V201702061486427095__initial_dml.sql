@@ -36,7 +36,7 @@ INSERT INTO grade (id, code, name) VALUES
 INSERT INTO asmt_type (id, code, name) VALUES
   (1, 'ica', 'Interim Comrehensive'),
   (2, 'iab', 'Interim Assessment Block'),
-  (3, 'summative', 'Summative');
+  (3, 'sum', 'Summative');
 
 INSERT INTO subject_claim_score (id, subject_id, asmt_type_id, code) VALUES
   (1, 1, 1, '1'),
@@ -67,13 +67,13 @@ INSERT INTO administration_condition (id, name) VALUES
   (4, 'invalid');
 
 INSERT INTO ethnicity (id, name) VALUES
-  (0, 'undefined'),
-  (1, 'HispanicOrLatino'),
+  (1, 'HispanicOrLatinoEthnicity'),
   (2, 'AmericanIndianOrAlaskaNative'),
   (3, 'Asian'),
   (4, 'BlackOrAfricanAmerican'),
-  (5, 'NativeHawaiianOrOtherPacificIslander'),
-  (6, 'DemographicRaceTwoOrMoreRaces');
+  (5, 'White'),
+  (6, 'NativeHawaiianOrOtherPacificIslander'),
+  (7, 'DemographicRaceTwoOrMoreRaces');
 
 INSERT INTO gender (id, name) VALUES
   (0, 'undefined'),

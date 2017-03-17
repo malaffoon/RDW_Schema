@@ -181,13 +181,20 @@ CREATE TABLE IF NOT EXISTS student (
   first_name varchar(35) NOT NULL,
   middle_name varchar(35),
   gender_id tinyint NOT NULL,
-  ethnicity_id tinyint NOT NULL,
   first_entry_into_us_school_at date,
   lep_entry_at date,
   lep_exit_at date,
   is_demo tinyint,
   birthday date NOT NULL
  );
+
+
+CREATE TABLE IF NOT EXISTS student_ethnicity (
+  id bigint NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  ethnicity_id tinyint NOT NULL,
+  student_id bigint NOT NULL
+);
+
 
 CREATE TABLE IF NOT EXISTS roster (
   id int NOT NULL AUTO_INCREMENT PRIMARY KEY,
@@ -367,7 +374,6 @@ CREATE PROCEDURE student_upsert (IN  p_ssid                          VARCHAR(65)
                                 IN  p_first_name                    VARCHAR(35),
                                 IN  p_middle_name                   VARCHAR(35),
                                 IN  p_gender_id                     TINYINT,
-                                IN  p_ethnicity_id                  TINYINT,
                                 IN  p_first_entry_into_us_school_at DATE,
                                 IN  p_lep_entry_at                  DATE,
                                 IN  p_lep_exit_at                   DATE,
@@ -389,15 +395,14 @@ CREATE PROCEDURE student_upsert (IN  p_ssid                          VARCHAR(65)
         first_name                    = p_first_name,
         middle_name                   = p_middle_name,
         gender_id                     = p_gender_id,
-        ethnicity_id                  = p_ethnicity_id,
         first_entry_into_us_school_at = p_first_entry_into_us_school_at,
         lep_entry_at                  = p_lep_entry_at,
         lep_exit_at                   = p_lep_exit_at,
         birthday                      = p_birthday
       WHERE id = p_id;
     ELSE
-      INSERT INTO student (ssid, last_or_surname, first_name, middle_name, gender_id, ethnicity_id, first_entry_into_us_school_at, lep_entry_at, lep_exit_at, birthday)
-      VALUES (p_ssid, p_last_or_surname, p_first_name, p_middle_name, p_gender_id, p_ethnicity_id, p_first_entry_into_us_school_at, p_lep_entry_at, p_lep_exit_at, p_birthday);
+      INSERT INTO student (ssid, last_or_surname, first_name, middle_name, gender_id, first_entry_into_us_school_at, lep_entry_at, lep_exit_at, birthday)
+      VALUES (p_ssid, p_last_or_surname, p_first_name, p_middle_name, p_gender_id, p_first_entry_into_us_school_at, p_lep_entry_at, p_lep_exit_at, p_birthday);
 
       SELECT id INTO p_id FROM student WHERE ssid = p_ssid;
     END IF;
