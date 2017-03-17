@@ -153,13 +153,19 @@ CREATE TABLE IF NOT EXISTS student (
   first_name varchar(35) NOT NULL,
   middle_name varchar(35),
   gender_id tinyint NOT NULL,
-  ethnicity_id tinyint NOT NULL,
   first_entry_into_us_school_at date,
   lep_entry_at date,
   lep_exit_at date,
   is_demo tinyint,
   birthday date NOT NULL
  );
+
+CREATE TABLE IF NOT EXISTS student_ethnicity (
+  id bigint NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  ethnicity_id tinyint NOT NULL,
+  student_id bigint NOT NULL
+);
+
 
 CREATE TABLE IF NOT EXISTS roster (
   id int NOT NULL AUTO_INCREMENT PRIMARY KEY,

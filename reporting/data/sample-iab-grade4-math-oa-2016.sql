@@ -38,8 +38,8 @@ INSERT IGNORE INTO school (id, district_id, name, natural_id) VALUES
 INSERT IGNORE INTO state (code) VALUES
   ('SM');
 
-INSERT INTO student (id, ssid, last_or_surname, first_name, middle_name, gender_id, ethnicity_id, first_entry_into_us_school_at, lep_entry_at, lep_exit_at, birthday) VALUES
-  (2, '2222222222', 'LastName2', 'FirstName2', 'MiddleName2', 1, 3, '2012-08-14', '2012-11-13', null, '2000-01-01');
+INSERT INTO student (id, ssid, last_or_surname, first_name, middle_name, gender_id, first_entry_into_us_school_at, lep_entry_at, lep_exit_at, birthday) VALUES
+  (2, '2222222222', 'LastName2', 'FirstName2', 'MiddleName2', 1, '2012-08-14', '2012-11-13', null, '2000-01-01');
 
 INSERT INTO roster (id, created_by, school_id, name, exam_from, exam_to, subject_id) VALUES
   (2, 'dwtest@example.com', 1, 'Test Student Group 2', null, '2017-08-01', 1);
