@@ -11,23 +11,23 @@ INSERT INTO claim (id, asmt_id, code) VALUES
   (5, 2, 'OA');
 
 -- TODO: should min/max be taken from assmt packge?
-INSERT INTO item (id, claim_id, target_id, item_key, bank_key) VALUES
-  (2010,  5, null, 2010,  '200'),
-  (18943, 5, null, 18943, '200'),
-  (8906,  5, null, 8906,  '200'),
-  (2014,  5, null, 2014,  '200'),
-  (2024,  5, null, 2024,  '200'),
-  (13980, 5, null, 13980, '200'),
-  (29233, 5, null, 29233, '200'),
-  (2018,  5, null, 2018,  '200'),
-  (11443, 5, null, 11443, '200'),
-  (30075, 5, null, 30075, '200'),
-  (18804, 5, null, 18804, '200'),
-  (45230, 5, null, 45230, '200'),
-  (2002,  5, null, 2002, '200'),
-  (18461, 5, null, 18461, '200'),
-  (13468, 5, null, 13468, '200'),
-  (14461, 5, null, 14461, '200');
+INSERT INTO item (id, claim_id, target_id, natural_id) VALUES
+  (2010,  5, null, '200-2010'),
+  (18943, 5, null, '200-18943'),
+  (8906,  5, null, '200-8906'),
+  (2014,  5, null, '200-2014'),
+  (2024,  5, null, '200-2024'),
+  (13980, 5, null, '200-13980'),
+  (29233, 5, null, '200-29233'),
+  (2018,  5, null, '200-2018'),
+  (11443, 5, null, '200-11443'),
+  (30075, 5, null, '200-30075'),
+  (18804, 5, null, '200-18804'),
+  (45230, 5, null, '200-45230'),
+  (2002,  5, null, '200-2002'),
+  (18461, 5, null, '200-18461'),
+  (13468, 5, null, '200-13468'),
+  (14461, 5, null, '200-14461');
 
 INSERT IGNORE INTO district (id, name, natural_id) VALUES
   (1, 'Sample District 1', '01247430000000');
@@ -59,21 +59,20 @@ INSERT INTO iab_exam (id, iab_exam_student_id, asmt_id, asmt_version, opportunit
 -- TODO: this needs more research.
 -- INSERT INTO exam_available_accommodation (exam_id, accommodation_id) VALUES ...
 
-INSERT INTO iab_exam_item (iab_exam_id, item_key, bank_key, score, score_status, response) VALUES
-  (1,  2010, '200', 1, 'SCORED', '<response><math xmlns="http://www.w3.org/1998/Math/MathML" title="10"><mstyle><mn>10</mn></mstyle></math></response>'),
-  (1,  18943,'200', 1, 'SCORED', 'D'),
-  (1,  8906, '200', 0, 'SCORED', 'C'),
-  (1,  2014, '200', 0, 'SCORED', '<response><math xmlns="http://www.w3.org/1998/Math/MathML" title="46"><mstyle><mn>46</mn></mstyle></math></response>'),
-  (1,  2024, '200', 0, 'SCORED', '<response><math xmlns="http://www.w3.org/1998/Math/MathML" title="68"><mstyle><mn>68</mn></mstyle></math></response>'),
-  (1,  13980,'200', 0, 'SCORED', 'A'),
-  (1,  29233,'200', 1, 'SCORED', '<itemResponse><response id="RESPONSE"><value>1 b</value><value>2 a</value><value>3 a</value><value>4 b</value></response></itemResponse>'),
-  (1,  2018, '200', 1, 'SCORED', '<response><math xmlns="http://www.w3.org/1998/Math/MathML" title="63"><mstyle><mn>63</mn></mstyle></math></response>'),
-  (1,  11443,'200', 0, 'SCORED', '<itemResponse><response id="RESPONSE"><value>1 b</value><value>2 b</value><value>3 b</value></response></itemResponse>'),
-  (1,  30075,'200', 1, 'SCORED', 'B'),
-  (1,  18804,'200', 1, 'SCORED', 'A'),
-  (1,  45230,'200', 0, 'SCORED', 'A'),
-  (1,  2002, '200', 0, 'SCORED', '<response><math xmlns="http://www.w3.org/1998/Math/MathML" title="23×5.75"><mstyle><mn>23</mn><mo>×</mo><mn>5.75</mn></mstyle></math></response>'),
-  (1,  18461,'200', 0, 'SCORED', '<response><math xmlns="http://www.w3.org/1998/Math/MathML" title="13w"><mstyle><mn>13</mn><mi>w</mi></mstyle></math></response>'),
-  -- TODO: not sure what score - 1 means, looks like it means no response
-  (1,  13468, '200', -1, 'SCORED', null),
-  (1,  14461, '200', -1, 'SCORED', null);
+INSERT INTO iab_exam_item (iab_exam_id, item_natural_id, score, score_status, response) VALUES
+  (1,  '200-2010', 1, 'SCORED', '<response><math xmlns="http://www.w3.org/1998/Math/MathML" title="10"><mstyle><mn>10</mn></mstyle></math></response>'),
+  (1,  '200-18943',1, 'SCORED', 'D'),
+  (1,  '200-8906', 0, 'SCORED', 'C'),
+  (1,  '200-2014', 0, 'SCORED', '<response><math xmlns="http://www.w3.org/1998/Math/MathML" title="46"><mstyle><mn>46</mn></mstyle></math></response>'),
+  (1,  '200-2024', 0, 'SCORED', '<response><math xmlns="http://www.w3.org/1998/Math/MathML" title="68"><mstyle><mn>68</mn></mstyle></math></response>'),
+  (1,  '200-13980',0, 'SCORED', 'A'),
+  (1,  '200-29233',1, 'SCORED', '<itemResponse><response id="RESPONSE"><value>1 b</value><value>2 a</value><value>3 a</value><value>4 b</value></response></itemResponse>'),
+  (1,  '200-2018', 1, 'SCORED', '<response><math xmlns="http://www.w3.org/1998/Math/MathML" title="63"><mstyle><mn>63</mn></mstyle></math></response>'),
+  (1,  '200-11443',0, 'SCORED', '<itemResponse><response id="RESPONSE"><value>1 b</value><value>2 b</value><value>3 b</value></response></itemResponse>'),
+  (1,  '200-30075',1, 'SCORED', 'B'),
+  (1,  '200-18804',1, 'SCORED', 'A'),
+  (1,  '200-45230',0, 'SCORED', 'A'),
+  (1,  '200-2002', 0, 'SCORED', '<response><math xmlns="http://www.w3.org/1998/Math/MathML" title="23×5.75"><mstyle><mn>23</mn><mo>×</mo><mn>5.75</mn></mstyle></math></response>'),
+  (1,  '200-18461',0, 'SCORED', '<response><math xmlns="http://www.w3.org/1998/Math/MathML" title="13w"><mstyle><mn>13</mn><mi>w</mi></mstyle></math></response>'),
+  (1,  '200-13468', -1, 'SCORED', null),
+  (1,  '200-14461', -1, 'SCORED', null);

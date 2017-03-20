@@ -138,8 +138,7 @@ CREATE TABLE IF NOT EXISTS item (
   id int NOT NULL AUTO_INCREMENT PRIMARY KEY,
   claim_id smallint,
   target_id smallint,
-  item_key bigint NOT NULL,
-  bank_key varchar(40) NOT NULL,
+  natural_id varchar(40) NOT NULL,
   CONSTRAINT fk__item__claim FOREIGN KEY (claim_id) REFERENCES claim(id),
   CONSTRAINT fk__item__target FOREIGN KEY (target_id) REFERENCES target(id)
 );
@@ -262,8 +261,7 @@ CREATE TABLE IF NOT EXISTS iab_exam (
 CREATE TABLE IF NOT EXISTS iab_exam_item (
   id bigint NOT NULL AUTO_INCREMENT PRIMARY KEY,
   iab_exam_id bigint NOT NULL,
-  item_key bigint NOT NULL,
-  bank_key varchar(40) NOT NULL,
+  item_natural_id varchar(40) NOT NULL,
   score float,
   score_status varchar(50),
   response text,
@@ -328,8 +326,7 @@ CREATE TABLE IF NOT EXISTS exam (
 CREATE TABLE IF NOT EXISTS exam_item (
   id bigint NOT NULL AUTO_INCREMENT PRIMARY KEY, 
   exam_id bigint NOT NULL,
-  item_key bigint NOT NULL,
-  bank_key varchar(40) NOT NULL,
+  item_natural_id varchar(40) NOT NULL,
   score float,
   score_status varchar(50), 
   response text,
