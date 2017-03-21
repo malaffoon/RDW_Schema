@@ -89,7 +89,7 @@ INSERT INTO user_roster (roster_id, user_login) VALUES
   (1, 'dwtest@example.com');
 
 INSERT INTO exam_student (id, grade_id, student_id, school_id, iep, lep, section504, economic_disadvantage, migrant_status, eng_prof_lvl, t3_program_type, language_code, prim_disability_type) VALUES
-  (1, 5, 1, 1, null, null, null, null, null, 'EO', null,'ENG', null);
+  (1, 5, 1, 1, 0, 0, 0, 0, null, 'EO', null,'ENG', null);
 
 INSERT INTO exam (id, exam_student_id, asmt_id, asmt_version, opportunity, status, completeness_id, administration_condition_id, session_id, scale_score, scale_score_std_err, achievement_level, completed_at) VALUES
   (1, 1, 1, null, 0, 'completed', 1, 1, 'CA-3ACF-69', 2642.54836495757, 27.6925766459382, 4, '2016-08-14');
