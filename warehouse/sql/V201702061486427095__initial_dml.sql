@@ -55,16 +55,14 @@ INSERT INTO subject_claim_score (subject_id, asmt_type_id, code) VALUES
   (2, 3, '4-CR');
 
 INSERT INTO completeness (id, name) VALUES
-  (0, 'undefined'),
-  (1, 'partial'),
-  (2, 'complete');
+  (1, 'Partial'),
+  (2, 'Complete');
 
 INSERT INTO administration_condition (id, name) VALUES
-  (0, 'undefined'),
-  (1, 'valid'),
-  (2, 'standardized'),
-  (3, 'nonstandardized'),
-  (4, 'invalid');
+  (1, 'Valid'),
+  (2, 'SD'),
+  (3, 'NS'),
+  (4, 'IN');
 
 INSERT INTO ethnicity (id, name) VALUES
   (1, 'HispanicOrLatinoEthnicity'),
@@ -76,9 +74,8 @@ INSERT INTO ethnicity (id, name) VALUES
   (7, 'DemographicRaceTwoOrMoreRaces');
 
 INSERT INTO gender (id, name) VALUES
-  (0, 'undefined'),
-  (1, 'male'),
-  (2, 'female');
+  (1, 'Male'),
+  (2, 'Female');
 
 INSERT INTO accommodation (code) VALUES
   ('TDS_ASL0'),

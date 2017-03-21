@@ -126,7 +126,6 @@ CREATE TABLE IF NOT EXISTS subject_claim_score (
   CONSTRAINT fk__subject_claim_score__asmt_type FOREIGN KEY (asmt_type_id) REFERENCES asmt_type(id)
 );
 
-
 CREATE TABLE IF NOT EXISTS target (
   id smallint NOT NULL AUTO_INCREMENT PRIMARY KEY,
   claim_id smallint NOT NULL,
@@ -142,7 +141,6 @@ CREATE TABLE IF NOT EXISTS item (
   CONSTRAINT fk__item__claim FOREIGN KEY (claim_id) REFERENCES claim(id),
   CONSTRAINT fk__item__target FOREIGN KEY (target_id) REFERENCES target(id)
 );
-
 
 CREATE TABLE IF NOT EXISTS item_trait_score (
   id tinyint NOT NULL PRIMARY KEY,
@@ -227,10 +225,10 @@ CREATE TABLE IF NOT EXISTS iab_exam_student (
   grade_id tinyint NOT NULL,
   student_id bigint NOT NULL,
   school_id mediumint NOT NULL,
-  iep tinyint,
-  lep tinyint,
-  section504 tinyint,
-  economic_disadvantage tinyint,
+  iep tinyint NOT NULL,
+  lep tinyint NOT NULL,
+  section504 tinyint NOT NULL,
+  economic_disadvantage tinyint NOT NULL,
   migrant_status tinyint,
   eng_prof_lvl varchar(20),
   t3_program_type varchar(20),
@@ -245,11 +243,11 @@ CREATE TABLE IF NOT EXISTS iab_exam (
   iab_exam_student_id bigint NOT NULL,
   asmt_id bigint NOT NULL,
   asmt_version varchar(30),
-  opportunity int NOT NULL,
-  status varchar(50) NOT NULL,
+  opportunity int,
+  status varchar(50),
   completeness_id tinyint NOT NULL,
   administration_condition_id tinyint NOT NULL,
-  session_id varchar(128) NULL,
+  session_id varchar(128),
   category tinyint,
   scale_score float,
   scale_score_std_err float,
@@ -292,10 +290,10 @@ CREATE TABLE IF NOT EXISTS exam_student (
   grade_id tinyint NOT NULL,
   student_id bigint NOT NULL,
   school_id mediumint NOT NULL,
-  iep tinyint,
-  lep tinyint,
-  section504 tinyint,
-  economic_disadvantage tinyint,
+  iep tinyint NOT NULL,
+  lep tinyint NOT NULL,
+  section504 tinyint NOT NULL,
+  economic_disadvantage tinyint NOT NULL,
   migrant_status tinyint,
   eng_prof_lvl varchar(20),
   t3_program_type varchar(20),
@@ -310,11 +308,11 @@ CREATE TABLE IF NOT EXISTS exam (
   exam_student_id bigint NOT NULL,
   asmt_id bigint NOT NULL,
   asmt_version varchar(30),
-  opportunity int NOT NULL,
-  status varchar(50) NOT NULL,
+  opportunity int,
+  status varchar(50),
   completeness_id tinyint NOT NULL,
   administration_condition_id tinyint NOT NULL,
-  session_id varchar(128) NULL,
+  session_id varchar(128),
   scale_score float,
   scale_score_std_err float,
   achievement_level tinyint,
