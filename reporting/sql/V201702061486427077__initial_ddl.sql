@@ -235,6 +235,8 @@ CREATE TABLE IF NOT EXISTS iab_exam_item (
   item_natural_id varchar(40) NOT NULL,
   score float,
   score_status varchar(50),
+  max_score float,
+  position int,
   response text,
   CONSTRAINT fk__iab_exam_item__exam FOREIGN KEY (iab_exam_id) REFERENCES iab_exam(id)
 );
@@ -300,6 +302,8 @@ CREATE TABLE IF NOT EXISTS exam_item (
   item_natural_id varchar(40) NOT NULL,
   score float,
   score_status varchar(50),
+  max_score float,
+  position int,
   response text,
   CONSTRAINT fk__exam_item__exam FOREIGN KEY (exam_id) REFERENCES exam(id)
 );
