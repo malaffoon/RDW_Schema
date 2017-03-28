@@ -9,13 +9,6 @@ INSERT INTO asmt (id, natural_id, grade_id,type_id, subject_id, academic_year, n
 INSERT INTO asmt_score (asmt_id, cut_point_1, cut_point_2, cut_point_3, min_score, max_score) VALUES
   (1, 2442, 2502, 2582, 2201, 2701);
 
--- TODO: where to find min/max score. Also ETS TRT has codes without SBAC?
-INSERT INTO claim (id, asmt_id, code) VALUES
-  (1, 1, 'SBAC-2-W'),
-  (2, 1, 'SBAC-4-CR'),
-  (3, 1, 'SOCK_LS'),
-  (4, 1, 'SOCK_R');
-
 -- TODO: currently item to claim assignment is random
 INSERT INTO item (id, claim_id, target_id, natural_id) VALUES
   (60347, 1, null, '200-60347'),

@@ -88,9 +88,10 @@ CREATE TABLE IF NOT EXISTS asmt_score (
 
 CREATE TABLE IF NOT EXISTS claim (
   id smallint NOT NULL AUTO_INCREMENT PRIMARY KEY,
-  asmt_id bigint NOT NULL,
-  code varchar(255) NOT NULL,
-  CONSTRAINT fk__claim__asmt FOREIGN KEY (asmt_id) REFERENCES asmt(id)
+  subject_id tinyint NOT NULL,
+  code varchar(10) NOT NULL,
+  name varchar(250) NOT NULL,
+  CONSTRAINT fk__claim__subject FOREIGN KEY (subject_id) REFERENCES subject(id)
 );
 
 CREATE TABLE IF NOT EXISTS subject_claim_score (
@@ -105,7 +106,8 @@ CREATE TABLE IF NOT EXISTS subject_claim_score (
 CREATE TABLE IF NOT EXISTS target (
   id smallint NOT NULL AUTO_INCREMENT PRIMARY KEY,
   claim_id smallint NOT NULL,
-  name varchar(255) NOT NULL,
+  code varchar(10) NOT NULL,
+  description varchar(500) NOT NULL,
   CONSTRAINT fk__target__claim FOREIGN KEY (claim_id) REFERENCES claim(id)
 );
 
@@ -122,6 +124,28 @@ CREATE TABLE IF NOT EXISTS item_trait_score (
   id tinyint NOT NULL PRIMARY KEY,
   dimension varchar(100) NOT NULL UNIQUE
  );
+
+CREATE TABLE IF NOT EXISTS item_difficulty_cuts (
+  id tinyint NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  type_id tinyint NOT NULL,
+  subject_id tinyint NOT NULL,
+  grade_id tinyint NOT NULL,
+  moderate_low_end float NOT NULL,
+  difficult_low_end float NOT NULL,
+  CONSTRAINT fk__item_difficulty_cuts__type FOREIGN KEY (type_id) REFERENCES asmt_type(id),
+  CONSTRAINT fk__item_difficulty_cuts__grade FOREIGN KEY (grade_id) REFERENCES grade(id),
+  CONSTRAINT fk__item_difficulty_cuts__subject FOREIGN KEY (subject_id) REFERENCES subject(id)
+);
+
+CREATE TABLE IF NOT EXISTS depth_of_knowledge (
+  level tinyint NOT NULL PRIMARY KEY,
+  description varchar(100) NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS math_practice (
+  practice tinyint NOT NULL PRIMARY KEY,
+  description varchar(250) NOT NULL
+);
 
 /** Data derived from the exams delivered via TRT **/
 
