@@ -146,6 +146,7 @@ INSERT INTO accommodation (code) VALUES
   ('NEA_NumTbl'), 
   ('NEA_NoiseBuf');
 
+-- the ids in this table has to match ids hardcoded in the application
 INSERT INTO item_trait_score (id, dimension) VALUES
   (1, 'Evidence/Elaboration'),
   (2, 'Organization/Purpose'),
