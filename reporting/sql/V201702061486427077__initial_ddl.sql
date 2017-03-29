@@ -262,6 +262,15 @@ CREATE TABLE IF NOT EXISTS iab_exam_item (
   max_score float,
   position int,
   response text,
+  trait_evidence_elaboration_score float,
+  trait_evidence_elaboration_score_status varchar(50),
+  trait_evidence_elaboration_max_score float,
+  trait_organization_purpose_score float,
+  trait_organization_purpose_score_status varchar(50),
+  trait_organization_purpose_max_score float,
+  trait_conventions_score float,
+  trait_conventions_score_status varchar(50),
+  trait_conventions_max_score float,
   CONSTRAINT fk__iab_exam_item__exam FOREIGN KEY (iab_exam_id) REFERENCES iab_exam(id)
 );
 
@@ -270,16 +279,6 @@ CREATE TABLE IF NOT EXISTS iab_exam_available_accommodation (
   accommodation_id int NOT NULL,
   CONSTRAINT fk__iab_exam_available_accommodation__iab_exam FOREIGN KEY (iab_exam_id) REFERENCES iab_exam(id),
   CONSTRAINT fk__iab_exam_available_accommodation__accomodation FOREIGN KEY (accommodation_id) REFERENCES accommodation(id)
-);
-
-CREATE TABLE IF NOT EXISTS iab_exam_item_trait_score (
-  id bigint NOT NULL AUTO_INCREMENT PRIMARY KEY,
-  iab_exam_item_id bigint NOT NULL,
-  item_trait_score_id tinyint NOT NULL,
-  score float NOT NULL,
-  score_status varchar(50),
-  CONSTRAINT fk__iab_exam_item_trait_score__iab_exam_item FOREIGN KEY (iab_exam_item_id) REFERENCES iab_exam_item(id),
-  CONSTRAINT fk__iab_exam_item_trait_score__item_trait_score FOREIGN KEY (item_trait_score_id) REFERENCES item_trait_score(id)
 );
 
 /** ICA and Summative exams **/
@@ -329,6 +328,15 @@ CREATE TABLE IF NOT EXISTS exam_item (
   max_score float,
   position int,
   response text,
+  trait_evidence_elaboration_score float,
+  trait_evidence_elaboration_score_status varchar(50),
+  trait_evidence_elaboration_max_score float,
+  trait_organization_purpose_score float,
+  trait_organization_purpose_score_status varchar(50),
+  trait_organization_purpose_max_score float,
+  trait_conventions_score float,
+  trait_conventions_score_status varchar(50),
+  trait_conventions_max_score float,
   CONSTRAINT fk__exam_item__exam FOREIGN KEY (exam_id) REFERENCES exam(id)
 );
 
@@ -349,12 +357,3 @@ CREATE TABLE IF NOT EXISTS exam_claim_score (
   CONSTRAINT fk__exam_claim_score__exam FOREIGN KEY (exam_id) REFERENCES exam(id)
 );
 
-CREATE TABLE IF NOT EXISTS exam_item_trait_score (
-  id bigint NOT NULL AUTO_INCREMENT PRIMARY KEY,
-  exam_item_id bigint NOT NULL,
-  item_trait_score_id tinyint NOT NULL,
-  score float NOT NULL,
-  score_status varchar(50),
-  CONSTRAINT fk__exam_item_trait_score__exam_item FOREIGN KEY (exam_item_id) REFERENCES exam_item(id),
-  CONSTRAINT fk__exam_item_trait_score__item_trait_score FOREIGN KEY (item_trait_score_id) REFERENCES item_trait_score(id)
-);

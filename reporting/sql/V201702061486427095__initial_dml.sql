@@ -194,10 +194,6 @@ INSERT INTO math_practice (practice, description) VALUES
   (6, 'Attend to precision'),
   (7, 'Look for and make use of structure'),
   (8, 'Look for and express regularity in repeated reasoning');
-INSERT INTO item_trait_score (id, dimension) VALUES
-  (1, 'Evidence/Elaboration'),
-  (2, 'Organization/Purpose'),
-  (3, 'Conventions');
 
 -- below data is loaded from https://github.com/SmarterApp/SS_CoreStandards/tree/master/Documents/Imports
 
@@ -213,7 +209,6 @@ INSERT INTO claim (subject_id, code, name) VALUES
   (1, '2', 'Problem Solving'),
   (1, '3', 'Communicating Reasoning'),
   (1, '4', 'Modeling and Data Analysis');
-
 
 INSERT INTO target (claim_id, code, description) VALUES
   -- ELA targets
