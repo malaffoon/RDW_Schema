@@ -201,7 +201,8 @@ INSERT INTO math_practice (practice, description) VALUES
   (8, 'Look for and express regularity in repeated reasoning');
 
 INSERT INTO import_content (id, name) VALUES
-  (1, 'EXAM');
+  (1, 'EXAM'),
+  (2, 'PACKAGE');
 
 INSERT INTO import_status (id, name) VALUES
   (-5, 'UNKNOWN_ASMT'),
