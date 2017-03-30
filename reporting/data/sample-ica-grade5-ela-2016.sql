@@ -72,13 +72,13 @@ INSERT IGNORE INTO state (code) VALUES
 INSERT INTO student (id, ssid, last_or_surname, first_name, middle_name, gender_id, first_entry_into_us_school_at, lep_entry_at, lep_exit_at, birthday) VALUES
   (1, '6666666666', 'LastName6', 'FirstName6', 'MiddleName6', 1, '2015-09-01', null, null, '2006-01-01');
 
-INSERT INTO roster (id, created_by, school_id, name, exam_from, exam_to, subject_id) VALUES
+INSERT INTO student_group (id, created_by, school_id, name, exam_from, exam_to, subject_id) VALUES
   (1, 'dwtest@example.com', 1, 'Test Student Group', null, '2017-08-01', 2);
 
-INSERT INTO roster_membership (roster_id, student_id) VALUES
+INSERT INTO student_group_membership (student_group_id, student_id) VALUES
   (1, 1);
 
-INSERT INTO user_roster (roster_id, user_login) VALUES
+INSERT INTO user_student_group (student_group_id, user_login) VALUES
   (1, 'dwtest@example.com');
 
 INSERT INTO exam_student (id, grade_id, student_id, school_id, iep, lep, section504, economic_disadvantage, migrant_status, eng_prof_lvl, t3_program_type, language_code, prim_disability_type) VALUES
