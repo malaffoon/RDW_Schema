@@ -190,7 +190,7 @@ CREATE TABLE IF NOT EXISTS student_ethnicity (
 );
 
 
-CREATE TABLE IF NOT EXISTS roster (
+CREATE TABLE IF NOT EXISTS student_group (
   id int NOT NULL AUTO_INCREMENT PRIMARY KEY,
   created_by varchar(255) NOT NULL,
   school_id mediumint,
@@ -198,21 +198,21 @@ CREATE TABLE IF NOT EXISTS roster (
   exam_from date,
   exam_to date NOT NULL,
   subject_id tinyint,
-  CONSTRAINT fk__roster__school FOREIGN KEY (school_id) REFERENCES school(id),
-  CONSTRAINT fk__roster__subject FOREIGN KEY (subject_id) REFERENCES subject(id)
+  CONSTRAINT fk__student_group__school FOREIGN KEY (school_id) REFERENCES school(id),
+  CONSTRAINT fk__student_group__subject FOREIGN KEY (subject_id) REFERENCES subject(id)
 );
 
-CREATE TABLE IF NOT EXISTS roster_membership (
-  roster_id int NOT NULL,
+CREATE TABLE IF NOT EXISTS student_group_membership (
+  student_group_id int NOT NULL,
   student_id bigint NOT NULL,
-  CONSTRAINT fk__roster_membership__roster FOREIGN KEY (roster_id) REFERENCES roster(id),
-  CONSTRAINT fk__roster_membership__student FOREIGN KEY (student_id) REFERENCES student(id)
+  CONSTRAINT fk__student_group_membership__student_group FOREIGN KEY (student_group_id) REFERENCES student_group(id),
+  CONSTRAINT fk__student_group_membership__student FOREIGN KEY (student_id) REFERENCES student(id)
 );
 
-CREATE TABLE IF NOT EXISTS user_roster (
-  roster_id int NOT NULL,
+CREATE TABLE IF NOT EXISTS user_student_group (
+  student_group_id int NOT NULL,
   user_login varchar(255) NOT NULL,
-  CONSTRAINT fk__user_roster__roster FOREIGN KEY (roster_id) REFERENCES roster(id)
+  CONSTRAINT fk__user_student_group__student_group FOREIGN KEY (student_group_id) REFERENCES student_group(id)
 );
 
 /** IAB exams **/
