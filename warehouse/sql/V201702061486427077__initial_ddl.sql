@@ -115,6 +115,7 @@ CREATE TABLE IF NOT EXISTS claim (
   subject_id tinyint NOT NULL,
   code varchar(10) NOT NULL,
   name varchar(250) NOT NULL,
+  description varchar(250) NOT NULL,
   CONSTRAINT fk__claim__subject FOREIGN KEY (subject_id) REFERENCES subject(id)
 );
 
@@ -123,6 +124,7 @@ CREATE TABLE IF NOT EXISTS subject_claim_score (
   subject_id tinyint NOT NULL,
   asmt_type_id tinyint NOT NULL,
   code varchar(10) NOT NULL,
+  name varchar(250) NOT NULL,
   CONSTRAINT fk__subject_claim_score__subject FOREIGN KEY (subject_id) REFERENCES subject(id),
   CONSTRAINT fk__subject_claim_score__asmt_type FOREIGN KEY (asmt_type_id) REFERENCES asmt_type(id)
 );

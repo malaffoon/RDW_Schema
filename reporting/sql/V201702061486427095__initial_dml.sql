@@ -38,21 +38,21 @@ INSERT INTO asmt_type (id, code, name) VALUES
   (2, 'iab', 'Interim Assessment Block'),
   (3, 'sum', 'Summative');
 
-INSERT INTO subject_claim_score (id, subject_id, asmt_type_id, code) VALUES
-  (1, 1, 1, '1'),
-  (2, 1, 1, 'SOCK_2'),
-  (3, 1, 1, '3'),
-  (4, 2, 1, 'SOCK_R'),
-  (5, 2, 1, 'SOCK_LS'),
-  (6, 2, 1, '2-W'),
-  (7, 2, 1, '4-CR'),
-  (8, 1, 3, '1'),
-  (9, 1, 3, 'SOCK_2'),
-  (10,1, 3, '3'),
-  (11, 2, 3, 'SOCK_R'),
-  (12, 2, 3, 'SOCK_LS'),
-  (13, 2, 3, '2-W'),
-  (14, 2, 3, '4-CR');
+INSERT INTO subject_claim_score (id, subject_id, asmt_type_id, code, name) VALUES
+  (1,  1, 1, '1', 'Concepts' ),
+  (2,  1, 1, 'SOCK_2', 'PSMDA (Problem Solving and Modeling & Data Analysis)'),
+  (3,  1, 1, '3', 'Reasoning'),
+  (4,  2, 1, 'SOCK_R' , 'Reading'),
+  (5,  2, 1, 'SOCK_LS', 'Listening'),
+  (6,  2, 1, '2-W', 'Writing'),
+  (7,  2, 1, '4-CR', 'Research'),
+  (8,  1, 3, '1', 'Concepts' ),
+  (9,  1, 3, 'SOCK_2', 'PSMDA (Problem Solving and Modeling & Data Analysis)'),
+  (10, 1, 3, '3', 'Reasoning'),
+  (11, 2, 3, 'SOCK_R' , 'Reading'),
+  (12, 2, 3, 'SOCK_LS', 'Listening'),
+  (13, 2, 3, '2-W', 'Writing'),
+  (14, 2, 3, '4-CR', 'Research');
 
 INSERT INTO completeness (id, name) VALUES
   (1, 'Partial'),
@@ -197,18 +197,19 @@ INSERT INTO math_practice (practice, description) VALUES
 
 -- below data is loaded from https://github.com/SmarterApp/SS_CoreStandards/tree/master/Documents/Imports
 
-INSERT INTO claim (subject_id, code, name) VALUES
-  (2, '1-IT', 'Read Analytically: Informational Text'),
-  (2, '1-LT', 'Read Analytically: Literary Text'),
-  (2, '2-W', 'Write Effectively'),
-  (2, '3-L', 'Listen Purposefully'),
-  (2, '3-S', 'Speak Purposefully'),
-  (2, '4-CR', 'Conduct Research'),
-  (2, 'NA', 'NA'),
-  (1, '1', 'Concepts and Procedures'),
-  (1, '2', 'Problem Solving'),
-  (1, '3', 'Communicating Reasoning'),
-  (1, '4', 'Modeling and Data Analysis');
+INSERT INTO claim (subject_id, code, name, description) VALUES
+  (2, '1-IT', 'Read Analytically: Informational Text', 'Read Analytically: Informational Text - Students can read closely and analytically to comprehend a range of increasingly complex literary and informational texts.'),
+  (2, '1-LT', 'Read Analytically: Literary Text', 'Read Analytically: Literary Text - Students can read closely and analytically to comprehend a range of increasingly complex literary and informational texts.'),
+  (2, '2-W', 'Write Effectively', 'Write Effectively - Students can produce effective and well-grounded writing for a range of purposes and audiences.'),
+  (2, '3-L', 'Listen Purposefully', 'Speak and Listen purposefully - Students can employ effective speaking and listening skills for a range of purposes and audiences.'),
+  (2, '3-S', 'Speak Purposefully', 'Speak and Listen purposefully - Students can employ effective speaking and listening skills for a range of purposes and audiences.'),
+  (2, '4-CR', 'Conduct Research', 'Conduct Research- Students can engage in research/ inquiry to investigate topics and to analyze, integrate, and present information.'),
+  (2, 'NA', 'NA', 'NA'),
+  (1, '1', 'Concepts and Procedures', 'Concepts and Procedures - Students can explain and apply mathematical concepts and interpret and carry out mathematical procedures with precision and fluency.?'),
+  (1, '2', 'Problem Solving', 'Problem Solving - Students can solve a range of complex well-posed problems in pure and applied mathematics, making productive use of knowledge and problem solving strategies.'),
+  (1, '3', 'Communicating Reasoning', 'Communicating Reasoning - Students can clearly and precisely construct viable arguments to support their own reasoning and to critique the reasoning of others.'),
+  (1, '4', 'Modeling and Data Analysis', 'Modeling and Data Analysis - Students can analyze complex, real-world scenarios and can construct and use mathematical models to interpret and solve problems.');
+
 
 INSERT INTO target (claim_id, code, description) VALUES
   -- ELA targets
