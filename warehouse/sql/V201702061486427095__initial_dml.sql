@@ -185,11 +185,15 @@ INSERT INTO item_difficulty_cuts (type_id, subject_id, grade_id, moderate_low_en
   (2, 1, 8, -0.50969, 1.19076),
   (2, 1, 11, -0.34891, 1.60976);
 
-INSERT INTO depth_of_knowledge (level, description) VALUES
-  (1, 'Recall of Information'),
-  (2, 'Basic Reasoning'),
-  (3, 'Complex Reasoning'),
-  (4, 'Extended Reasoning');
+INSERT INTO depth_of_knowledge (id, level, subject_id, description, reference) VALUES
+  (1, 1, 1, 'Recall and Reproduction', 'https://portal.smarterbalanced.org/library/en/mathematics-content-specifications.pdf#page=72'),
+  (2, 2, 1, 'Basic Skills and Concepts', 'https://portal.smarterbalanced.org/library/en/mathematics-content-specifications.pdf#page=72'),
+  (3, 3, 1, 'Strategic Thinking and Reasoning', 'https://portal.smarterbalanced.org/library/en/mathematics-content-specifications.pdf#page=72'),
+  (4, 4, 1, 'Extended Thinking', 'https://portal.smarterbalanced.org/library/en/mathematics-content-specifications.pdf#page=72'),
+  (5, 1, 2, 'Recall and Reproduction', 'https://portal.smarterbalanced.org/library/en/english-language-artsliteracy-content-specifications.pdf#page=54'),
+  (6, 2, 2, 'Basic Skills and Concepts', 'https://portal.smarterbalanced.org/library/en/english-language-artsliteracy-content-specifications.pdf#page=54'),
+  (7, 3, 2, 'Strategic Thinking and Reasoning', 'https://portal.smarterbalanced.org/library/en/english-language-artsliteracy-content-specifications.pdf#page=54'),
+  (8, 4, 2, 'Extended Thinking', 'https://portal.smarterbalanced.org/library/en/english-language-artsliteracy-content-specifications.pdf#page=54');
 
 INSERT INTO math_practice (practice, description) VALUES
   (1, 'Make sense of problems and persevere in solving them'),
@@ -225,7 +229,7 @@ INSERT INTO claim (subject_id, code, name, description) VALUES
   (2, '3-S', 'Speak Purposefully', 'Speak and Listen purposefully - Students can employ effective speaking and listening skills for a range of purposes and audiences.'),
   (2, '4-CR', 'Conduct Research', 'Conduct Research- Students can engage in research/ inquiry to investigate topics and to analyze, integrate, and present information.'),
   (2, 'NA', 'NA', 'NA'),
-  (1, '1', 'Concepts and Procedures', 'Concepts and Procedures - Students can explain and apply mathematical concepts and interpret and carry out mathematical procedures with precision and fluency.?'),
+  (1, '1', 'Concepts and Procedures', 'Concepts and Procedures - Students can explain and apply mathematical concepts and interpret and carry out mathematical procedures with precision and fluency.'),
   (1, '2', 'Problem Solving', 'Problem Solving - Students can solve a range of complex well-posed problems in pure and applied mathematics, making productive use of knowledge and problem solving strategies.'),
   (1, '3', 'Communicating Reasoning', 'Communicating Reasoning - Students can clearly and precisely construct viable arguments to support their own reasoning and to critique the reasoning of others.'),
   (1, '4', 'Modeling and Data Analysis', 'Modeling and Data Analysis - Students can analyze complex, real-world scenarios and can construct and use mathematical models to interpret and solve problems.');
@@ -686,7 +690,7 @@ INSERT INTO target (claim_id, code, description) VALUES
   ((select id from claim where subject_id = 2 and code = 'NA'), 'NA-7', 'Standards not listed within an SBAC claim'),
   ((select id from claim where subject_id = 2 and code = 'NA'), 'NA-8', 'Standards not listed within an SBAC claim'),
   ((select id from claim where subject_id = 2 and code = 'NA'), 'NA-KG', 'Standards not listed within an SBAC claim'),
-  -- Math targets
+  -- TODO: this is math's 'Content Domain', not Targets. Still waiting on the rules to load math targets.
   ((select id from claim where subject_id = 1 and code = '1'),'A-APR', 'Arithmetic with Polynomials and Rational Expressions'),
   ((select id from claim where subject_id = 1 and code = '1'),'A-CED', 'Creating Equations'),
   ((select id from claim where subject_id = 1 and code = '1'),'A-REI', 'Reasoning with Equations and Inequalities'),
@@ -699,7 +703,7 @@ INSERT INTO target (claim_id, code, description) VALUES
   ((select id from claim where subject_id = 1 and code = '1'),'F-LE', 'Linear, Quadratic, and Exponential Models'),
   ((select id from claim where subject_id = 1 and code = '1'),'F-TF', 'Trigonometric Functions'),
   ((select id from claim where subject_id = 1 and code = '1'),'G', 'Geometry'),
-  ((select id from claim where subject_id = 1 and code = '1'),'G', 'Circles'),
+  ((select id from claim where subject_id = 1 and code = '1'),'G-C', 'Circles'),
   ((select id from claim where subject_id = 1 and code = '1'),'G-CO', 'Congruence'),
   ((select id from claim where subject_id = 1 and code = '1'),'G-GMD', 'Geometric Measurement and Dimension'),
   ((select id from claim where subject_id = 1 and code = '1'),'G-GPE', 'xpressing Geometric Properties with Equations'),
