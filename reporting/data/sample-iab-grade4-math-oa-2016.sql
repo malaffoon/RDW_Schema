@@ -3,7 +3,7 @@
  */
 use reporting;
 
-INSERT INTO asmt (id, natural_id, grade_id,type_id, subject_id, academic_year, name, label, version) VALUES
+INSERT INTO asmt (id, natural_id, grade_id,type_id, subject_id, school_year, name, label, version) VALUES
   (2, '(SBAC)SBAC-IAB-FIXED-G4M-OA-MATH-4-Winter-2016-2017', 4, 2, 1, 2016, 'SBAC-IAB-FIXED-G4M-OA-MATH-4', 'MTH IAB G4 OperationsAlgebraicThinking', '9835');
 
 -- TODO: should min/max be taken from assmt packge?

@@ -3,7 +3,7 @@
  */
 use reporting;
 
-INSERT INTO asmt (id, natural_id, grade_id,type_id, subject_id, academic_year, name, label, version) VALUES
+INSERT INTO asmt (id, natural_id, grade_id,type_id, subject_id, school_year, name, label, version) VALUES
   (1, 'SBAC)SBAC-ICA-FIXED-G5E-COMBINED-2017-Winter-2016-2017', 5, 1, 2, 2016, 'SBAC-ICA-FIXED-G5E-COMBINED-2017', 'Grade 5 ELA', '9831');
 
 INSERT INTO asmt_score (asmt_id, cut_point_1, cut_point_2, cut_point_3, min_score, max_score) VALUES

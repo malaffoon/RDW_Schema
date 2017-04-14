@@ -91,7 +91,7 @@ CREATE TABLE IF NOT EXISTS asmt (
   grade_id tinyint NOT NULL,
   type_id tinyint NOT NULL,
   subject_id tinyint NOT NULL,
-  academic_year smallint NOT NULL,
+  school_year smallint NOT NULL,
   name varchar(250),
   label varchar(255),
   version varchar(30),
