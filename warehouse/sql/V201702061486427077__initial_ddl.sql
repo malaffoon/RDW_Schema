@@ -138,8 +138,12 @@ CREATE TABLE IF NOT EXISTS target (
 );
 
 CREATE TABLE IF NOT EXISTS depth_of_knowledge (
-  level tinyint NOT NULL PRIMARY KEY,
-  description varchar(100) NOT NULL
+  id tinyint NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  level tinyint NOT NULL,
+  subject_id tinyint NOT NULL,
+  description varchar(100) NOT NULL,
+  reference varchar(1000) NOT NULL,
+  CONSTRAINT fk_depth_of_knowledge__subject FOREIGN KEY (subject_id) REFERENCES subject(id)
 );
 
 CREATE TABLE IF NOT EXISTS math_practice (
@@ -155,14 +159,14 @@ CREATE TABLE IF NOT EXISTS item (
   asmt_id bigint NOT NULL,
   math_practice tinyint,
   allow_calc boolean,
-  dok tinyint NOT NULL,
+  dok_id tinyint NOT NULL,
   difficulty float NOT NULL,
   max_points float UNSIGNED NOT NULL,
   CONSTRAINT fk__item__claim FOREIGN KEY (claim_id) REFERENCES claim(id),
   CONSTRAINT fk__item__target FOREIGN KEY (target_id) REFERENCES target(id),
   CONSTRAINT fk__item__asmt FOREIGN KEY (asmt_id) REFERENCES asmt(id),
   CONSTRAINT fk__item__math_practice FOREIGN KEY (math_practice) REFERENCES math_practice(practice), 
-  CONSTRAINT fk__item__dok FOREIGN KEY (dok) REFERENCES depth_of_knowledge(level)
+  CONSTRAINT fk__item__dok FOREIGN KEY (dok_id) REFERENCES depth_of_knowledge(id)
 );
 
 CREATE TABLE IF NOT EXISTS item_trait_score (
