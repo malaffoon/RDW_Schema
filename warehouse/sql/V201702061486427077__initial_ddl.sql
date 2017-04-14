@@ -279,6 +279,7 @@ CREATE TABLE IF NOT EXISTS iab_exam_student (
 CREATE TABLE IF NOT EXISTS iab_exam (
   id bigint NOT NULL AUTO_INCREMENT PRIMARY KEY,
   iab_exam_student_id bigint NOT NULL,
+  school_year smallint NOT NULL,
   asmt_id bigint NOT NULL,
   asmt_version varchar(30),
   opportunity int,
@@ -341,6 +342,7 @@ CREATE TABLE IF NOT EXISTS exam_student (
 CREATE TABLE IF NOT EXISTS exam (
   id bigint NOT NULL AUTO_INCREMENT PRIMARY KEY,
   exam_student_id bigint NOT NULL,
+  school_year smallint NOT NULL,
   asmt_id bigint NOT NULL,
   asmt_version varchar(30),
   opportunity int,
