@@ -270,18 +270,14 @@ CREATE TABLE IF NOT EXISTS iab_exam_item (
   item_natural_id varchar(40) NOT NULL,
   score float,
   score_status varchar(50),
-  max_score float,
   position int,
   response text,
   trait_evidence_elaboration_score float,
   trait_evidence_elaboration_score_status varchar(50),
-  trait_evidence_elaboration_max_score float,
   trait_organization_purpose_score float,
   trait_organization_purpose_score_status varchar(50),
-  trait_organization_purpose_max_score float,
   trait_conventions_score float,
   trait_conventions_score_status varchar(50),
-  trait_conventions_max_score float,
   CONSTRAINT fk__iab_exam_item__exam FOREIGN KEY (iab_exam_id) REFERENCES iab_exam(id)
 );
 
@@ -336,18 +332,14 @@ CREATE TABLE IF NOT EXISTS exam_item (
   item_natural_id varchar(40) NOT NULL,
   score float,
   score_status varchar(50),
-  max_score float,
   position int,
   response text,
   trait_evidence_elaboration_score float,
   trait_evidence_elaboration_score_status varchar(50),
-  trait_evidence_elaboration_max_score float,
   trait_organization_purpose_score float,
   trait_organization_purpose_score_status varchar(50),
-  trait_organization_purpose_max_score float,
   trait_conventions_score float,
   trait_conventions_score_status varchar(50),
-  trait_conventions_max_score float,
   CONSTRAINT fk__exam_item__exam FOREIGN KEY (exam_id) REFERENCES exam(id)
 );
 

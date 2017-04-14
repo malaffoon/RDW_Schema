@@ -55,20 +55,20 @@ INSERT INTO iab_exam (id, iab_exam_student_id, asmt_id, asmt_version, opportunit
 -- TODO: this needs more research.
 -- INSERT INTO exam_available_accommodation (exam_id, accommodation_id) VALUES ...
 
-INSERT INTO iab_exam_item (iab_exam_id, item_natural_id, score, score_status, response, position, max_score) VALUES
-  (1,  '200-2010', 1, 'SCORED', '<response><math xmlns="http://www.w3.org/1998/Math/MathML" title="10"><mstyle><mn>10</mn></mstyle></math></response>', 1, 2),
-  (1,  '200-18943',1, 'SCORED', 'D', 2, 2),
-  (1,  '200-8906', 0, 'SCORED', 'C', 3, 2),
-  (1,  '200-2014', 0, 'SCORED', '<response><math xmlns="http://www.w3.org/1998/Math/MathML" title="46"><mstyle><mn>46</mn></mstyle></math></response>', 4, 2),
-  (1,  '200-2024', 0, 'SCORED', '<response><math xmlns="http://www.w3.org/1998/Math/MathML" title="68"><mstyle><mn>68</mn></mstyle></math></response>', 5, 2),
-  (1,  '200-13980',0, 'SCORED', 'A', 6, 2),
-  (1,  '200-29233',1, 'SCORED', '<itemResponse><response id="RESPONSE"><value>1 b</value><value>2 a</value><value>3 a</value><value>4 b</value></response></itemResponse>', 7, 2),
-  (1,  '200-2018', 1, 'SCORED', '<response><math xmlns="http://www.w3.org/1998/Math/MathML" title="63"><mstyle><mn>63</mn></mstyle></math></response>', 8, 2),
-  (1,  '200-11443',0, 'SCORED', '<itemResponse><response id="RESPONSE"><value>1 b</value><value>2 b</value><value>3 b</value></response></itemResponse>', 9, 2),
-  (1,  '200-30075',1, 'SCORED', 'B', 10, 2),
-  (1,  '200-18804',1, 'SCORED', 'A', 11, 2),
-  (1,  '200-45230',0, 'SCORED', 'A', 12, 2),
-  (1,  '200-2002', 0, 'SCORED', '<response><math xmlns="http://www.w3.org/1998/Math/MathML" title="23×5.75"><mstyle><mn>23</mn><mo>×</mo><mn>5.75</mn></mstyle></math></response>', 13, 2),
-  (1,  '200-18461',0, 'SCORED', '<response><math xmlns="http://www.w3.org/1998/Math/MathML" title="13w"><mstyle><mn>13</mn><mi>w</mi></mstyle></math></response>', 14, 2),
-  (1,  '200-13468', -1, 'SCORED', null, 15, 2),
-  (1,  '200-14461', -1, 'SCORED', null, 16, 2);
+INSERT INTO iab_exam_item (iab_exam_id, item_natural_id, score, score_status, response, position) VALUES
+  (1,  '200-2010', 1, 'SCORED', '<response><math xmlns="http://www.w3.org/1998/Math/MathML" title="10"><mstyle><mn>10</mn></mstyle></math></response>', 1),
+  (1,  '200-18943',1, 'SCORED', 'D', 2),
+  (1,  '200-8906', 0, 'SCORED', 'C', 3),
+  (1,  '200-2014', 0, 'SCORED', '<response><math xmlns="http://www.w3.org/1998/Math/MathML" title="46"><mstyle><mn>46</mn></mstyle></math></response>', 4),
+  (1,  '200-2024', 0, 'SCORED', '<response><math xmlns="http://www.w3.org/1998/Math/MathML" title="68"><mstyle><mn>68</mn></mstyle></math></response>', 5),
+  (1,  '200-13980',0, 'SCORED', 'A', 6),
+  (1,  '200-29233',1, 'SCORED', '<itemResponse><response id="RESPONSE"><value>1 b</value><value>2 a</value><value>3 a</value><value>4 b</value></response></itemResponse>', 7),
+  (1,  '200-2018', 1, 'SCORED', '<response><math xmlns="http://www.w3.org/1998/Math/MathML" title="63"><mstyle><mn>63</mn></mstyle></math></response>', 8),
+  (1,  '200-11443',0, 'SCORED', '<itemResponse><response id="RESPONSE"><value>1 b</value><value>2 b</value><value>3 b</value></response></itemResponse>', 9),
+  (1,  '200-30075',1, 'SCORED', 'B', 10),
+  (1,  '200-18804',1, 'SCORED', 'A', 11),
+  (1,  '200-45230',0, 'SCORED', 'A', 12),
+  (1,  '200-2002', 0, 'SCORED', '<response><math xmlns="http://www.w3.org/1998/Math/MathML" title="23×5.75"><mstyle><mn>23</mn><mo>×</mo><mn>5.75</mn></mstyle></math></response>', 13),
+  (1,  '200-18461',0, 'SCORED', '<response><math xmlns="http://www.w3.org/1998/Math/MathML" title="13w"><mstyle><mn>13</mn><mi>w</mi></mstyle></math></response>', 14),
+  (1,  '200-13468', -1, 'SCORED', null, 15),
+  (1,  '200-14461', -1, 'SCORED', null, 16);
