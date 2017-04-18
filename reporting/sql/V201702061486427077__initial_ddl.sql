@@ -204,15 +204,15 @@ CREATE TABLE IF NOT EXISTS student_ethnicity (
   student_id bigint NOT NULL
 );
 
-
 CREATE TABLE IF NOT EXISTS student_group (
   id int NOT NULL AUTO_INCREMENT PRIMARY KEY,
-  created_by varchar(255) NOT NULL,
-  school_id mediumint,
   name varchar(255) NOT NULL UNIQUE,
-  exam_from date,
-  exam_to date NOT NULL,
+  school_id mediumint NOT NULL,
+  school_year smallint NOT NULL,
   subject_id tinyint,
+  active tinyint NOT NULL,
+  created_by varchar(255) NOT NULL,
+  created_at date NOT NULL,
   CONSTRAINT fk__student_group__school FOREIGN KEY (school_id) REFERENCES school(id),
   CONSTRAINT fk__student_group__subject FOREIGN KEY (subject_id) REFERENCES subject(id)
 );

@@ -37,8 +37,8 @@ INSERT IGNORE INTO state (code) VALUES
 INSERT INTO student (id, ssid, last_or_surname, first_name, middle_name, gender_id, first_entry_into_us_school_at, lep_entry_at, lep_exit_at, birthday) VALUES
   (2, '2222222222', 'LastName2', 'FirstName2', 'MiddleName2', 1, '2012-08-14', '2012-11-13', null, '2000-01-01');
 
-INSERT INTO student_group (id, created_by, school_id, name, exam_from, exam_to, subject_id) VALUES
-  (2, 'dwtest@example.com', 1, 'Test Student Group 2', null, '2017-08-01', 1);
+INSERT INTO student_group (id, created_by, created_at, school_id, school_year, name, subject_id, active) VALUES
+  (2, 'dwtest@example.com', '2017-03-14', 1, 2017, 'Test Student Group 2', 1, 1);
 
 INSERT INTO student_group_membership (student_group_id, student_id) VALUES
   (2, 2);
