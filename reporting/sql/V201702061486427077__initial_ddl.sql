@@ -204,13 +204,13 @@ CREATE TABLE IF NOT EXISTS student_ethnicity (
   student_id bigint NOT NULL
 );
 
+-- Note: data mart has only active groups
 CREATE TABLE IF NOT EXISTS student_group (
   id int NOT NULL AUTO_INCREMENT PRIMARY KEY,
   name varchar(255) NOT NULL UNIQUE,
   school_id mediumint NOT NULL,
   school_year smallint NOT NULL,
   subject_id tinyint,
-  active tinyint NOT NULL,
   created_by varchar(255) NOT NULL,
   created_at timestamp(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
   CONSTRAINT fk__student_group__school FOREIGN KEY (school_id) REFERENCES school(id),
