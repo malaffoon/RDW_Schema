@@ -230,8 +230,6 @@ CREATE TABLE IF NOT EXISTS user_student_group (
   CONSTRAINT fk__user_student_group__student_group FOREIGN KEY (student_group_id) REFERENCES student_group(id)
 );
 
-ALTER TABLE user_student_group ADD INDEX idx__user_student_group__user (user_login);
-
 /** IAB exams **/
 CREATE TABLE IF NOT EXISTS iab_exam (
   id bigint NOT NULL PRIMARY KEY,
@@ -321,8 +319,6 @@ CREATE TABLE IF NOT EXISTS exam (
   CONSTRAINT fk__exam__school FOREIGN KEY (school_id) REFERENCES school(id),
   CONSTRAINT fk__exam__asmt FOREIGN KEY (asmt_id) REFERENCES asmt(id)
 );
-
-ALTER TABLE exam ADD INDEX idx__exam__school_year (school_year);
 
 CREATE TABLE IF NOT EXISTS exam_item (
   id bigint NOT NULL PRIMARY KEY,
