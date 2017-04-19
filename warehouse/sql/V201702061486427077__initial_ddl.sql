@@ -176,12 +176,12 @@ CREATE TABLE IF NOT EXISTS item_trait_score (
 
 CREATE TABLE IF NOT EXISTS item_difficulty_cuts (
   id tinyint NOT NULL AUTO_INCREMENT PRIMARY KEY,
-  type_id tinyint NOT NULL,
+  asmt_type_id tinyint NOT NULL,
   subject_id tinyint NOT NULL,
   grade_id tinyint NOT NULL,
   moderate_low_end float NOT NULL,
   difficult_low_end float NOT NULL,
-  CONSTRAINT fk__item_difficulty_cuts__type FOREIGN KEY (type_id) REFERENCES asmt_type(id),
+  CONSTRAINT fk__item_difficulty_cuts__asmt_type FOREIGN KEY (asmt_type_id) REFERENCES asmt_type(id),
   CONSTRAINT fk__item_difficulty_cuts__grade FOREIGN KEY (grade_id) REFERENCES grade(id),
   CONSTRAINT fk__item_difficulty_cuts__subject FOREIGN KEY (subject_id) REFERENCES subject(id)
 );

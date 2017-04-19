@@ -55,14 +55,14 @@ CREATE TABLE IF NOT EXISTS gender (
 );
 
 CREATE TABLE IF NOT EXISTS accommodation (
-  id int NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  id int NOT NULL PRIMARY KEY,
   code varchar(25) NOT NULL UNIQUE
 );
 
 /** Assessment Packages related data **/
 
 CREATE TABLE IF NOT EXISTS asmt (
-  id  bigint NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  id  bigint NOT NULL PRIMARY KEY,
   natural_id varchar(250) NOT NULL UNIQUE,
   grade_id tinyint NOT NULL,
   type_id tinyint NOT NULL,
@@ -87,7 +87,7 @@ CREATE TABLE IF NOT EXISTS asmt_score (
 );
 
 CREATE TABLE IF NOT EXISTS claim (
-  id smallint NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  id smallint NOT NULL PRIMARY KEY,
   subject_id tinyint NOT NULL,
   code varchar(10) NOT NULL,
   name varchar(250) NOT NULL,
@@ -96,7 +96,7 @@ CREATE TABLE IF NOT EXISTS claim (
 );
 
 CREATE TABLE IF NOT EXISTS subject_claim_score (
-  id smallint NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  id smallint NOT NULL PRIMARY KEY,
   subject_id tinyint NOT NULL,
   asmt_type_id tinyint NOT NULL,
   code varchar(10) NOT NULL,
@@ -106,7 +106,7 @@ CREATE TABLE IF NOT EXISTS subject_claim_score (
 );
 
 CREATE TABLE IF NOT EXISTS target (
-  id smallint NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  id smallint NOT NULL PRIMARY KEY,
   claim_id smallint NOT NULL,
   code varchar(10) NOT NULL,
   description varchar(500) NOT NULL,
@@ -114,7 +114,7 @@ CREATE TABLE IF NOT EXISTS target (
 );
 
 CREATE TABLE IF NOT EXISTS depth_of_knowledge (
-  id tinyint NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  id tinyint NOT NULL PRIMARY KEY,
   level tinyint NOT NULL,
   subject_id tinyint NOT NULL,
   description varchar(100) NOT NULL,
@@ -128,7 +128,7 @@ CREATE TABLE IF NOT EXISTS math_practice (
 );
 
 CREATE TABLE IF NOT EXISTS item (
-  id int NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  id int NOT NULL PRIMARY KEY,
   claim_id smallint,
   target_id smallint,
   natural_id varchar(40) NOT NULL,
@@ -151,13 +151,13 @@ CREATE TABLE IF NOT EXISTS item_trait_score (
  );
 
 CREATE TABLE IF NOT EXISTS item_difficulty_cuts (
-  id tinyint NOT NULL AUTO_INCREMENT PRIMARY KEY,
-  type_id tinyint NOT NULL,
+  id tinyint NOT NULL PRIMARY KEY,
+  asmt_type_id tinyint NOT NULL,
   subject_id tinyint NOT NULL,
   grade_id tinyint NOT NULL,
   moderate_low_end float NOT NULL,
   difficult_low_end float NOT NULL,
-  CONSTRAINT fk__item_difficulty_cuts__type FOREIGN KEY (type_id) REFERENCES asmt_type(id),
+  CONSTRAINT fk__item_difficulty_cuts__asmt_type FOREIGN KEY (asmt_type_id) REFERENCES asmt_type(id),
   CONSTRAINT fk__item_difficulty_cuts__grade FOREIGN KEY (grade_id) REFERENCES grade(id),
   CONSTRAINT fk__item_difficulty_cuts__subject FOREIGN KEY (subject_id) REFERENCES subject(id)
 );
@@ -165,13 +165,13 @@ CREATE TABLE IF NOT EXISTS item_difficulty_cuts (
 /** Data derived from the exams delivered via TRT **/
 
 CREATE TABLE IF NOT EXISTS district (
-  id mediumint NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  id mediumint NOT NULL PRIMARY KEY,
   name varchar(60) NOT NULL,
   natural_id varchar(40) NOT NULL UNIQUE
 );
 
 CREATE TABLE IF NOT EXISTS school (
-  id mediumint NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  id mediumint NOT NULL PRIMARY KEY,
   district_id mediumint NOT NULL,
   name varchar(60) NOT NULL,
   natural_id varchar(40) NOT NULL UNIQUE,
@@ -185,7 +185,7 @@ CREATE TABLE IF NOT EXISTS state (
 /** Student Groups */
 
 CREATE TABLE IF NOT EXISTS student (
-  id bigint NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  id bigint NOT NULL PRIMARY KEY,
   ssid varchar(65) NOT NULL UNIQUE,
   last_or_surname varchar(35) NOT NULL,
   first_name varchar(35) NOT NULL,
@@ -199,14 +199,14 @@ CREATE TABLE IF NOT EXISTS student (
  );
 
 CREATE TABLE IF NOT EXISTS student_ethnicity (
-  id bigint NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  id bigint NOT NULL PRIMARY KEY,
   ethnicity_id tinyint NOT NULL,
   student_id bigint NOT NULL
 );
 
 -- Note: data mart has only active groups
 CREATE TABLE IF NOT EXISTS student_group (
-  id int NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  id int NOT NULL PRIMARY KEY,
   name varchar(255) NOT NULL UNIQUE,
   school_id mediumint NOT NULL,
   school_year smallint NOT NULL,
@@ -233,9 +233,8 @@ CREATE TABLE IF NOT EXISTS user_student_group (
 ALTER TABLE user_student_group ADD INDEX idx__user_student_group__user (user_login);
 
 /** IAB exams **/
-
-CREATE TABLE IF NOT EXISTS iab_exam_student (
-  id bigint NOT NULL AUTO_INCREMENT PRIMARY KEY,
+CREATE TABLE IF NOT EXISTS iab_exam (
+  id bigint NOT NULL PRIMARY KEY,
   grade_id tinyint NOT NULL,
   student_id bigint NOT NULL,
   school_id mediumint NOT NULL,
@@ -248,13 +247,6 @@ CREATE TABLE IF NOT EXISTS iab_exam_student (
   t3_program_type varchar(20),
   language_code varchar(3),
   prim_disability_type varchar(3),
-  CONSTRAINT fk__iab_exam_student__student FOREIGN KEY (student_id) REFERENCES student(id),
-  CONSTRAINT fk__iab_exam_student__school FOREIGN KEY (school_id) REFERENCES school(id)
- );
-
-CREATE TABLE IF NOT EXISTS iab_exam (
-  id bigint NOT NULL AUTO_INCREMENT PRIMARY KEY,
-  iab_exam_student_id bigint NOT NULL,
   school_year smallint NOT NULL,
   asmt_id bigint NOT NULL,
   asmt_version varchar(30),
@@ -267,12 +259,15 @@ CREATE TABLE IF NOT EXISTS iab_exam (
   scale_score float NOT NULL,
   scale_score_std_err float NOT NULL,
   completed_at date NOT NULL,
-  CONSTRAINT fk__iab_exam__iab_exam_student FOREIGN KEY (iab_exam_student_id) REFERENCES iab_exam_student(id),
+  CONSTRAINT fk_iab_exam__student FOREIGN KEY (student_id) REFERENCES student(id),
+  CONSTRAINT fk__iab_exam__school FOREIGN KEY (school_id) REFERENCES school(id),
   CONSTRAINT fk__iab_exam__asmt FOREIGN KEY (asmt_id) REFERENCES asmt(id)
 );
 
+ALTER TABLE iab_exam ADD INDEX idx__iab_exam__school_year (school_year);
+
 CREATE TABLE IF NOT EXISTS iab_exam_item (
-  id bigint NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  id bigint NOT NULL PRIMARY KEY,
   iab_exam_id bigint NOT NULL,
   item_natural_id varchar(40) NOT NULL,
   score float,
@@ -296,9 +291,8 @@ CREATE TABLE IF NOT EXISTS iab_exam_available_accommodation (
 );
 
 /** ICA and Summative exams **/
-
-CREATE TABLE IF NOT EXISTS exam_student (
-  id bigint NOT NULL AUTO_INCREMENT PRIMARY KEY,
+CREATE TABLE IF NOT EXISTS exam (
+  id bigint NOT NULL PRIMARY KEY,
   grade_id tinyint NOT NULL,
   student_id bigint NOT NULL,
   school_id mediumint NOT NULL,
@@ -311,13 +305,6 @@ CREATE TABLE IF NOT EXISTS exam_student (
   t3_program_type varchar(20),
   language_code varchar(3),
   prim_disability_type varchar(3),
-  CONSTRAINT fk__exam_student__student FOREIGN KEY (student_id) REFERENCES student(id),
-  CONSTRAINT fk__exam_student__school FOREIGN KEY (school_id) REFERENCES school(id)
- );
-
-CREATE TABLE IF NOT EXISTS exam (
-  id bigint NOT NULL AUTO_INCREMENT PRIMARY KEY,
-  exam_student_id bigint NOT NULL,
   school_year smallint NOT NULL,
   asmt_id bigint NOT NULL,
   asmt_version varchar(30),
@@ -330,12 +317,15 @@ CREATE TABLE IF NOT EXISTS exam (
   scale_score_std_err float NOT NULL,
   achievement_level tinyint NOT NULL,
   completed_at date NOT NULL,
-  CONSTRAINT fk__exam__exam_student FOREIGN KEY (exam_student_id) REFERENCES exam_student(id),
+  CONSTRAINT fk__exam__student FOREIGN KEY (student_id) REFERENCES student(id),
+  CONSTRAINT fk__exam__school FOREIGN KEY (school_id) REFERENCES school(id),
   CONSTRAINT fk__exam__asmt FOREIGN KEY (asmt_id) REFERENCES asmt(id)
 );
 
+ALTER TABLE exam ADD INDEX idx__exam__school_year (school_year);
+
 CREATE TABLE IF NOT EXISTS exam_item (
-  id bigint NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  id bigint NOT NULL PRIMARY KEY,
   exam_id bigint NOT NULL,
   item_natural_id varchar(40) NOT NULL,
   score float,
@@ -359,7 +349,7 @@ CREATE TABLE IF NOT EXISTS exam_available_accommodation (
 );
 
 CREATE TABLE IF NOT EXISTS exam_claim_score (
-  id int NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  id int NOT NULL PRIMARY KEY,
   exam_id bigint NOT NULL,
   subject_claim_score_id smallint NOT NULL,
   scale_score float NOT NULL,
