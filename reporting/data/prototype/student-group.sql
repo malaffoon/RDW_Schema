@@ -74,6 +74,6 @@ FROM student_group_membership gm
   JOIN exam exam ON exam.student_id = gm.student_id
   JOIN student st on st.id = exam.student_id
   JOIN school sch ON sch.id = exam.school_id
-  JOIN asmt asmt on asmt.id = exama.asmt_id
+  JOIN asmt asmt on asmt.id = exam.asmt_id
 WHERE (sch.id IN (-1) OR district_id IN (-1) OR 1 = 1) AND gm.student_group_id = 2
       and exam.school_year = 2016 and asmt.subject_id = 1
