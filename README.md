@@ -25,6 +25,12 @@ OR
 warehouse$ ../scripts/clean
 ```
 
+#### Alternate Data Source
+The data source, user, password, etc. can be overridden on the command line, e.g.
+```bash
+warehouse$ ../scripts/migrate -url="jdbc:mysql://rdw-aurora-dev.cugsexobhx8t.us-west-2.rds.amazonaws.com:3306/" -user=sbac -password=mypassword
+```
+
 ### Developing
 Flyway requires prefixing each script with the version. To avoid a prefix collision use a timestamp for a prefix. 
 This project uses the following pattern:yyyyMMddHHmmss. To get timestamp on MacOS:
