@@ -21,10 +21,12 @@ INSERT INTO reporting.iab_exam (id, school_year, asmt_id, asmt_version, opportun
     CASE category WHEN 1 THEN 1  ELSE 0  END AS is_category1,
     CASE category WHEN 2 THEN 1  ELSE 0  END AS is_category2,
     CASE category WHEN 3 THEN 1  ELSE 0  END AS is_category3
-  FROM warehouse.iab_exam e JOIN warehouse.iab_exam_student s on e.iab_exam_student_id = s.id;
+  FROM warehouse.iab_exam e JOIN warehouse.iab_exam_student s on e.iab_exam_student_id = s.id
+  AND e.scale_score is not null;
 
 INSERT INTO reporting.iab_exam_item (id, iab_exam_id, item_natural_id, score, score_status, response, position)
-  SELECT id, iab_exam_id, item_natural_id, round(score), score_status, response, position FROM warehouse.iab_exam_item;
+  SELECT i.id, iab_exam_id, item_natural_id, round(score), score_status, response, position FROM warehouse.iab_exam_item i
+    JOIN warehouse.iab_exam e on e.id = i.iab_exam_id  WHERE e.scale_score is not null;
 
 INSERT INTO reporting.exam (id, school_year,  asmt_id, asmt_version, opportunity, status, completeness_id, administration_condition_id, session_id, scale_score, scale_score_std_err, achievement_level, completed_at,
                             grade_id, student_id, school_id, iep, lep, section504, economic_disadvantage, migrant_status, eng_prof_lvl, t3_program_type, language_code, prim_disability_type,
@@ -80,7 +82,7 @@ INSERT INTO reporting.exam (id, school_year,  asmt_id, asmt_version, opportunity
 
 
 INSERT INTO reporting.exam_item (id, exam_id, item_natural_id, score, score_status, response, position)
-   SELECT id, exam_id, item_natural_id, round(score), score_status, response, position FROM warehouse.exam_item;
+  SELECT id, exam_id, item_natural_id, round(score), score_status, response, position FROM warehouse.exam_item;
 
 
 DROP PROCEDURE IF EXISTS reporting.create_student_groups;
@@ -114,4 +116,3 @@ CREATE PROCEDURE reporting.create_student_groups()
 DELIMITER ;
 
 call create_student_groups();
-
