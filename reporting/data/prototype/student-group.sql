@@ -90,7 +90,7 @@ SELECT
   sum(is_category1) as is_category1,
   sum(is_category2) as is_category2,
   sum(is_category3) as is_category3,
-  sqrt(sum(scale_score_std_err*iab.scale_score_std_err))/count(*) as avg_scale_score_std_err
+  sqrt(sum(scale_score_std_err*iab.scale_score_std_err)/count(*)) as avg_scale_score_std_err
 FROM iab_exam iab
   JOIN student_group_membership gm ON iab.student_id = gm.student_id and gm.student_group_id = 55
   JOIN school sch ON sch.id = iab.school_id
