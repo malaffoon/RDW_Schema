@@ -262,8 +262,6 @@ CREATE TABLE IF NOT EXISTS iab_exam (
   CONSTRAINT fk__iab_exam__asmt FOREIGN KEY (asmt_id) REFERENCES asmt(id)
 );
 
-ALTER TABLE iab_exam ADD INDEX idx__iab_exam__school_year (school_year);
-
 CREATE TABLE IF NOT EXISTS iab_exam_item (
   id bigint NOT NULL PRIMARY KEY,
   iab_exam_id bigint NOT NULL,
@@ -311,13 +309,31 @@ CREATE TABLE IF NOT EXISTS exam (
   completeness_id tinyint NOT NULL,
   administration_condition_id tinyint NOT NULL,
   session_id varchar(128),
-  scale_score float NOT NULL,
-  scale_score_std_err float NOT NULL,
-  achievement_level tinyint NOT NULL,
+  scale_score float,
+  scale_score_std_err float,
+  achievement_level tinyint,
+  claim1_scale_score float,
+  claim1_scale_score_std_err float,
+  claim1_category tinyint,
+  claim2_scale_score float,
+  claim2_scale_score_std_err float,
+  claim2_category tinyint,
+  claim3_scale_score_std_err float,
+  claim3_category tinyint,
+  claim3_scale_score float,
+  claim4_scale_score_std_err float,
+  claim4_category tinyint,
+  claim4_scale_score float,
   completed_at date NOT NULL,
   CONSTRAINT fk__exam__student FOREIGN KEY (student_id) REFERENCES student(id),
   CONSTRAINT fk__exam__school FOREIGN KEY (school_id) REFERENCES school(id),
   CONSTRAINT fk__exam__asmt FOREIGN KEY (asmt_id) REFERENCES asmt(id)
+);
+
+CREATE TABLE IF NOT EXISTS exam_claim_score_mapping (
+  subject_claim_score_id smallint NOT NULL,
+  num tinyint NOT NULL,
+  CONSTRAINT fk__exam_claim_score_mapping__subject_claim_score FOREIGN KEY (subject_claim_score_id) REFERENCES subject_claim_score(id)
 );
 
 CREATE TABLE IF NOT EXISTS exam_item (
@@ -342,15 +358,5 @@ CREATE TABLE IF NOT EXISTS exam_available_accommodation (
   accommodation_id int NOT NULL,
   CONSTRAINT fk__exam_available_accommodation__exam FOREIGN KEY (exam_id) REFERENCES exam(id),
   CONSTRAINT fk__exam_available_accommodation_accomodation FOREIGN KEY (accommodation_id) REFERENCES accommodation(id)
-);
-
-CREATE TABLE IF NOT EXISTS exam_claim_score (
-  id int NOT NULL PRIMARY KEY,
-  exam_id bigint NOT NULL,
-  subject_claim_score_id smallint NOT NULL,
-  scale_score float NOT NULL,
-  scale_score_std_err float NOT NULL,
-  category tinyint NOT NULL,
-  CONSTRAINT fk__exam_claim_score__exam FOREIGN KEY (exam_id) REFERENCES exam(id)
 );
 
