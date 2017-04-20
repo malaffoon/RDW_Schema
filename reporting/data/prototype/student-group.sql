@@ -102,4 +102,5 @@ WHERE
   AND iab.school_year = 2016
   AND iab.asmt_id in(2)
   -- this is probably not needed
-  AND s.id = 11;
+  AND s.id = 1
+GROUP BY session_id, asmt_id;
