@@ -82,15 +82,15 @@ WHERE (sch.id IN (-1) OR sch.district_id IN (-1) OR 1 = 1) AND gm.student_group_
 -- TODO
 --   joins seems to interfere with the indexes; check performance to see if more de-normalization could help with getting it to pick up an index (assuming one is created)
 SELECT
-  min(completed_at) as date,
-  session_id,
+  min(iab.completed_at) as date,
+  iab.session_id,
   count(*),
-  asmt_id,
-  avg(scale_score) avg_scale_score,
-  sum(is_category1) as is_category1,
-  sum(is_category2) as is_category2,
-  sum(is_category3) as is_category3,
-  sqrt(sum(scale_score_std_err*iab.scale_score_std_err)/count(*)) as avg_scale_score_std_err
+  iab.asmt_id,
+  avg(iab.scale_score) as avg_scale_score,
+  sum(iab.is_category1) as is_category1,
+  sum(iab.is_category2) as is_category2,
+  sum(iab.is_category3) as is_category3,
+  sqrt(sum(iab.scale_score_std_err*iab.scale_score_std_err)/count(*)) as avg_scale_score_std_err
 FROM iab_exam iab
   JOIN student_group_membership gm ON iab.student_id = gm.student_id and gm.student_group_id = 55
   JOIN school sch ON sch.id = iab.school_id
@@ -100,6 +100,6 @@ FROM iab_exam iab
 WHERE
   (sch.id IN (-1) OR sch.district_id IN (-1) OR 1 = 1)
   AND iab.school_year = 2016
-  AND asmt_id in(2)
+  AND iab.asmt_id in(2)
   -- this is probably not needed
-  AND s.id = 1;
+  AND s.id = 11;
