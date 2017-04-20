@@ -54,6 +54,22 @@ INSERT INTO subject_claim_score (id, subject_id, asmt_type_id, code, name) VALUE
   (13, 2, 3, '2-W', 'Writing'),
   (14, 2, 3, '4-CR', 'Research');
 
+INSERT INTO exam_claim_score_mapping (subject_claim_score_id, num) VALUES
+  (1, 1),
+  (2, 2),
+  (3, 3),
+  (4, 1),
+  (5, 2),
+  (6, 3),
+  (7, 4),
+  (8, 1),
+  (9, 2),
+  (10, 3),
+  (11, 1),
+  (12, 2),
+  (13, 3),
+  (14, 4);
+
 INSERT INTO completeness (id, name) VALUES
   (1, 'Partial'),
   (2, 'Complete');

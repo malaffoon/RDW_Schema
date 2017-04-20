@@ -15,6 +15,7 @@ SELECT
   , g.school_id
   , sch.name
   , g.subject_id
+  -- TODO: this is a pretty nasty query. It needs to be worked on or the UI needs to be modified
 #   , CASE (SELECT 1
 #         FROM dual
 #         WHERE exists(
@@ -22,7 +23,7 @@ SELECT
 #             FROM student_group_membership gm
 #               JOIN iab_exam iab ON iab.student_id = gm.student_id
 #               JOIN school sch ON sch.id = iab.school_id
-#             WHERE (sch.id IN (-1) OR district_id IN (-1) OR 1 = 1) AND gm.student_group_id = g.id
+#             WHERE (sch.id IN (-1) OR sch.district_id IN (-1) OR 1 = 1) AND gm.student_group_id = g.id
 #         ))
 #   WHEN 1
 #     THEN 1
@@ -36,7 +37,7 @@ SELECT
 #             FROM student_group_membership gm
 #               JOIN exam e ON e.student_id = gm.student_id
 #               JOIN school sch ON sch.id = e.school_id
-#             WHERE (sch.id IN (-1) OR district_id IN (-1) OR 1 = 1) AND gm.student_group_id = g.id
+#             WHERE (sch.id IN (-1) OR sch.district_id IN (-1) OR 1 = 1) AND gm.student_group_id = g.id
 #         ))
 #   WHEN 1
 #     THEN 1
@@ -63,8 +64,16 @@ FROM student_group_membership gm
   JOIN student st on st.id = iab.student_id
   JOIN school sch ON sch.id = iab.school_id
   JOIN asmt asmt on asmt.id = iab.asmt_id
-WHERE (sch.id IN (-1) OR district_id IN (-1) OR 1 = 1) AND gm.student_group_id = 2
+WHERE (sch.id IN (-1) OR sch.district_id IN (-1) OR 1 = 1) AND gm.student_group_id = 2
        and iab.school_year = 2016 and asmt.subject_id = 1
 
-
-
+-- ICA tab:
+explain
+SELECT st.*, exam.*, asmt.*
+FROM student_group_membership gm
+  JOIN exam exam ON exam.student_id = gm.student_id
+  JOIN student st on st.id = exam.student_id
+  JOIN school sch ON sch.id = exam.school_id
+  JOIN asmt asmt on asmt.id = exam.asmt_id
+WHERE (sch.id IN (-1) OR sch.district_id IN (-1) OR 1 = 1) AND gm.student_group_id = 2
+      and exam.school_year = 2016 and asmt.subject_id = 1
