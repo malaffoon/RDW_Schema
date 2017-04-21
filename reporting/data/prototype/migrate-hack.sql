@@ -24,8 +24,8 @@ INSERT INTO reporting.iab_exam (id, school_year, asmt_id, asmt_version, opportun
   FROM warehouse.iab_exam e JOIN warehouse.iab_exam_student s on e.iab_exam_student_id = s.id
   AND e.scale_score is not null;
 
-INSERT INTO reporting.iab_exam_item (id, iab_exam_id, item_natural_id, score, score_status, response, position)
-  SELECT i.id, iab_exam_id, item_natural_id, round(score), score_status, response, position FROM warehouse.iab_exam_item i
+INSERT INTO reporting.iab_exam_item (id, iab_exam_id, item_id, score, score_status, response, position)
+  SELECT i.id, iab_exam_id, item_id, round(score), score_status, response, position FROM warehouse.iab_exam_item i
     JOIN warehouse.iab_exam e on e.id = i.iab_exam_id  WHERE e.scale_score is not null;
 
 INSERT INTO reporting.exam (id, school_year,  asmt_id, asmt_version, opportunity, status, completeness_id, administration_condition_id, session_id, scale_score, scale_score_std_err, achievement_level, completed_at,
@@ -81,8 +81,8 @@ INSERT INTO reporting.exam (id, school_year,  asmt_id, asmt_version, opportunity
       ) AS claim4 ON claim4.exam_id = e.id;
 
 
-INSERT INTO reporting.exam_item (id, exam_id, item_natural_id, score, score_status, response, position)
-  SELECT id, exam_id, item_natural_id, round(score), score_status, response, position FROM warehouse.exam_item;
+INSERT INTO reporting.exam_item (id, exam_id, item_id, score, score_status, response, position)
+  SELECT id, exam_id, item_id, round(score), score_status, response, position FROM warehouse.exam_item;
 
 
 DROP PROCEDURE IF EXISTS reporting.create_student_groups;

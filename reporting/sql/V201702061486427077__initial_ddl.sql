@@ -166,14 +166,14 @@ CREATE TABLE IF NOT EXISTS item_difficulty_cuts (
 
 CREATE TABLE IF NOT EXISTS district (
   id mediumint NOT NULL PRIMARY KEY,
-  name varchar(60) NOT NULL,
+  name varchar(100) NOT NULL,
   natural_id varchar(40) NOT NULL UNIQUE
 );
 
 CREATE TABLE IF NOT EXISTS school (
   id mediumint NOT NULL PRIMARY KEY,
   district_id mediumint NOT NULL,
-  name varchar(60) NOT NULL,
+  name varchar(100) NOT NULL,
   natural_id varchar(40) NOT NULL UNIQUE,
   CONSTRAINT fk__school__district FOREIGN KEY (district_id) REFERENCES district(id)
 );
@@ -187,9 +187,9 @@ CREATE TABLE IF NOT EXISTS state (
 CREATE TABLE IF NOT EXISTS student (
   id bigint NOT NULL PRIMARY KEY,
   ssid varchar(65) NOT NULL UNIQUE,
-  last_or_surname varchar(35) NOT NULL,
-  first_name varchar(35) NOT NULL,
-  middle_name varchar(35),
+  last_or_surname varchar(60) NOT NULL,
+  first_name varchar(60) NOT NULL,
+  middle_name varchar(60),
   gender_id tinyint NOT NULL,
   first_entry_into_us_school_at date,
   lep_entry_at date,
@@ -268,7 +268,7 @@ CREATE TABLE IF NOT EXISTS iab_exam (
 CREATE TABLE IF NOT EXISTS iab_exam_item (
   id bigint NOT NULL PRIMARY KEY,
   iab_exam_id bigint NOT NULL,
-  item_natural_id varchar(40) NOT NULL,
+  item_id int NOT NULL,
   score smallint,
   score_status varchar(50),
   position int,
@@ -279,7 +279,8 @@ CREATE TABLE IF NOT EXISTS iab_exam_item (
   trait_organization_purpose_score_status varchar(50),
   trait_conventions_score smallint,
   trait_conventions_score_status varchar(50),
-  CONSTRAINT fk__iab_exam_item__exam FOREIGN KEY (iab_exam_id) REFERENCES iab_exam(id)
+  CONSTRAINT fk__iab_exam_item__exam FOREIGN KEY (iab_exam_id) REFERENCES iab_exam(id),
+  CONSTRAINT fk__iab_exam_item__item FOREIGN KEY (item_id) REFERENCES item(id)
 );
 
 CREATE TABLE IF NOT EXISTS iab_exam_available_accommodation (
@@ -342,7 +343,7 @@ CREATE TABLE IF NOT EXISTS exam_claim_score_mapping (
 CREATE TABLE IF NOT EXISTS exam_item (
   id bigint NOT NULL PRIMARY KEY,
   exam_id bigint NOT NULL,
-  item_natural_id varchar(40) NOT NULL,
+  item_id int NOT NULL,
   score smallint,
   score_status varchar(50),
   position int,
@@ -353,7 +354,8 @@ CREATE TABLE IF NOT EXISTS exam_item (
   trait_organization_purpose_score_status varchar(50),
   trait_conventions_score smallint,
   trait_conventions_score_status varchar(50),
-  CONSTRAINT fk__exam_item__exam FOREIGN KEY (exam_id) REFERENCES exam(id)
+  CONSTRAINT fk__exam_item__exam FOREIGN KEY (exam_id) REFERENCES exam(id),
+  CONSTRAINT fk__exam_item__item FOREIGN KEY (item_id) REFERENCES item(id)
 );
 
 CREATE TABLE IF NOT EXISTS exam_available_accommodation (
