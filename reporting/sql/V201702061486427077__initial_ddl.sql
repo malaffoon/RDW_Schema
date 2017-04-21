@@ -325,7 +325,7 @@ CREATE TABLE IF NOT EXISTS exam (
   claim3_scale_score_std_err float,
   claim3_category tinyint,
   claim4_scale_score smallint,
-   claim4_scale_score_std_err float,
+  claim4_scale_score_std_err float,
   claim4_category tinyint,
   completed_at date NOT NULL,
   CONSTRAINT fk__exam__student FOREIGN KEY (student_id) REFERENCES student(id),

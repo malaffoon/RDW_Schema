@@ -46,9 +46,9 @@ INSERT INTO student_group_membership (student_group_id, student_id) VALUES
 INSERT INTO user_student_group (student_group_id, user_login) VALUES
   (2, 'dwtest@example.com');
 
-INSERT INTO iab_exam (id, school_year, asmt_id, asmt_version, opportunity, status, completeness_id, administration_condition_id, session_id, scale_score, scale_score_std_err, category, completed_at,
+INSERT INTO iab_exam (id, school_year, asmt_id, asmt_version, opportunity, status, completeness_id, administration_condition_id, session_id, scale_score, scale_score_std_err, category, is_category1, is_category2, is_category3, completed_at,
                             grade_id, student_id, school_id, iep, lep, section504, economic_disadvantage, migrant_status, eng_prof_lvl, t3_program_type, language_code, prim_disability_type) VALUES
-  (1, 2016, 2, null, 0, 'completed', 1, 1, 'CA-3ACF-69', 2412.74552705744, 30.4087233385275, 1, '2016-08-14', 4, 2, 1, 0, 0, 0, 0, 0, 'EL', null,'VIE', null);
+  (1, 2016, 2, null, 0, 'completed', 1, 1, 'CA-3ACF-69', 2412.74552705744, 30.4087233385275, 1, 1, 0, 0, '2016-08-14', 4, 2, 1, 0, 0, 0, 0, 0, 'EL', null,'VIE', null);
 
 -- TODO: this needs more research.
 -- INSERT INTO exam_available_accommodation (exam_id, accommodation_id) VALUES ...

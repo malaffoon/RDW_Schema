@@ -82,17 +82,21 @@ INSERT INTO user_student_group (student_group_id, user_login) VALUES
   (1, 'dwtest@example.com');
 
 INSERT INTO exam (id, school_year,  asmt_id, asmt_version, opportunity, status, completeness_id, administration_condition_id, session_id, scale_score, scale_score_std_err, achievement_level, completed_at,
-                      grade_id, student_id, school_id, iep, lep, section504, economic_disadvantage, migrant_status, eng_prof_lvl, t3_program_type, language_code, prim_disability_type) VALUES
-  (1, 2016, 1, null, 0, 'completed', 1, 1, 'CA-3ACF-69', 2642.54836495757, 27.6925766459382, 4, '2016-08-14',  5, 1, 1, 0, 0, 0, 0, null, 'EO', null,'ENG', null);
+                  grade_id, student_id, school_id, iep, lep, section504, economic_disadvantage, migrant_status, eng_prof_lvl, t3_program_type, language_code, prim_disability_type,
+                  claim1_scale_score,  claim1_scale_score_std_err, claim1_category,
+                  claim2_scale_score,  claim2_scale_score_std_err, claim2_category,
+                  claim3_scale_score,  claim3_scale_score_std_err, claim3_category,
+                  claim4_scale_score,  claim4_scale_score_std_err, claim4_category
+) VALUES
+  (1, 2016, 1, null, 0, 'completed', 1, 1, 'CA-3ACF-69', 2642.54836495757, 27.6925766459382, 4, '2016-08-14',  5, 1, 1, 0, 0, 0, 0, null, 'EO', null,'ENG', null,
+   2577, 46.7512956510613, 3,
+   2668, 67.885043404398, 3,
+   2701, 101.838594705009, 3,
+   2657, 42.9833504368907, 3
+  );
 
 -- TODO: this needs more research. There are some mismatched codes and it is not clear what is available and what needs to be stored
 -- INSERT INTO exam_available_accommodation (exam_id, accommodation_id) VALUES ...
-
-INSERT INTO exam_claim_score (id, exam_id, subject_claim_score_id, scale_score, scale_score_std_err, category) VALUES
-  (1, 1, 4, 2577.80680893986, 46.7512956510613, 3),
-  (2, 1, 5, 2668.81750838064, 67.885043404398, 3),
-  (3, 1, 6, 2701.23284, 101.838594705009, 3),
-  (4, 1, 7, 2657.87221487352, 42.9833504368907, 3);
 
 INSERT INTO exam_item (id, exam_id, item_natural_id, score, score_status, response, position) VALUES
   (17, 1, '200-60347', 1, 'SCORED', 'D', 1),
