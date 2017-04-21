@@ -299,7 +299,7 @@ CREATE TABLE IF NOT EXISTS iab_exam (
 CREATE TABLE IF NOT EXISTS iab_exam_item (
   id bigint NOT NULL AUTO_INCREMENT PRIMARY KEY,
   iab_exam_id bigint NOT NULL,
-  item_natural_id varchar(40) NOT NULL,
+  item_id int NOT NULL,
   score float,
   score_status varchar(50),
   position int,
@@ -362,7 +362,7 @@ CREATE TABLE IF NOT EXISTS exam (
 CREATE TABLE IF NOT EXISTS exam_item (
   id bigint NOT NULL AUTO_INCREMENT PRIMARY KEY, 
   exam_id bigint NOT NULL,
-  item_natural_id varchar(40) NOT NULL,
+  item_id int NOT NULL,
   score float,
   score_status varchar(50),
   position int,
