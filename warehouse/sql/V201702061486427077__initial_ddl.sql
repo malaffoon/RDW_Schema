@@ -279,6 +279,7 @@ CREATE TABLE IF NOT EXISTS iab_exam_student (
 
 CREATE TABLE IF NOT EXISTS iab_exam (
   id bigint NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  import_id bigint NOT NULL,
   iab_exam_student_id bigint NOT NULL,
   school_year smallint NOT NULL,
   asmt_id bigint NOT NULL,
@@ -293,7 +294,8 @@ CREATE TABLE IF NOT EXISTS iab_exam (
   scale_score_std_err float,
   completed_at date NOT NULL,
   CONSTRAINT fk__iab_exam__iab_exam_student FOREIGN KEY (iab_exam_student_id) REFERENCES iab_exam_student(id),
-  CONSTRAINT fk__iab_exam__asmt FOREIGN KEY (asmt_id) REFERENCES asmt(id)
+  CONSTRAINT fk__iab_exam__asmt FOREIGN KEY (asmt_id) REFERENCES asmt(id),
+  CONSTRAINT fk__iab_exam__import FOREIGN KEY (import_id) REFERENCES import(id)
 );
 
 CREATE TABLE IF NOT EXISTS iab_exam_item (
@@ -342,6 +344,7 @@ CREATE TABLE IF NOT EXISTS exam_student (
 
 CREATE TABLE IF NOT EXISTS exam (
   id bigint NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  import_id bigint NOT NULL,
   exam_student_id bigint NOT NULL,
   school_year smallint NOT NULL,
   asmt_id bigint NOT NULL,
@@ -356,7 +359,8 @@ CREATE TABLE IF NOT EXISTS exam (
   achievement_level tinyint,
   completed_at date NOT NULL,
   CONSTRAINT fk__exam__exam_student FOREIGN KEY (exam_student_id) REFERENCES exam_student(id),
-  CONSTRAINT fk__exam__asmt FOREIGN KEY (asmt_id) REFERENCES asmt(id)
+  CONSTRAINT fk__exam__asmt FOREIGN KEY (asmt_id) REFERENCES asmt(id),
+  CONSTRAINT fk__exam__import FOREIGN KEY (import_id) REFERENCES import(id)
 );
 
 CREATE TABLE IF NOT EXISTS exam_item (
