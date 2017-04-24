@@ -14,15 +14,10 @@ INSERT INTO reporting.item (id, claim_id, target_id, natural_id, asmt_id, dok_id
   SELECT id, claim_id, target_id, natural_id, asmt_id, dok_id, difficulty, max_points, math_practice, allow_calc FROM warehouse.item;
 
 INSERT INTO reporting.iab_exam (id, school_year, asmt_id, asmt_version, opportunity, status, completeness_id, administration_condition_id, session_id, scale_score, scale_score_std_err, category, completed_at,
-                                grade_id, student_id, school_id, iep, lep, section504, economic_disadvantage, migrant_status, eng_prof_lvl, t3_program_type, language_code, prim_disability_type,
-                                is_category1, is_category2, is_category3)
+                                grade_id, student_id, school_id, iep, lep, section504, economic_disadvantage, migrant_status, eng_prof_lvl, t3_program_type, language_code, prim_disability_type)
   SELECT e.id, school_year, asmt_id, asmt_version, opportunity, status, completeness_id, administration_condition_id, session_id, round(scale_score), scale_score_std_err, category, completed_at,
-    grade_id, student_id, school_id, iep, lep, section504, economic_disadvantage, migrant_status, eng_prof_lvl, t3_program_type, language_code, prim_disability_type,
-    CASE category WHEN 1 THEN 1  ELSE 0  END AS is_category1,
-    CASE category WHEN 2 THEN 1  ELSE 0  END AS is_category2,
-    CASE category WHEN 3 THEN 1  ELSE 0  END AS is_category3
-  FROM warehouse.iab_exam e JOIN warehouse.iab_exam_student s on e.iab_exam_student_id = s.id
-  AND e.scale_score is not null;
+    grade_id, student_id, school_id, iep, lep, section504, economic_disadvantage, migrant_status, eng_prof_lvl, t3_program_type, language_code, prim_disability_type
+  FROM warehouse.iab_exam e JOIN warehouse.iab_exam_student s on e.iab_exam_student_id = s.id AND e.scale_score is not null;
 
 INSERT INTO reporting.iab_exam_item (id, iab_exam_id, item_id, score, score_status, response, position)
   SELECT i.id, iab_exam_id, item_id, round(score), score_status, response, position FROM warehouse.iab_exam_item i
