@@ -54,8 +54,11 @@ FROM student_group_membership gm
 WHERE (sch.id IN (-1) OR sch.district_id IN (-1) OR 1 = 1) AND gm.student_group_id = 2
       and exam.school_year = 2016 and asmt.subject_id = 1
 
+-----------------------------------------------------------------------------------------
 -- https://confluence.fairwaytech.com/display/SWF/3.0+School+Grade+Test+Results
 -- similar to the above, but instead of gm.student_group_id = 2 use asmt.grade_id
+-----------------------------------------------------------------------------------------
+
 
 -- https://confluence.fairwaytech.com/display/SWF/1.0.1+Aggregate+Tabs
 -- TODO:
@@ -172,6 +175,9 @@ WHERE
   (sch.id IN (-1) OR sch.district_id IN (-1) OR 1 = 1) AND gm.student_group_id = 2
   AND e.school_year = 2016 AND asmt.subject_id = 1
 
+----------------------------------------------------------------------------------------------
+-- Common between groups and not groups
+----------------------------------------------------------------------------------------------
 
 -- https://confluence.fairwaytech.com/display/SWF/2.0+Student+History+Test+Results
 -- TODO:
