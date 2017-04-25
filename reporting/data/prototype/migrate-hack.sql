@@ -79,6 +79,7 @@ INSERT INTO reporting.exam (id, school_year,  asmt_id, asmt_version, opportunity
 INSERT INTO reporting.exam_item (id, exam_id, item_id, score, score_status, response, position)
   SELECT id, exam_id, item_id, round(score), score_status, response, position FROM warehouse.exam_item;
 
+-- TODO:  need an intelligent way to combine student into groups; something like given me students in the same grade that have the same session ids..?
 
 DROP PROCEDURE IF EXISTS reporting.create_student_groups;
 
