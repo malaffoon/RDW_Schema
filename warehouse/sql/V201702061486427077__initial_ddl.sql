@@ -293,7 +293,7 @@ CREATE TABLE IF NOT EXISTS iab_exam (
   category tinyint,
   scale_score float,
   scale_score_std_err float,
-  completed_at date NOT NULL,
+  completed_at timestamp(0) NOT NULL,
   CONSTRAINT fk__iab_exam__iab_exam_student FOREIGN KEY (iab_exam_student_id) REFERENCES iab_exam_student(id),
   CONSTRAINT fk__iab_exam__asmt FOREIGN KEY (asmt_id) REFERENCES asmt(id),
   CONSTRAINT fk__iab_exam__import FOREIGN KEY (import_id) REFERENCES import(id)
@@ -358,7 +358,7 @@ CREATE TABLE IF NOT EXISTS exam (
   scale_score float,
   scale_score_std_err float,
   achievement_level tinyint,
-  completed_at date NOT NULL,
+  completed_at timestamp(0) NOT NULL,
   CONSTRAINT fk__exam__exam_student FOREIGN KEY (exam_student_id) REFERENCES exam_student(id),
   CONSTRAINT fk__exam__asmt FOREIGN KEY (asmt_id) REFERENCES asmt(id),
   CONSTRAINT fk__exam__import FOREIGN KEY (import_id) REFERENCES import(id)

@@ -256,7 +256,7 @@ CREATE TABLE IF NOT EXISTS iab_exam (
   category tinyint NOT NULL,
   scale_score smallint NOT NULL,
   scale_score_std_err float NOT NULL,
-  completed_at date NOT NULL,
+  completed_at timestamp(0) NOT NULL,
   CONSTRAINT fk_iab_exam__student FOREIGN KEY (student_id) REFERENCES student(id),
   CONSTRAINT fk__iab_exam__school FOREIGN KEY (school_id) REFERENCES school(id),
   CONSTRAINT fk__iab_exam__asmt FOREIGN KEY (asmt_id) REFERENCES asmt(id)
@@ -325,7 +325,7 @@ CREATE TABLE IF NOT EXISTS exam (
   claim4_scale_score smallint,
   claim4_scale_score_std_err float,
   claim4_category tinyint,
-  completed_at date NOT NULL,
+  completed_at timestamp(0) NOT NULL,
   CONSTRAINT fk__exam__student FOREIGN KEY (student_id) REFERENCES student(id),
   CONSTRAINT fk__exam__school FOREIGN KEY (school_id) REFERENCES school(id),
   CONSTRAINT fk__exam__asmt FOREIGN KEY (asmt_id) REFERENCES asmt(id)
