@@ -15,13 +15,13 @@ CREATE TABLE application_schema_version (
    major_version int UNIQUE NOT NULL
 );
 
-/** Import Migrate **/
-CREATE TABLE IF NOT EXISTS import_migrate_status (
+/** Migrate **/
+CREATE TABLE IF NOT EXISTS migrate_status (
   id tinyint NOT NULL PRIMARY KEY,
   name varchar(20) NOT NULL UNIQUE
 );
 
-CREATE TABLE IF NOT EXISTS import_migrate (
+CREATE TABLE IF NOT EXISTS migrate (
   id bigint NOT NULL PRIMARY KEY,
   status tinyint NOT NULL,
   first_import_id bigint NOT NULL,
