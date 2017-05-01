@@ -557,7 +557,7 @@ CREATE PROCEDURE school_upsert(IN  p_district_name       VARCHAR(100),
       END IF;
 
     ELSE
-      INSERT INTO school (district_id, NAME, natural_id, import_id)
+      INSERT INTO school (district_id, name, natural_id, import_id)
       VALUES (p_district_id, p_name, p_natural_id, p_import_id);
 
       SELECT id INTO p_id FROM school WHERE natural_id = p_natural_id;
