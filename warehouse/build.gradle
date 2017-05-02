@@ -1,0 +1,4 @@
+flyway {
+    schemas = ['warehouse']
+    locations = ['filesystem:' + rootDir.path +'/warehouse/sql']
+}

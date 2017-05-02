@@ -1,0 +1,4 @@
+flyway {
+    schemas = ['reporting']
+    locations = ['filesystem:' + rootDir.path +'/reporting/sql']
+}
