@@ -116,7 +116,7 @@ CREATE TABLE IF NOT EXISTS asmt_score (
 );
 
 CREATE TABLE IF NOT EXISTS claim (
-  id int NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  id smallint NOT NULL AUTO_INCREMENT PRIMARY KEY,
   subject_id tinyint NOT NULL,
   code varchar(10) NOT NULL,
   name varchar(250) NOT NULL,
@@ -135,8 +135,8 @@ CREATE TABLE IF NOT EXISTS subject_claim_score (
 );
 
 CREATE TABLE IF NOT EXISTS target (
-  id int NOT NULL AUTO_INCREMENT PRIMARY KEY,
-  claim_id int NOT NULL,
+  id smallint NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  claim_id smallint NOT NULL,
   code varchar(10) NOT NULL,
   description varchar(500) NOT NULL,
   CONSTRAINT fk__target__claim FOREIGN KEY (claim_id) REFERENCES claim(id)
@@ -158,8 +158,8 @@ CREATE TABLE IF NOT EXISTS math_practice (
 
 CREATE TABLE IF NOT EXISTS item (
   id int NOT NULL AUTO_INCREMENT PRIMARY KEY,
-  claim_id int, -- TODO: change this to NOT NULL when we do not need a hack code that creates assmt
-  target_id int, -- TODO: change this to NOT NULL  when we do not need a hack code that creates assmt
+  claim_id smallint, -- TODO: change this to NOT NULL when we do not need a hack code that creates assmt
+  target_id smallint, -- TODO: change this to NOT NULL  when we do not need a hack code that creates assmt
   natural_id varchar(40) NOT NULL,
   asmt_id int NOT NULL,
   math_practice tinyint,
