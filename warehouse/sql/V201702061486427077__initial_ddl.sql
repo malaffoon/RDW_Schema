@@ -1,5 +1,5 @@
 /**
-** 	Initial script for the SBAC Reportind Data Warehouse schema
+** 	Initial script for the SBAC Reporting Data Warehouse schema
 **
 **  NOTES
 **  This schema assumes the following:
