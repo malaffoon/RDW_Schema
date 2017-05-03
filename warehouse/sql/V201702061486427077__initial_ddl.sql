@@ -97,6 +97,7 @@ CREATE TABLE IF NOT EXISTS asmt (
   label varchar(255), -- TODO: change this to NOT NULL when we do not need a hack code that creates assmt
   version varchar(30),
   import_id bigint NOT NULL,
+  deleted tinyint NOT NULL DEFAULT 0,
   CONSTRAINT fk__asmt__grade FOREIGN KEY (grade_id) REFERENCES grade(id),
   CONSTRAINT fk__asmt__type FOREIGN KEY (type_id) REFERENCES asmt_type(id),
   CONSTRAINT fk__asmt__subject FOREIGN KEY (subject_id) REFERENCES subject(id),
@@ -203,6 +204,7 @@ CREATE TABLE IF NOT EXISTS school (
   natural_id varchar(40) NOT NULL UNIQUE,
   name varchar(100) NOT NULL,
   import_id bigint NOT NULL,
+  deleted tinyint NOT NULL DEFAULT 0,
   CONSTRAINT fk__school__district FOREIGN KEY (district_id) REFERENCES district(id),
   CONSTRAINT fk__school__import FOREIGN KEY (import_id) REFERENCES import(id)
 );
@@ -226,6 +228,7 @@ CREATE TABLE IF NOT EXISTS student (
   lep_exit_at date,
   birthday date NOT NULL,
   import_id bigint NOT NULL,
+  deleted tinyint NOT NULL DEFAULT 0,
   CONSTRAINT fk__student__import FOREIGN KEY (import_id) REFERENCES import(id)
  );
 
@@ -245,6 +248,7 @@ CREATE TABLE IF NOT EXISTS student_group (
   creator varchar(250),
   created timestamp(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
   import_id bigint NOT NULL,
+  deleted tinyint NOT NULL DEFAULT 0,
   CONSTRAINT uk__name__school__year UNIQUE INDEX (name, school_id, school_year),
   CONSTRAINT fk__student_group__school FOREIGN KEY (school_id) REFERENCES school(id),
   CONSTRAINT fk__student_group__subject FOREIGN KEY (subject_id) REFERENCES subject(id),
@@ -302,6 +306,7 @@ CREATE TABLE IF NOT EXISTS iab_exam (
   scale_score_std_err float,
   completed_at timestamp(0) NOT NULL,
   import_id bigint NOT NULL,
+  deleted tinyint NOT NULL DEFAULT 0,
   CONSTRAINT fk__iab_exam__iab_exam_student FOREIGN KEY (iab_exam_student_id) REFERENCES iab_exam_student(id),
   CONSTRAINT fk__iab_exam__asmt FOREIGN KEY (asmt_id) REFERENCES asmt(id),
   CONSTRAINT fk__iab_exam__import FOREIGN KEY (import_id) REFERENCES import(id)
@@ -366,6 +371,7 @@ CREATE TABLE IF NOT EXISTS exam (
   achievement_level tinyint,
   completed_at timestamp(0) NOT NULL,
   import_id bigint NOT NULL,
+  deleted tinyint NOT NULL DEFAULT 0,
   CONSTRAINT fk__exam__exam_student FOREIGN KEY (exam_student_id) REFERENCES exam_student(id),
   CONSTRAINT fk__exam__asmt FOREIGN KEY (asmt_id) REFERENCES asmt(id),
   CONSTRAINT fk__exam__import FOREIGN KEY (import_id) REFERENCES import(id)
