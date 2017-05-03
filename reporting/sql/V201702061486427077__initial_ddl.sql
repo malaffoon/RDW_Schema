@@ -73,8 +73,7 @@ CREATE TABLE IF NOT EXISTS gender (
 
 CREATE TABLE IF NOT EXISTS accommodation (
   id smallint NOT NULL PRIMARY KEY,
-  code varchar(25) NOT NULL UNIQUE,
-  import_id bigint NOT NULL
+  code varchar(25) NOT NULL UNIQUE
 );
 
 /** Assessment Packages related data **/

@@ -81,9 +81,7 @@ CREATE TABLE IF NOT EXISTS gender (
 
 CREATE TABLE IF NOT EXISTS accommodation (
   id smallint NOT NULL AUTO_INCREMENT PRIMARY KEY,
-  code varchar(25) NOT NULL UNIQUE,
-  import_id bigint NOT NULL,
-  CONSTRAINT fk__accommodation__import FOREIGN KEY (import_id) REFERENCES import(id)
+  code varchar(25) NOT NULL UNIQUE
 );
 
 /** Assessment Packages related data **/

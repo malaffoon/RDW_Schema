@@ -138,7 +138,8 @@ INSERT INTO math_practice (practice, description) VALUES
 
 INSERT INTO import_content (id, name) VALUES
   (1, 'EXAM'),
-  (2, 'PACKAGE');
+  (2, 'PACKAGE'),
+  (3, 'CODES');
 
 INSERT INTO import_status (id, name) VALUES
   (-5, 'UNKNOWN_ASMT'),
@@ -149,6 +150,11 @@ INSERT INTO import_status (id, name) VALUES
   (0, 'ACCEPTED'),
   (1, 'PROCESSED'),
   (2, 'PUBLISHED');
+
+-- This is intended to trigger a migration of all the tables that define codified data
+INSERT INTO import(status, content, contentType, digest) VALUES
+  (1, 3, 'initial load', 'initial load');
+
 
 -- below data is loaded from https://github.com/SmarterApp/SS_CoreStandards/tree/master/Documents/Imports
 
