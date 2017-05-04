@@ -117,7 +117,7 @@ DELETE FROM reporting.student WHERE id in (SELECT id FROM staging_student WHERE 
 -- District first. This covers a use case when a school gets re-assigned to a new district
 -- -----------------------------------------------------------------------------------------
 UPDATE reporting.district d
-  JOIN (SELECT id, name FROM staging_district) sd ON sd.id = d.id
+  JOIN staging_district sd ON sd.id = d.id
 SET d.name = sd.name;
 
 INSERT INTO reporting.district(id, natural_id,name)
@@ -152,8 +152,7 @@ INSERT INTO reporting.school (id, natural_id, name, district_id, import_id)
 
 -- TODO: do we need to wrap the below into a transaction? does it really matter?
 UPDATE reporting.student rs
-  JOIN (SELECT id, last_or_surname, first_name, middle_name, gender_id, first_entry_into_us_school_at,
-          lep_entry_at, lep_exit_at, birthday, import_id FROM staging_student) ss ON ss.id = rs.id
+  JOIN staging_student ss ON ss.id = rs.id
 SET
   rs.last_or_surname = ss.last_or_surname,
   rs.first_name = ss.first_name,
