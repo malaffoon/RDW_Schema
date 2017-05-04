@@ -24,7 +24,7 @@ CREATE TABLE IF NOT EXISTS staging_school (
 );
 
 CREATE TABLE IF NOT EXISTS staging_student (
-  id int NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  id int NOT NULL PRIMARY KEY,
   ssid varchar(65) NOT NULL,
   last_or_surname varchar(60) NOT NULL,
   first_name varchar(60) NOT NULL,
