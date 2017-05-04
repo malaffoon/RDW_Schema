@@ -22,3 +22,25 @@ CREATE TABLE IF NOT EXISTS staging_school (
   deleted tinyint NOT NULL,
   migrate_id bigint NOT NULL
 );
+
+CREATE TABLE IF NOT EXISTS staging_student (
+  id int NOT NULL PRIMARY KEY,
+  ssid varchar(65) NOT NULL,
+  last_or_surname varchar(60) NOT NULL,
+  first_name varchar(60) NOT NULL,
+  middle_name varchar(60),
+  gender_id tinyint NOT NULL,
+  first_entry_into_us_school_at date,
+  lep_entry_at date,
+  lep_exit_at date,
+  birthday date NOT NULL,
+  import_id bigint NOT NULL,
+  deleted tinyint NOT NULL,
+  migrate_id bigint NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS staging_student_ethnicity (
+  id int NOT NULL PRIMARY KEY,
+  ethnicity_id tinyint NOT NULL,
+  student_id int NOT NULL
+);
