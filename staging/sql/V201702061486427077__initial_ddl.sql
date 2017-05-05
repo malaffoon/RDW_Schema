@@ -62,7 +62,7 @@ CREATE TABLE IF NOT EXISTS staging_asmt (
   label varchar(255),
   version varchar(30),
   import_id bigint NOT NULL,
-  deleted tinyint NOT NULL DEFAULT 0,
+  deleted tinyint NOT NULL,
   migrate_id bigint NOT NULL
 );
 

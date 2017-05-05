@@ -299,7 +299,6 @@ INSERT INTO reporting.asmt (id, natural_id, grade_id, type_id, subject_id, schoo
 UPDATE reporting.asmt_score ras
   JOIN staging_asmt_score sas ON ras.asmt_id = sas.asmt_id
 SET
-  ras.asmt_id     = sas.asmt_id,
   ras.cut_point_1 = sas.cut_point_1,
   ras.cut_point_2 = sas.cut_point_2,
   ras.cut_point_3 = sas.cut_point_3,
