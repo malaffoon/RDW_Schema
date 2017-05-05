@@ -143,6 +143,32 @@ CREATE TABLE IF NOT EXISTS staging_student_ethnicity (
   student_id int NOT NULL
 );
 
+/** Student Group **/
+
+CREATE TABLE IF NOT EXISTS staging_student_group (
+  id int NOT NULL PRIMARY KEY,
+  name varchar(255) NOT NULL,
+  school_id int NOT NULL,
+  school_year smallint NOT NULL,
+  subject_id tinyint,
+  active tinyint NOT NULL,
+  creator varchar(250),
+  created timestamp(6) NOT NULL,
+  import_id bigint NOT NULL,
+  deleted tinyint NOT NULL,
+  migrate_id bigint NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS staging_student_group_membership (
+  student_group_id int NOT NULL,
+  student_id int NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS staging_user_student_group (
+  student_group_id int NOT NULL,
+  user_login varchar(255) NOT NULL
+);
+
 /** Assessment Packages related data **/
 
 CREATE TABLE IF NOT EXISTS staging_asmt (
