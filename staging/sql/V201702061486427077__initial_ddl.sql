@@ -6,6 +6,100 @@ ALTER DATABASE `${schemaName}` CHARACTER SET utf8  COLLATE utf8_unicode_ci;
 
 USE `${schemaName}`;
 
+/** Code tables **/
+
+CREATE TABLE IF NOT EXISTS staging_subject (
+  id tinyint NOT NULL PRIMARY KEY,
+  name varchar(10) NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS staging_grade (
+  id tinyint NOT NULL PRIMARY KEY,
+  code varchar(2) NOT NULL,
+  name varchar(100) NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS staging_asmt_type (
+  id tinyint NOT NULL PRIMARY KEY,
+  code varchar(10) NOT NULL,
+  name varchar(24) NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS staging_completeness (
+  id tinyint NOT NULL PRIMARY KEY,
+  name varchar(10) NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS staging_administration_condition (
+  id tinyint NOT NULL PRIMARY KEY,
+  name varchar(20) NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS staging_ethnicity (
+  id tinyint NOT NULL PRIMARY KEY,
+  name varchar(255) NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS staging_gender (
+  id tinyint NOT NULL PRIMARY KEY,
+  name varchar(255) NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS staging_accommodation (
+  id smallint NOT NULL PRIMARY KEY,
+  code varchar(25) NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS staging_claim (
+  id smallint NOT NULL PRIMARY KEY,
+  subject_id tinyint NOT NULL,
+  code varchar(10) NOT NULL,
+  name varchar(250) NOT NULL,
+  description varchar(250) NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS staging_subject_claim_score (
+  id tinyint NOT NULL PRIMARY KEY,
+  subject_id tinyint NOT NULL,
+  asmt_type_id tinyint NOT NULL,
+  code varchar(10) NOT NULL,
+  name varchar(250) NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS staging_target (
+  id smallint NOT NULL PRIMARY KEY,
+  claim_id smallint NOT NULL,
+  code varchar(10) NOT NULL,
+  description varchar(500) NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS staging_depth_of_knowledge (
+  id tinyint NOT NULL PRIMARY KEY,
+  level tinyint NOT NULL,
+  subject_id tinyint NOT NULL,
+  description varchar(100) NOT NULL,
+  reference varchar(1000) NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS staging_math_practice (
+  practice tinyint NOT NULL PRIMARY KEY,
+  description varchar(250) NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS staging_item_trait_score (
+  id tinyint NOT NULL PRIMARY KEY,
+  dimension varchar(100) NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS staging_item_difficulty_cuts (
+  id tinyint NOT NULL PRIMARY KEY,
+  asmt_type_id tinyint NOT NULL,
+  subject_id tinyint NOT NULL,
+  grade_id tinyint NOT NULL,
+  moderate_low_end float NOT NULL,
+  difficult_low_end float NOT NULL
+);
+
 /** School and District **/
 
 CREATE TABLE IF NOT EXISTS staging_district (
