@@ -28,6 +28,17 @@ TRUNCATE TABLE staging_math_practice;
 TRUNCATE TABLE staging_item_trait_score;
 TRUNCATE TABLE staging_item_difficulty_cuts;
 
+TRUNCATE TABLE staging_iab_exam_student;
+TRUNCATE TABLE staging_iab_exam;
+TRUNCATE TABLE staging_iab_exam_item;
+TRUNCATE TABLE staging_iab_exam_available_accommodation;
+
+TRUNCATE TABLE staging_exam_student;
+TRUNCATE TABLE staging_exam;
+TRUNCATE TABLE staging_exam_item;
+TRUNCATE TABLE staging_exam_available_accommodation;
+TRUNCATE TABLE staging_exam_claim_score;
+
 TRUNCATE TABLE staging_school;
 TRUNCATE TABLE staging_district;
 
@@ -231,11 +242,11 @@ INSERT INTO staging_asmt ( id, natural_id, grade_id, type_id, subject_id, school
 INSERT INTO staging_asmt_score ( asmt_id, cut_point_1, cut_point_2, cut_point_3, min_score, max_score, migrate_id)
   SELECT
     was.asmt_id,
-    was.cut_point_1,
-    was.cut_point_2,
-    was.cut_point_3,
-    was.min_score,
-    was.max_score,
+    round(was.cut_point_1),
+    round(was.cut_point_2),
+    round(was.cut_point_3),
+    round(was.min_score),
+    round(was.max_score),
     11 -- TODO: this id will be passed in from the previous migrate task
   FROM warehouse.asmt_score  was
     JOIN warehouse.asmt wa ON wa.id = was.asmt_id
@@ -256,7 +267,7 @@ INSERT INTO staging_item ( id, claim_id, target_id, natural_id, asmt_id, math_pr
     wi.allow_calc,
     wi.dok_id,
     wi.difficulty,
-    wi.max_points,
+    round(wi.max_points),
     11 -- TODO: this id will be passed in from the previous migrate task
   FROM warehouse.item  wi
     JOIN warehouse.asmt wa ON wa.id = wi.asmt_id
@@ -264,6 +275,209 @@ INSERT INTO staging_item ( id, claim_id, target_id, natural_id, asmt_id, math_pr
     -- TODO: this ids will be passed in from the previous migrate task
     wa.import_id IN (SELECT id FROM warehouse.import WHERE id >= -1)
     AND wa.deleted = 0;  -- delete will be taken care on the 'master' level
+
+-- IAB Exams ------------------------------------------------------------------------------
+
+
+INSERT INTO staging_iab_exam_student (id, grade_id, student_id, school_id, iep, lep, section504,
+                                      economic_disadvantage, migrant_status, eng_prof_lvl, t3_program_type,
+                                      language_code, prim_disability_type, migrate_id)
+  SELECT
+    wies.id,
+    wies.grade_id,
+    wies.student_id,
+    wies.school_id,
+    wies.iep,
+    wies.lep,
+    wies.section504,
+    wies.economic_disadvantage,
+    wies.migrant_status,
+    wies.eng_prof_lvl,
+    wies.t3_program_type,
+    wies.language_code,
+    wies.prim_disability_type,
+    11 -- TODO: this id will be passed in from the previous migrate task
+  FROM warehouse.iab_exam  wie
+    JOIN warehouse.iab_exam_student wies ON wie.iab_exam_student_id = wies.id
+  WHERE
+    -- TODO: this ids will be passed in from the previous migrate task
+    wie.import_id IN (SELECT id FROM warehouse.import WHERE id >= -1)
+    AND wie.scale_score is not null
+    AND wie.deleted = 0; -- delete will be taken care on the 'master' level
+
+INSERT INTO staging_iab_exam (id, iab_exam_student_id, school_year, asmt_id, asmt_version, opportunity, status,
+                              completeness_id, administration_condition_id, session_id, category, scale_score, scale_score_std_err,
+                              completed_at, deleted, import_id, migrate_id)
+  SELECT
+    wie.id,
+    wie.iab_exam_student_id,
+    wie.school_year,
+    wie.asmt_id,
+    wie.asmt_version,
+    wie.opportunity,
+    wie.status,
+    wie.completeness_id,
+    wie.administration_condition_id,
+    wie.session_id,
+    wie.category,
+    round(wie.scale_score),
+    wie.scale_score_std_err,
+    wie.completed_at,
+    wie.deleted,
+    wie.import_id,
+    11 -- TODO: this id will be passed in from the previous migrate task
+  FROM warehouse.iab_exam wie
+  WHERE
+    -- TODO: this ids will be passed in from the previous migrate task
+    wie.import_id IN (SELECT id FROM warehouse.import WHERE id >= -1)
+    AND wie.scale_score is not null;
+
+INSERT INTO staging_iab_exam_item (id, iab_exam_id, item_id, score, score_status, position, response,
+                                   trait_evidence_elaboration_score, trait_evidence_elaboration_score_status,
+                                   trait_organization_purpose_score, trait_organization_purpose_score_status,
+                                   trait_conventions_score, trait_conventions_score_status, migrate_id)
+  SELECT
+    wiei.id,
+    wiei.iab_exam_id,
+    wiei.item_id,
+    round(wiei.score),
+    wiei.score_status,
+    wiei.position,
+    wiei.response,
+    round(wiei.trait_evidence_elaboration_score),
+    wiei.trait_evidence_elaboration_score_status,
+    round(wiei.trait_organization_purpose_score),
+    wiei.trait_organization_purpose_score_status,
+    round(wiei.trait_conventions_score),
+    wiei.trait_conventions_score_status,
+    11 -- TODO: this id will be passed in from the previous migrate task
+  FROM warehouse.iab_exam_item wiei
+    JOIN warehouse.iab_exam wie ON wiei.iab_exam_id = wie.id
+  WHERE
+    -- TODO: this ids will be passed in from the previous migrate task
+    wie.import_id IN (SELECT id
+                      FROM warehouse.import
+                      WHERE id >= -1)
+    AND wie.scale_score IS NOT NULL
+    AND wie.deleted = 0; -- delete will be taken care on the 'master' level
+
+INSERT INTO staging_iab_exam_available_accommodation (iab_exam_id, accommodation_id)
+  SELECT
+    wieaa.iab_exam_id,
+    wieaa.accommodation_id
+  FROM warehouse.iab_exam_available_accommodation wieaa
+    JOIN warehouse.iab_exam wie ON wieaa.iab_exam_id = wie.id
+  WHERE
+    -- TODO: this ids will be passed in from the previous migrate task
+    wie.import_id IN (SELECT id FROM warehouse.import WHERE id >= -1)
+    AND wie.scale_score is not null
+    AND wie.deleted = 0; -- delete will be taken care on the 'master' level
+
+-- ICA and Summative Exams ----------------------------------------------------------------------------
+
+INSERT INTO staging_exam_student (id, grade_id, student_id, school_id, iep, lep, section504,
+                                  economic_disadvantage, migrant_status, eng_prof_lvl, t3_program_type,
+                                  language_code, prim_disability_type, migrate_id)
+  SELECT
+    wes.id,
+    wes.grade_id,
+    wes.student_id,
+    wes.school_id,
+    wes.iep,
+    wes.lep,
+    wes.section504,
+    wes.economic_disadvantage,
+    wes.migrant_status,
+    wes.eng_prof_lvl,
+    wes.t3_program_type,
+    wes.language_code,
+    wes.prim_disability_type,
+    11 -- TODO: this id will be passed in from the previous migrate task
+  FROM warehouse.exam  we
+    JOIN warehouse.exam_student wes ON we.exam_student_id = wes.id
+  WHERE
+    -- TODO: this ids will be passed in from the previous migrate task
+    we.import_id IN (SELECT id FROM warehouse.import WHERE id >= -1)
+    AND we.deleted = 0; -- delete will be taken care on the 'master' level
+
+INSERT INTO staging_exam (id, exam_student_id, school_year, asmt_id, asmt_version, opportunity, status,
+                          completeness_id, administration_condition_id, session_id, achievement_level, scale_score, scale_score_std_err,
+                          completed_at, deleted, import_id, migrate_id)
+  SELECT
+    we.id,
+    we.exam_student_id,
+    we.school_year,
+    we.asmt_id,
+    we.asmt_version,
+    we.opportunity,
+    we.status,
+    we.completeness_id,
+    we.administration_condition_id,
+    we.session_id,
+    we.achievement_level,
+    round(we.scale_score),
+    we.scale_score_std_err,
+    we.completed_at,
+    we.deleted,
+    we.import_id,
+    11 -- TODO: this id will be passed in from the previous migrate task
+  FROM warehouse.exam we
+  WHERE
+    -- TODO: this ids will be passed in from the previous migrate task
+    we.import_id IN (SELECT id FROM warehouse.import WHERE id >= -1);
+
+INSERT INTO staging_exam_item (id, exam_id, item_id, score, score_status, position, response,
+                               trait_evidence_elaboration_score, trait_evidence_elaboration_score_status,
+                               trait_organization_purpose_score, trait_organization_purpose_score_status,
+                               trait_conventions_score, trait_conventions_score_status, migrate_id)
+  SELECT
+    wei.id,
+    wei.exam_id,
+    wei.item_id,
+    round(wei.score),
+    wei.score_status,
+    wei.position,
+    wei.response,
+    round(wei.trait_evidence_elaboration_score),
+    wei.trait_evidence_elaboration_score_status,
+    round(wei.trait_organization_purpose_score),
+    wei.trait_organization_purpose_score_status,
+    round(wei.trait_conventions_score),
+    wei.trait_conventions_score_status,
+    11 -- TODO: this id will be passed in from the previous migrate task
+  FROM warehouse.exam_item wei
+    JOIN warehouse.exam we ON wei.exam_id = we.id
+  WHERE
+    -- TODO: this ids will be passed in from the previous migrate task
+    we.import_id IN (SELECT id FROM warehouse.import WHERE id >= -1)
+    AND we.deleted = 0; -- delete will be taken care on the 'master' level
+
+INSERT INTO staging_exam_available_accommodation (exam_id, accommodation_id)
+  SELECT
+    weaa.exam_id,
+    weaa.accommodation_id
+  FROM warehouse.exam_available_accommodation weaa
+    JOIN warehouse.exam we ON weaa.exam_id = we.id
+  WHERE
+    -- TODO: this ids will be passed in from the previous migrate task
+    we.import_id IN (SELECT id FROM warehouse.import WHERE id >= -1)
+    AND we.deleted = 0; -- delete will be taken care on the 'master' level
+
+
+INSERT INTO staging_exam_claim_score (id, exam_id, subject_claim_score_id, scale_score, scale_score_std_err, category)
+  SELECT
+    wecs.id,
+    wecs.exam_id,
+    wecs.subject_claim_score_id,
+    round(wecs.scale_score),
+    wecs.scale_score_std_err,
+    wecs.category
+  FROM warehouse.exam_claim_score wecs
+    JOIN warehouse.exam we ON wecs.exam_id = we.id
+  WHERE
+    -- TODO: this ids will be passed in from the previous migrate task
+    we.import_id IN (SELECT id FROM warehouse.import WHERE id >= -1)
+    AND we.deleted = 0; -- delete will be taken care on the 'master' level
 
 -- -----------------------------------------------------------------------------------------
 -- MOVE FROM STAGING TO REPORTING
@@ -530,14 +744,25 @@ INSERT INTO reporting.item_difficulty_cuts (id, asmt_type_id, subject_id, grade_
 -- -----------------------------------------------------------------------------------------
 -- handle delete first
 -- -----------------------------------------------------------------------------------------
+-- IAB Exams -------------------------------------------------------------------------------
+DELETE FROM reporting.iab_exam_available_accommodation WHERE iab_exam_id IN
+                                                             (SELECT id from staging_iab_exam WHERE deleted = 1 );
+DELETE FROM reporting.iab_exam_item WHERE iab_exam_id IN (SELECT id from staging_iab_exam WHERE deleted = 1 );
+DELETE FROM reporting.iab_exam WHERE id IN (SELECT id from staging_iab_exam WHERE deleted = 1 );
+
+-- ICA and Summative Exams -------------------------------------------------------------------------------
+DELETE FROM reporting.exam_available_accommodation WHERE exam_id IN
+                                                         (SELECT id from staging_exam WHERE deleted = 1 );
+DELETE FROM reporting.exam_item WHERE exam_id IN (SELECT id from staging_exam WHERE deleted = 1 );
+DELETE FROM reporting.exam WHERE id IN (SELECT id from staging_exam WHERE deleted = 1 );
 
 -- Student Group ----------------------------------------------------------------------------
 DELETE from reporting.student_group_membership WHERE student_group_id IN
-        (SELECT id FROM staging_student_group WHERE deleted = 1 or active = 0);
+                                                     (SELECT id FROM staging_student_group WHERE deleted = 1 or active = 0);
 DELETE from reporting.user_student_group WHERE student_group_id IN
-        (SELECT id FROM staging_student_group WHERE deleted = 1 or active = 0);
+                                               (SELECT id FROM staging_student_group WHERE deleted = 1 or active = 0);
 DELETE FROM reporting.student_group WHERE id IN
-        (SELECT id FROM staging_student_group WHERE deleted = 1 or active = 0);
+                                          (SELECT id FROM staging_student_group WHERE deleted = 1 or active = 0);
 
 -- School  ---------------------------------------------------------------------------------
 -- student groups and exams depend on the school.
@@ -601,7 +826,7 @@ INSERT INTO reporting.school (id, natural_id, name, district_id, import_id)
     ss.import_id
   FROM staging_school ss
     LEFT JOIN reporting.school rs ON rs.id = ss.id
-  WHERE rs.id IS NULL and ss.deleted = 0;
+  WHERE rs.id IS NULL AND ss.deleted = 0;
 
 -- Student  ---------------------------------------------------------------------------------
 -- Process students update/inserts first, and then all the ethnicity at once
@@ -682,9 +907,9 @@ INSERT INTO reporting.student_group_membership ( student_group_id, student_id)
   WHERE rsgm.student_group_id IS NULL;
 
 DELETE rsgm FROM reporting.student_group_membership rsgm
-  WHERE student_group_id in (select id from staging_student_group where deleted = 0 and active = 1)
-                    AND NOT EXISTS(SELECT student_group_id FROM staging_student_group_membership
-                                      WHERE student_group_id = rsgm.student_group_id AND student_id = rsgm.student_id);
+WHERE student_group_id in (select id from staging_student_group where deleted = 0 and active = 1)
+      AND NOT EXISTS(SELECT student_group_id FROM staging_student_group_membership
+WHERE student_group_id = rsgm.student_group_id AND student_id = rsgm.student_id);
 
 INSERT INTO reporting.user_student_group ( student_group_id, user_login)
   SELECT
@@ -696,9 +921,9 @@ INSERT INTO reporting.user_student_group ( student_group_id, user_login)
   WHERE rusg.student_group_id IS NULL;
 
 DELETE rsug FROM reporting.user_student_group rsug
-  WHERE student_group_id in (select id from staging_student_group where deleted = 0 and active = 1)
+WHERE student_group_id in (select id from staging_student_group where deleted = 0 and active = 1)
       AND NOT EXISTS(SELECT student_group_id FROM staging_user_student_group
-                        WHERE student_group_id = rsug.student_group_id AND user_login = rsug.user_login);
+WHERE student_group_id = rsug.student_group_id AND user_login = rsug.user_login);
 
 -- Assessment ------------------------------------------------------------------------------
 UPDATE reporting.asmt ra
@@ -762,7 +987,7 @@ WHERE rs.asmt_id in (select asmt_id from staging_asmt where deleted = 0)
       AND NOT EXISTS(SELECT asmt_id FROM staging_asmt_score WHERE asmt_id = rs.asmt_id);
 
 UPDATE reporting.item ri
-  JOIN staging_item si ON ri.asmt_id = si.asmt_id
+  JOIN staging_item si ON ri.id = si.id
 SET
   ri.claim_id      = si.claim_id,
   ri.target_id     = si.target_id,
@@ -793,6 +1018,357 @@ INSERT INTO reporting.item ( id, claim_id, target_id, natural_id, asmt_id, math_
 DELETE ri FROM reporting.item ri
 WHERE ri.asmt_id in (select id from staging_asmt where deleted = 0)
       AND  NOT EXISTS(SELECT id FROM staging_item WHERE id = ri.id);
+
+-- IAB Exams -----------------------------------------------------------------------------------------------
+
+UPDATE reporting.iab_exam rie
+  JOIN staging_iab_exam sie ON sie.id = rie.id
+  JOIN staging_iab_exam_student sies ON sie.iab_exam_student_id = sies.id
+SET
+  rie.grade_id = sies.grade_id,
+  rie.student_id = sies.student_id,
+  rie.school_id = sies.school_id,
+  rie.iep = sies.iep,
+  rie.lep = sies.lep,
+  rie.section504 = sies.section504,
+  rie.economic_disadvantage = sies.economic_disadvantage,
+  rie.migrant_status = sies.migrant_status,
+  rie.eng_prof_lvl = sies.eng_prof_lvl,
+  rie.t3_program_type = sies.t3_program_type,
+  rie.language_code = sies.language_code,
+  rie.prim_disability_type = sies.prim_disability_type,
+  rie.school_year = sie.school_year,
+  rie.asmt_id = sie.asmt_id,
+  rie.asmt_version = sie.asmt_version,
+  rie.opportunity = sie.opportunity,
+  rie.status = sie.status,
+  rie.completeness_id = sie.completeness_id,
+  rie.administration_condition_id = sie.administration_condition_id,
+  rie.session_id = sie.session_id,
+  rie.category = sie.category,
+  rie.scale_score = sie.scale_score,
+  rie.scale_score_std_err = sie.scale_score_std_err,
+  rie.completed_at = sie.completed_at,
+  rie.import_id = sie.import_id
+WHERE sie.deleted = 0;
+
+INSERT INTO reporting.iab_exam (id, grade_id, student_id, school_id, iep, lep, section504, economic_disadvantage,
+                                migrant_status, eng_prof_lvl, t3_program_type, language_code, prim_disability_type,
+                                school_year, asmt_id, asmt_version, opportunity, status, completeness_id,
+                                administration_condition_id, session_id, category, scale_score, scale_score_std_err,
+                                import_id)
+  SELECT
+    sie.id,
+    sies.grade_id,
+    sies.student_id,
+    sies.school_id,
+    sies.iep,
+    sies.lep,
+    sies.section504,
+    sies.economic_disadvantage,
+    sies.migrant_status,
+    sies.eng_prof_lvl,
+    sies.t3_program_type,
+    sies.language_code,
+    sies.prim_disability_type,
+    sie.school_year,
+    sie.asmt_id,
+    sie.asmt_version,
+    sie.opportunity,
+    sie.status,
+    sie.completeness_id,
+    sie.administration_condition_id,
+    sie.session_id,
+    sie.category,
+    sie.scale_score,
+    sie.scale_score_std_err,
+    sie.import_id
+  FROM staging_iab_exam sie JOIN staging_iab_exam_student sies ON sie.iab_exam_student_id = sies.id
+    LEFT JOIN reporting.iab_exam rie ON rie.id = sie.id
+  WHERE rie.id IS NULL AND sie.deleted = 0;
+
+UPDATE reporting.iab_exam_item ri
+  JOIN staging_iab_exam_item si ON ri.id = si.id
+SET
+  ri.iab_exam_id                             = si.iab_exam_id,
+  ri.item_id                                 = si.item_id,
+  ri.score                                   = si.score,
+  ri.score_status                            = si.score_status,
+  ri.position                                = si.position,
+  ri.response                                = si.response,
+  ri.trait_evidence_elaboration_score        = si.trait_evidence_elaboration_score,
+  ri.trait_evidence_elaboration_score_status = si.trait_evidence_elaboration_score_status,
+  ri.trait_organization_purpose_score        = si.trait_organization_purpose_score,
+  ri.trait_organization_purpose_score_status = si.trait_organization_purpose_score_status,
+  ri.trait_conventions_score                 = si.trait_conventions_score,
+  ri.trait_conventions_score_status          = si.trait_conventions_score_status,
+  ri.trait_evidence_elaboration_score_status = si.trait_evidence_elaboration_score_status;
+
+INSERT INTO reporting.iab_exam_item (id, iab_exam_id, item_id, score, score_status, position, response,
+                                     trait_evidence_elaboration_score, trait_evidence_elaboration_score_status,
+                                     trait_organization_purpose_score, trait_organization_purpose_score_status,
+                                     trait_conventions_score, trait_conventions_score_status)
+  SELECT
+    si.id,
+    si.iab_exam_id,
+    si.item_id,
+    si.score,
+    si.score_status,
+    si.position,
+    si.response,
+    si.trait_evidence_elaboration_score,
+    si.trait_evidence_elaboration_score_status,
+    si.trait_organization_purpose_score,
+    si.trait_organization_purpose_score_status,
+    si.trait_conventions_score,
+    si.trait_conventions_score_status
+  FROM staging_iab_exam_item si
+    LEFT JOIN reporting.iab_exam_item ri ON ri.id = si.id
+  WHERE ri.id IS NULL;
+
+DELETE ri FROM reporting.iab_exam_item ri
+WHERE ri.iab_exam_id in (select id from staging_iab_exam where deleted = 0)
+      AND  NOT EXISTS(SELECT id FROM staging_iab_exam_item WHERE id = ri.id);
+
+INSERT INTO reporting.iab_exam_available_accommodation ( iab_exam_id, accommodation_id)
+  SELECT
+    s.iab_exam_id,
+    s.accommodation_id
+  FROM staging_iab_exam_available_accommodation s
+    LEFT JOIN reporting.iab_exam_available_accommodation r
+      ON (r.iab_exam_id = s.iab_exam_id AND r.accommodation_id = s.accommodation_id)
+  WHERE r.iab_exam_id IS NULL;
+
+DELETE r FROM reporting.iab_exam_available_accommodation r
+WHERE iab_exam_id in (select id from staging_iab_exam where deleted = 0)
+      AND NOT EXISTS(SELECT iab_exam_id FROM staging_iab_exam_available_accommodation
+WHERE iab_exam_id = r.iab_exam_id AND accommodation_id = r.accommodation_id);
+
+-- ICA and Summative Exams -----------------------------------------------------------------------------------------------
+
+UPDATE reporting.exam re
+  JOIN staging_exam se ON se.id = re.id
+  JOIN staging_exam_student ses ON se.exam_student_id = ses.id
+  INNER JOIN (
+               SELECT exam_id
+                 ,scale_score
+                 ,scale_score_std_err
+                 ,category
+               FROM staging_exam_claim_score s
+                 INNER JOIN reporting.exam_claim_score_mapping m ON m.subject_claim_score_id = s.subject_claim_score_id
+                                                                    AND m.num = 1
+             ) AS claim1 ON claim1.exam_id = se.id
+  INNER JOIN (
+               SELECT exam_id
+                 ,scale_score
+                 ,scale_score_std_err
+                 ,category
+               FROM staging_exam_claim_score s
+                 INNER JOIN reporting.exam_claim_score_mapping m ON m.subject_claim_score_id = s.subject_claim_score_id
+                                                                    AND m.num = 2
+             ) AS claim2 ON claim2.exam_id = se.id
+  INNER JOIN (
+               SELECT exam_id
+                 ,scale_score
+                 ,scale_score_std_err
+                 ,category
+               FROM staging_exam_claim_score s
+                 INNER JOIN reporting.exam_claim_score_mapping m ON m.subject_claim_score_id = s.subject_claim_score_id
+                                                                    AND m.num = 3
+             ) AS claim3 ON claim3.exam_id = se.id
+  LEFT JOIN (
+              SELECT exam_id
+                ,scale_score
+                ,scale_score_std_err
+                ,category
+              FROM staging_exam_claim_score s
+                INNER JOIN reporting.exam_claim_score_mapping m ON m.subject_claim_score_id = s.subject_claim_score_id
+                                                                   AND m.num = 4
+            ) AS claim4 ON claim4.exam_id = se.id
+SET
+  re.grade_id = ses.grade_id,
+  re.student_id = ses.student_id,
+  re.school_id = ses.school_id,
+  re.iep = ses.iep,
+  re.lep = ses.lep,
+  re.section504 = ses.section504,
+  re.economic_disadvantage = ses.economic_disadvantage,
+  re.migrant_status = ses.migrant_status,
+  re.eng_prof_lvl = ses.eng_prof_lvl,
+  re.t3_program_type = ses.t3_program_type,
+  re.language_code = ses.language_code,
+  re.prim_disability_type = ses.prim_disability_type,
+  re.school_year = se.school_year,
+  re.asmt_id = se.asmt_id,
+  re.asmt_version = se.asmt_version,
+  re.opportunity = se.opportunity,
+  re.status = se.status,
+  re.completeness_id = se.completeness_id,
+  re.administration_condition_id = se.administration_condition_id,
+  re.session_id = se.session_id,
+  re.achievement_level = se.achievement_level,
+  re.scale_score = se.scale_score,
+  re.scale_score_std_err = se.scale_score_std_err,
+  re.completed_at = se.completed_at,
+  re.import_id = se.import_id,
+  re.claim1_scale_score = claim1.scale_score,
+  re.claim1_scale_score_std_err = claim1.scale_score_std_err,
+  re.claim1_category = claim1.category,
+  re.claim2_scale_score  = claim2.scale_score,
+  re.claim2_scale_score_std_err = claim2.scale_score_std_err,
+  re.claim2_category = claim2.category,
+  re.claim3_scale_score = claim3.scale_score,
+  re.claim3_scale_score_std_err = claim3.scale_score_std_err,
+  re.claim3_category = claim3.category,
+  re.claim4_scale_score = claim4.scale_score,
+  re.claim4_scale_score_std_err = claim4.scale_score_std_err,
+  re.claim4_category = claim4.category
+WHERE se.deleted = 0;
+
+INSERT INTO reporting.exam (id, grade_id, student_id, school_id, iep, lep, section504, economic_disadvantage,
+                            migrant_status, eng_prof_lvl, t3_program_type, language_code, prim_disability_type,
+                            school_year, asmt_id, asmt_version, opportunity, status, completeness_id,
+                            administration_condition_id, session_id, achievement_level, scale_score, scale_score_std_err,
+                            import_id,
+                            claim1_scale_score, claim1_scale_score_std_err, claim1_category,
+                            claim2_scale_score, claim2_scale_score_std_err, claim2_category,
+                            claim3_scale_score, claim3_scale_score_std_err, claim3_category,
+                            claim4_scale_score, claim4_scale_score_std_err, claim4_category)
+  SELECT
+    se.id,
+    ses.grade_id,
+    ses.student_id,
+    ses.school_id,
+    ses.iep,
+    ses.lep,
+    ses.section504,
+    ses.economic_disadvantage,
+    ses.migrant_status,
+    ses.eng_prof_lvl,
+    ses.t3_program_type,
+    ses.language_code,
+    ses.prim_disability_type,
+    se.school_year,
+    se.asmt_id,
+    se.asmt_version,
+    se.opportunity,
+    se.status,
+    se.completeness_id,
+    se.administration_condition_id,
+    se.session_id,
+    se.achievement_level,
+    se.scale_score,
+    se.scale_score_std_err,
+    se.import_id,
+    claim1.scale_score as claim1_scale_score,
+    claim1.scale_score_std_err as claim1_scale_score_std_err,
+    claim1.category as claim1_category,
+    claim2.scale_score as claim2_scale_score,
+    claim2.scale_score_std_err as claim2_scale_score_std_err,
+    claim2.category as claim2_category,
+    claim3.scale_score as claim3_scale_score,
+    claim3.scale_score_std_err as claim3_scale_score_std_err,
+    claim3.category as claim3_category,
+    claim4.scale_score as claim4_scale_score,
+    claim4.scale_score_std_err as claim4_scale_score_std_err,
+    claim4.category as claim4_category
+  FROM staging_exam se
+    JOIN staging_exam_student ses ON se.exam_student_id = ses.id
+    INNER JOIN (
+                 SELECT exam_id
+                   ,scale_score
+                   ,scale_score_std_err
+                   ,category
+                 FROM staging_exam_claim_score s
+                   INNER JOIN reporting.exam_claim_score_mapping m ON m.subject_claim_score_id = s.subject_claim_score_id
+                                                                      AND m.num = 1
+               ) AS claim1 ON claim1.exam_id = se.id
+    INNER JOIN (
+                 SELECT exam_id
+                   ,scale_score
+                   ,scale_score_std_err
+                   ,category
+                 FROM staging_exam_claim_score s
+                   INNER JOIN reporting.exam_claim_score_mapping m ON m.subject_claim_score_id = s.subject_claim_score_id
+                                                                      AND m.num = 2
+               ) AS claim2 ON claim2.exam_id = se.id
+    INNER JOIN (
+                 SELECT exam_id
+                   ,scale_score
+                   ,scale_score_std_err
+                   ,category
+                 FROM staging_exam_claim_score s
+                   INNER JOIN reporting.exam_claim_score_mapping m ON m.subject_claim_score_id = s.subject_claim_score_id
+                                                                      AND m.num = 3
+               ) AS claim3 ON claim3.exam_id = se.id
+    LEFT JOIN (
+                SELECT exam_id
+                  ,scale_score
+                  ,scale_score_std_err
+                  ,category
+                FROM staging_exam_claim_score s
+                  INNER JOIN reporting.exam_claim_score_mapping m ON m.subject_claim_score_id = s.subject_claim_score_id
+                                                                     AND m.num = 4
+              ) AS claim4 ON claim4.exam_id = se.id
+    LEFT JOIN reporting.exam re ON re.id = se.id
+  WHERE re.id IS NULL AND se.deleted = 0;
+
+UPDATE reporting.exam_item ri
+  JOIN staging_exam_item si ON ri.id = si.id
+SET
+  ri.exam_id                             = si.exam_id,
+  ri.item_id                                 = si.item_id,
+  ri.score                                   = si.score,
+  ri.score_status                            = si.score_status,
+  ri.position                                = si.position,
+  ri.response                                = si.response,
+  ri.trait_evidence_elaboration_score        = si.trait_evidence_elaboration_score,
+  ri.trait_evidence_elaboration_score_status = si.trait_evidence_elaboration_score_status,
+  ri.trait_organization_purpose_score        = si.trait_organization_purpose_score,
+  ri.trait_organization_purpose_score_status = si.trait_organization_purpose_score_status,
+  ri.trait_conventions_score                 = si.trait_conventions_score,
+  ri.trait_conventions_score_status          = si.trait_conventions_score_status,
+  ri.trait_evidence_elaboration_score_status = si.trait_evidence_elaboration_score_status;
+
+INSERT INTO reporting.exam_item (id, exam_id, item_id, score, score_status, position, response,
+                                 trait_evidence_elaboration_score, trait_evidence_elaboration_score_status,
+                                 trait_organization_purpose_score, trait_organization_purpose_score_status,
+                                 trait_conventions_score, trait_conventions_score_status)
+  SELECT
+    si.id,
+    si.exam_id,
+    si.item_id,
+    si.score,
+    si.score_status,
+    si.position,
+    si.response,
+    si.trait_evidence_elaboration_score,
+    si.trait_evidence_elaboration_score_status,
+    si.trait_organization_purpose_score,
+    si.trait_organization_purpose_score_status,
+    si.trait_conventions_score,
+    si.trait_conventions_score_status
+  FROM staging_exam_item si
+    LEFT JOIN reporting.exam_item ri ON ri.id = si.id
+  WHERE ri.id IS NULL;
+
+DELETE ri FROM reporting.exam_item ri
+WHERE ri.exam_id in (select id from staging_exam where deleted = 0)
+      AND  NOT EXISTS(SELECT id FROM staging_exam_item WHERE id = ri.id);
+
+INSERT INTO reporting.exam_available_accommodation ( exam_id, accommodation_id)
+  SELECT
+    s.exam_id,
+    s.accommodation_id
+  FROM staging_exam_available_accommodation s
+    LEFT JOIN reporting.exam_available_accommodation r
+      ON (r.exam_id = s.exam_id AND r.accommodation_id = s.accommodation_id)
+  WHERE r.exam_id IS NULL;
+
+DELETE r FROM reporting.exam_available_accommodation r
+WHERE exam_id in (select id from staging_exam where deleted = 0)
+      AND NOT EXISTS(SELECT exam_id FROM staging_exam_available_accommodation
+WHERE exam_id = r.exam_id AND accommodation_id = r.accommodation_id);
 
 -- Remove codes (step 3 for code migration) ----------------------------------------------------------------
 DELETE rs FROM reporting.subject rs

@@ -188,11 +188,11 @@ CREATE TABLE IF NOT EXISTS staging_asmt (
 
 CREATE TABLE IF NOT EXISTS staging_asmt_score (
   asmt_id int NOT NULL PRIMARY KEY,
-  cut_point_1 float NOT NULL,
-  cut_point_2 float NOT NULL,
-  cut_point_3 float NOT NULL,
-  min_score float NOT NULL,
-  max_score float NOT NULL,
+  cut_point_1 smallint NOT NULL,
+  cut_point_2 smallint NOT NULL,
+  cut_point_3 smallint NOT NULL,
+  min_score smallint NOT NULL,
+  max_score smallint NOT NULL,
   migrate_id bigint NOT NULL
 );
 
@@ -206,6 +206,138 @@ CREATE TABLE IF NOT EXISTS staging_item (
   allow_calc tinyint,
   dok_id tinyint NOT NULL,
   difficulty float NOT NULL,
-  max_points float UNSIGNED NOT NULL,
+  max_points tinyint UNSIGNED NOT NULL,
   migrate_id bigint NOT NULL
+);
+
+/** IAB exams **/
+
+CREATE TABLE IF NOT EXISTS staging_iab_exam_student (
+  id bigint NOT NULL PRIMARY KEY,
+  grade_id tinyint NOT NULL,
+  student_id int NOT NULL,
+  school_id int NOT NULL,
+  iep tinyint NOT NULL,
+  lep tinyint NOT NULL,
+  section504 tinyint NOT NULL,
+  economic_disadvantage tinyint NOT NULL,
+  migrant_status tinyint,
+  eng_prof_lvl varchar(20),
+  t3_program_type varchar(20),
+  language_code varchar(3),
+  prim_disability_type varchar(3),
+  migrate_id bigint NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS staging_iab_exam (
+  id bigint NOT NULL PRIMARY KEY,
+  iab_exam_student_id bigint NOT NULL,
+  school_year smallint NOT NULL,
+  asmt_id int NOT NULL,
+  asmt_version varchar(30),
+  opportunity int,
+  status varchar(50),
+  completeness_id tinyint NOT NULL,
+  administration_condition_id tinyint NOT NULL,
+  session_id varchar(128),
+  category tinyint,
+  scale_score smallint,
+  scale_score_std_err float,
+  completed_at timestamp(0) NOT NULL,
+  import_id bigint NOT NULL,
+  deleted tinyint NOT NULL,
+  migrate_id bigint NOT NULL
+ );
+
+CREATE TABLE IF NOT EXISTS staging_iab_exam_item (
+  id bigint NOT NULL PRIMARY KEY,
+  iab_exam_id bigint NOT NULL,
+  item_id int NOT NULL,
+  score tinyint NOT NULL,
+  score_status varchar(50),
+  position int NOT NULL,
+  response text,
+  trait_evidence_elaboration_score tinyint,
+  trait_evidence_elaboration_score_status varchar(50),
+  trait_organization_purpose_score tinyint,
+  trait_organization_purpose_score_status varchar(50),
+  trait_conventions_score tinyint,
+  trait_conventions_score_status varchar(50),
+  migrate_id bigint NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS staging_iab_exam_available_accommodation (
+  iab_exam_id bigint NOT NULL,
+  accommodation_id smallint NOT NULL
+);
+
+
+/** ICA and Summative exams **/
+
+CREATE TABLE IF NOT EXISTS staging_exam_student (
+  id bigint NOT NULL PRIMARY KEY,
+  grade_id tinyint NOT NULL,
+  student_id int NOT NULL,
+  school_id int NOT NULL,
+  iep tinyint NOT NULL,
+  lep tinyint NOT NULL,
+  section504 tinyint NOT NULL,
+  economic_disadvantage tinyint NOT NULL,
+  migrant_status tinyint,
+  eng_prof_lvl varchar(20),
+  t3_program_type varchar(20),
+  language_code varchar(3),
+  prim_disability_type varchar(3),
+  migrate_id bigint NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS staging_exam (
+  id bigint NOT NULL PRIMARY KEY,
+  exam_student_id bigint NOT NULL,
+  school_year smallint NOT NULL,
+  asmt_id int NOT NULL,
+  asmt_version varchar(30),
+  opportunity int,
+  status varchar(50),
+  completeness_id tinyint NOT NULL,
+  administration_condition_id tinyint NOT NULL,
+  session_id varchar(128),
+  scale_score smallint,
+  scale_score_std_err float,
+  achievement_level tinyint,
+  completed_at timestamp(0) NOT NULL,
+  import_id bigint NOT NULL,
+  deleted tinyint NOT NULL,
+  migrate_id bigint NOT NULL
+ );
+
+CREATE TABLE IF NOT EXISTS staging_exam_item (
+  id bigint NOT NULL PRIMARY KEY,
+  exam_id bigint NOT NULL,
+  item_id int NOT NULL,
+  score tinyint NOT NULL,
+  score_status varchar(50),
+  position int NOT NULL,
+  response text,
+  trait_evidence_elaboration_score tinyint,
+  trait_evidence_elaboration_score_status varchar(50),
+  trait_organization_purpose_score tinyint,
+  trait_organization_purpose_score_status varchar(50),
+  trait_conventions_score tinyint,
+  trait_conventions_score_status varchar(50),
+  migrate_id bigint NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS staging_exam_available_accommodation (
+  exam_id bigint NOT NULL,
+  accommodation_id smallint NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS staging_exam_claim_score (
+  id bigint NOT NULL PRIMARY KEY,
+  exam_id bigint NOT NULL,
+  subject_claim_score_id smallint NOT NULL,
+  scale_score smallint,
+  scale_score_std_err float,
+  category tinyint
 );
