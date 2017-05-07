@@ -22,7 +22,7 @@ def taskMap = [migrate: org.flywaydb.gradle.task.FlywayMigrateTask,
 //Gradle can't call a single task more than once, because of its design, so
 //we dynamically create individual tasks for each of the available flyway commands
 //on all of our databases (dev and test)
-["reporting", "reporting-test", "warehouse", "warehouse-test", "staging", "staging-test"].each { schema ->
+["reporting", "reporting-test", "warehouse", "warehouse-test", "staging", "staging-test", "spring_batch_reporting", "spring_batch_reporting-test"].each { schema ->
     taskMap.keySet().each { key ->
         task("$key$schema", type: taskMap[key]) {
             group = key
