@@ -34,6 +34,10 @@ TRUNCATE TABLE staging_district;
 TRUNCATE TABLE staging_student;
 TRUNCATE TABLE staging_student_ethnicity;
 
+TRUNCATE TABLE staging_student_group;
+TRUNCATE TABLE staging_student_group_membership;
+TRUNCATE TABLE staging_user_student_group;
+
 TRUNCATE TABLE staging_asmt;
 TRUNCATE TABLE staging_asmt_score;
 TRUNCATE TABLE staging_item;
@@ -159,6 +163,48 @@ INSERT INTO staging_student_ethnicity (id, ethnicity_id, student_id)
     ws.import_id IN (SELECT id FROM warehouse.import WHERE id >= -1)
     AND ws.deleted = 0;  -- delete will be taken care on the 'master' level
 
+-- Student Groups --------------------------------------------------------------------------
+INSERT INTO  staging_student_group ( id, name, school_id, school_year, subject_id, active,
+                                     creator, created, import_id, deleted, migrate_id)
+  SELECT
+    wsg.id,
+    wsg.name,
+    wsg.school_id,
+    wsg.school_year,
+    wsg.subject_id,
+    wsg.active,
+    wsg.creator,
+    wsg.created,
+    wsg.import_id,
+    wsg.deleted,
+    11 -- TODO: this id will be passed in from the previous migrate task
+  FROM warehouse.student_group wsg
+  WHERE
+    -- TODO: this ids will be passed in from the previous migrate task
+    wsg.import_id IN (SELECT id FROM warehouse.import WHERE id >= -1);
+
+INSERT INTO staging_student_group_membership (student_group_id, student_id)
+  SELECT
+    wsgm.student_group_id,
+    wsgm.student_id
+  FROM warehouse.student_group_membership wsgm
+    JOIN warehouse.student_group wsg ON wsg.id= wsgm.student_group_id
+  WHERE
+    -- TODO: this ids will be passed in from the previous migrate task
+    wsg.import_id IN (SELECT id FROM warehouse.import WHERE id >= -1)
+    AND ( wsg.deleted = 0 and wsg.active = 1);  -- delete/inactive will be taken care on the 'master' level
+
+INSERT INTO staging_user_student_group (student_group_id, user_login)
+  SELECT
+    wusg.student_group_id,
+    wusg.user_login
+  FROM warehouse.user_student_group wusg
+    JOIN warehouse.student_group wsg ON wsg.id= wusg.student_group_id
+  WHERE
+    -- TODO: this ids will be passed in from the previous migrate task
+    wsg.import_id IN (SELECT id FROM warehouse.import WHERE id >= -1)
+    AND ( wsg.deleted = 0 and wsg.active = 1);  -- delete/inactive will be taken care on the 'master' level
+
 -- Assessment ------------------------------------------------------------------------------
 
 INSERT INTO staging_asmt ( id, natural_id, grade_id, type_id, subject_id, school_year, name,
@@ -228,7 +274,7 @@ INSERT INTO staging_item ( id, claim_id, target_id, natural_id, asmt_id, math_pr
 -- step 1: update existing codes
 -- step 2: insert new codes
 -- step 3: remove codes that do not exists in the staging/warehouse
-
+-- the last step must be done after all other migration to make sure that the code can be safely removed
 -- ------------ Subject --------------------------------------------------------------------
 UPDATE reporting.subject rs
   JOIN staging_subject ss ON ss.id = rs.id
@@ -242,10 +288,6 @@ INSERT INTO reporting.subject ( id, name)
   FROM staging_subject ss
     LEFT JOIN reporting.subject rs ON rs.id = ss.id
   WHERE rs.id IS NULL;
-
-DELETE rs FROM reporting.subject rs
-WHERE NOT EXISTS(SELECT id FROM staging_subject WHERE id = rs.id);
-
 
 -- ------------ Grade --------------------------------------------------------------------
 UPDATE reporting.grade rg
@@ -263,9 +305,6 @@ INSERT INTO reporting.grade ( id, code, name)
     LEFT JOIN reporting.grade rg ON rg.id = sg.id
   WHERE rg.id IS NULL;
 
-DELETE rg FROM reporting.grade rg
-WHERE NOT EXISTS(SELECT id FROM staging_grade WHERE id = rg.id);
-
 -- ------------ Asmt Type --------------------------------------------------------------------
 UPDATE reporting.asmt_type rat
   JOIN staging_asmt_type sat ON sat.id = rat.id
@@ -282,10 +321,6 @@ INSERT INTO reporting.asmt_type ( id, code, name)
     LEFT JOIN reporting.asmt_type rat ON rat.id = sat.id
   WHERE rat.id IS NULL;
 
-DELETE rat FROM reporting.asmt_type rat
-WHERE NOT EXISTS(SELECT id FROM staging_asmt_type WHERE id = rat.id);
-
-
 -- ------------ Completeness --------------------------------------------------------------------
 UPDATE reporting.completeness rc
   JOIN staging_completeness sc ON sc.id = rc.id
@@ -300,10 +335,6 @@ INSERT INTO reporting.completeness ( id, name)
     LEFT JOIN reporting.completeness rc ON rc.id = sc.id
   WHERE rc.id IS NULL;
 
-DELETE rc FROM reporting.completeness rc
-WHERE NOT EXISTS(SELECT id FROM staging_completeness WHERE id = rc.id);
-
-
 -- ------------ Administration Condition ---------------------------------------------------------
 UPDATE reporting.administration_condition rac
   JOIN staging_administration_condition sac ON sac.id = rac.id
@@ -317,9 +348,6 @@ INSERT INTO reporting.administration_condition ( id, name)
   FROM staging_administration_condition sac
     LEFT JOIN reporting.administration_condition rac ON rac.id = sac.id
   WHERE rac.id IS NULL;
-
-DELETE rac FROM reporting.administration_condition rac
-WHERE NOT EXISTS(SELECT id FROM staging_administration_condition WHERE id = rac.id);
 
 
 -- ------------ Ethnicity ------------------------------------------------------------------------
@@ -336,9 +364,6 @@ INSERT INTO reporting.ethnicity ( id, name)
     LEFT JOIN reporting.ethnicity re ON re.id = se.id
   WHERE re.id IS NULL;
 
-DELETE re FROM reporting.ethnicity re
-WHERE NOT EXISTS(SELECT id FROM staging_ethnicity WHERE id = re.id);
-
 
 -- ------------ Gender ------------------------------------------------------------------------
 UPDATE reporting.gender rg
@@ -354,9 +379,6 @@ INSERT INTO reporting.gender ( id, name)
     LEFT JOIN reporting.gender rg ON rg.id = sg.id
   WHERE rg.id IS NULL;
 
-DELETE rg FROM reporting.gender rg
-WHERE NOT EXISTS(SELECT id FROM staging_gender WHERE id = rg.id);
-
 
 -- ------------ Accommodation ------------------------------------------------------------------------
 UPDATE reporting.accommodation ra
@@ -371,9 +393,6 @@ INSERT INTO reporting.accommodation ( id, code)
   FROM staging_accommodation sa
     LEFT JOIN reporting.accommodation ra ON ra.id = sa.id
   WHERE ra.id IS NULL;
-
-DELETE ra FROM reporting.accommodation ra
-WHERE NOT EXISTS(SELECT id FROM staging_accommodation WHERE id = ra.id);
 
 
 -- ------------ Claim ------------------------------------------------------------------------
@@ -396,10 +415,6 @@ INSERT INTO reporting.claim ( id, subject_id, code, name, description)
     LEFT JOIN reporting.claim rc ON rc.id = sc.id
   WHERE rc.id IS NULL;
 
-DELETE rc FROM reporting.claim rc
-WHERE NOT EXISTS(SELECT id FROM staging_claim WHERE id = rc.id);
-
-
 -- ------------ Subject Claim Score --------------------------------------------------------------------
 UPDATE reporting.subject_claim_score rc
   JOIN staging_subject_claim_score sc ON sc.id = rc.id
@@ -420,10 +435,6 @@ INSERT INTO reporting.subject_claim_score ( id, subject_id, asmt_type_id, code, 
     LEFT JOIN reporting.subject_claim_score rc ON rc.id = sc.id
   WHERE rc.id IS NULL;
 
-DELETE rc FROM reporting.subject_claim_score rc
-WHERE NOT EXISTS(SELECT id FROM staging_subject_claim_score WHERE id = rc.id);
-
-
 -- ------------ Target ---------------------------------------------------------------------------
 UPDATE reporting.target rt
   JOIN staging_target st ON st.id = rt.id
@@ -441,10 +452,6 @@ INSERT INTO reporting.target ( id, claim_id, code, description)
   FROM staging_target st
     LEFT JOIN reporting.target rt ON rt.id = st.id
   WHERE rt.id IS NULL;
-
-DELETE rt FROM reporting.target rt
-WHERE NOT EXISTS(SELECT id FROM staging_target WHERE id = rt.id);
-
 
 -- ------------ Depth of knowledge ---------------------------------------------------------------------------
 UPDATE reporting.depth_of_knowledge rdok
@@ -466,9 +473,6 @@ INSERT INTO reporting.depth_of_knowledge ( id, level, subject_id, description, r
     LEFT JOIN reporting.depth_of_knowledge rdok ON rdok.id = sdok.id
   WHERE rdok.id IS NULL;
 
-DELETE rdok FROM reporting.depth_of_knowledge rdok
-WHERE NOT EXISTS(SELECT id FROM staging_depth_of_knowledge WHERE id = rdok.id);
-
 
 -- ------------ Math Practice ---------------------------------------------------------------------------
 UPDATE reporting.math_practice rmp
@@ -484,9 +488,6 @@ INSERT INTO reporting.math_practice ( practice, description)
     LEFT JOIN reporting.math_practice rmp ON rmp.practice = smp.practice
   WHERE rmp.practice IS NULL;
 
-DELETE rmp FROM reporting.math_practice rmp
-WHERE NOT EXISTS(SELECT practice FROM staging_math_practice WHERE practice = rmp.practice);
-
 
 -- ------------ Item Trait Score ---------------------------------------------------------------------------
 UPDATE reporting.item_trait_score rit
@@ -501,9 +502,6 @@ INSERT INTO reporting.item_trait_score ( id, dimension)
   FROM staging_item_trait_score sit
     LEFT JOIN reporting.item_trait_score rit ON rit.id = sit.id
   WHERE rit.id IS NULL;
-
-DELETE rit FROM reporting.item_trait_score rit
-WHERE NOT EXISTS(SELECT id FROM staging_item_trait_score WHERE id = rit.id);
 
 
 -- ------------ Item Difficulty Cuts ---------------------------------------------------------------------------
@@ -528,12 +526,18 @@ INSERT INTO reporting.item_difficulty_cuts (id, asmt_type_id, subject_id, grade_
     LEFT JOIN reporting.item_difficulty_cuts ridc ON ridc.id = sidc.id
   WHERE ridc.id IS NULL;
 
-DELETE ridc FROM reporting.item_difficulty_cuts ridc
-WHERE NOT EXISTS(SELECT id FROM staging_item_difficulty_cuts WHERE id = ridc.id);
 
 -- -----------------------------------------------------------------------------------------
 -- handle delete first
 -- -----------------------------------------------------------------------------------------
+
+-- Student Group ----------------------------------------------------------------------------
+DELETE from reporting.student_group_membership WHERE student_group_id IN
+        (SELECT id FROM staging_student_group WHERE deleted = 1 or active = 0);
+DELETE from reporting.user_student_group WHERE student_group_id IN
+        (SELECT id FROM staging_student_group WHERE deleted = 1 or active = 0);
+DELETE FROM reporting.student_group WHERE id IN
+        (SELECT id FROM staging_student_group WHERE deleted = 1 or active = 0);
 
 -- School  ---------------------------------------------------------------------------------
 -- student groups and exams depend on the school.
@@ -635,9 +639,66 @@ INSERT INTO reporting.student (id, ssid, last_or_surname, first_name, middle_nam
     LEFT JOIN reporting.student rs ON rs.id = ss.id
   WHERE rs.id IS NULL and ss.deleted = 0;
 
+-- TODO: clean this up:
 DELETE FROM reporting.student_ethnicity WHERE student_id in (SELECT id FROM staging_student);
 INSERT INTO reporting.student_ethnicity( id, student_id, ethnicity_id)
   SELECT id, student_id, ethnicity_id from staging_student_ethnicity;
+
+
+-- Student Group ---------------------------------------------------------------------------
+UPDATE reporting.student_group rsg
+  JOIN staging_student_group ssg ON ssg.id = rsg.id
+SET
+  rsg.name = ssg.name,
+  rsg.school_id = ssg.school_id,
+  rsg.school_year = ssg.school_year,
+  rsg.subject_id = ssg.subject_id,
+  rsg.creator = ssg.creator,
+  rsg.created = ssg.created,
+  rsg.import_id = ssg.import_id
+WHERE ssg.deleted = 0 AND ssg.active = 1;
+
+INSERT INTO reporting.student_group (id, name, school_id, school_year, subject_id, creator, created, import_id)
+  SELECT
+    ssg.id,
+    ssg.name,
+    ssg.school_id,
+    ssg.school_year,
+    ssg.subject_id,
+    ssg.creator,
+    ssg.created,
+    ssg.import_id
+  FROM staging_student_group ssg
+    LEFT JOIN reporting.student_group rsg ON rsg.id = ssg.id
+  WHERE rsg.id IS NULL AND ssg.deleted = 0 AND ssg.active = 1;
+
+INSERT INTO reporting.student_group_membership ( student_group_id, student_id)
+  SELECT
+    ssgm.student_group_id,
+    ssgm.student_id
+  FROM staging_student_group_membership ssgm
+    LEFT JOIN reporting.student_group_membership rsgm
+      ON (rsgm.student_group_id = ssgm.student_group_id AND rsgm.student_id = ssgm.student_id)
+  WHERE rsgm.student_group_id IS NULL;
+
+DELETE rsgm FROM reporting.student_group_membership rsgm
+  WHERE student_group_id in (select id from staging_student_group where deleted = 0 and active = 1)
+                    AND NOT EXISTS(SELECT student_group_id FROM staging_student_group_membership
+                                      WHERE student_group_id = rsgm.student_group_id AND student_id = rsgm.student_id);
+
+INSERT INTO reporting.user_student_group ( student_group_id, user_login)
+  SELECT
+    susg.student_group_id,
+    susg.user_login
+  FROM staging_user_student_group susg
+    LEFT JOIN reporting.user_student_group rusg
+      ON (rusg.student_group_id = susg.student_group_id AND rusg.user_login = susg.user_login)
+  WHERE rusg.student_group_id IS NULL;
+
+DELETE rsug FROM reporting.user_student_group rsug
+  WHERE student_group_id in (select id from staging_student_group where deleted = 0 and active = 1)
+      AND NOT EXISTS(SELECT student_group_id FROM staging_user_student_group
+                        WHERE student_group_id = rsug.student_group_id AND user_login = rsug.user_login);
 
 -- Assessment ------------------------------------------------------------------------------
 UPDATE reporting.asmt ra
@@ -732,3 +793,49 @@ INSERT INTO reporting.item ( id, claim_id, target_id, natural_id, asmt_id, math_
 DELETE ri FROM reporting.item ri
 WHERE ri.asmt_id in (select id from staging_asmt where deleted = 0)
       AND  NOT EXISTS(SELECT id FROM staging_item WHERE id = ri.id);
+
+-- Remove codes (step 3 for code migration) ----------------------------------------------------------------
+DELETE rs FROM reporting.subject rs
+WHERE NOT EXISTS(SELECT id FROM staging_subject WHERE id = rs.id);
+
+DELETE rg FROM reporting.grade rg
+WHERE NOT EXISTS(SELECT id FROM staging_grade WHERE id = rg.id);
+
+DELETE rat FROM reporting.asmt_type rat
+WHERE NOT EXISTS(SELECT id FROM staging_asmt_type WHERE id = rat.id);
+
+DELETE rc FROM reporting.completeness rc
+WHERE NOT EXISTS(SELECT id FROM staging_completeness WHERE id = rc.id);
+
+DELETE rac FROM reporting.administration_condition rac
+WHERE NOT EXISTS(SELECT id FROM staging_administration_condition WHERE id = rac.id);
+
+DELETE re FROM reporting.ethnicity re
+WHERE NOT EXISTS(SELECT id FROM staging_ethnicity WHERE id = re.id);
+
+DELETE rg FROM reporting.gender rg
+WHERE NOT EXISTS(SELECT id FROM staging_gender WHERE id = rg.id);
+
+DELETE ra FROM reporting.accommodation ra
+WHERE NOT EXISTS(SELECT id FROM staging_accommodation WHERE id = ra.id);
+
+DELETE rc FROM reporting.claim rc
+WHERE NOT EXISTS(SELECT id FROM staging_claim WHERE id = rc.id);
+
+DELETE rc FROM reporting.subject_claim_score rc
+WHERE NOT EXISTS(SELECT id FROM staging_subject_claim_score WHERE id = rc.id);
+
+DELETE rt FROM reporting.target rt
+WHERE NOT EXISTS(SELECT id FROM staging_target WHERE id = rt.id);
+
+DELETE rdok FROM reporting.depth_of_knowledge rdok
+WHERE NOT EXISTS(SELECT id FROM staging_depth_of_knowledge WHERE id = rdok.id);
+
+DELETE rmp FROM reporting.math_practice rmp
+WHERE NOT EXISTS(SELECT practice FROM staging_math_practice WHERE practice = rmp.practice);
+
+DELETE rit FROM reporting.item_trait_score rit
+WHERE NOT EXISTS(SELECT id FROM staging_item_trait_score WHERE id = rit.id);
+
+DELETE ridc FROM reporting.item_difficulty_cuts ridc
+WHERE NOT EXISTS(SELECT id FROM staging_item_difficulty_cuts WHERE id = ridc.id);
