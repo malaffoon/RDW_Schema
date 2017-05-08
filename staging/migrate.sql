@@ -3,10 +3,10 @@ use staging;
 -- MOVE FROM WAREHOUSE TO STAGING
 -- -----------------------------------------------------------------------------------------
 -- TODO: this is a temp hack/simulation that I needed to test
-TRUNCATE TABLE reporting.migrate;
+DELETE FROM reporting.migrate WHERE id = -11;
 -- In the real life this will be done at the beginning of the migration
 INSERT INTO reporting.migrate (id, status, first_import_id, last_import_id)
-VALUES (11, 10, 100, 1100);
+VALUES (-11, 10, -1, -1);
 
 -- TODO: the steps below will be controlled by the migrate job and will be driven by the type of the import content
 -- -----------------------------------------------------------------------------------------
@@ -115,7 +115,7 @@ INSERT INTO staging_district (id, natural_id, name, migrate_id)
     wd.id,
     wd.natural_id,
     wd.name,
-    11 -- TODO: this id will be passed in from the previous migrate task
+    -11 -- TODO: this id will be passed in from the previous migrate task
   FROM warehouse.district wd
   WHERE EXISTS(
       SELECT id from warehouse.school ws
@@ -132,7 +132,7 @@ INSERT INTO staging_school (id, natural_id, name, import_id, deleted, district_i
     ws.import_id,
     ws.deleted,
     ws.district_id,
-    11 -- TODO: this id will be passed in from the previous migrate task
+    -11 -- TODO: this id will be passed in from the previous migrate task
   FROM warehouse.school ws
     JOIN warehouse.district wd ON wd.id = ws.district_id
   WHERE
@@ -155,7 +155,7 @@ INSERT INTO staging_student (id, ssid, last_or_surname, first_name, middle_name,
     ws.birthday,
     ws.import_id,
     ws.deleted,
-    11 -- TODO: this id will be passed in from the previous migrate task
+    -11 -- TODO: this id will be passed in from the previous migrate task
   FROM warehouse.student ws
   WHERE
     -- TODO: this ids will be passed in from the previous migrate task
@@ -188,7 +188,7 @@ INSERT INTO  staging_student_group ( id, name, school_id, school_year, subject_i
     wsg.created,
     wsg.import_id,
     wsg.deleted,
-    11 -- TODO: this id will be passed in from the previous migrate task
+    -11 -- TODO: this id will be passed in from the previous migrate task
   FROM warehouse.student_group wsg
   WHERE
     -- TODO: this ids will be passed in from the previous migrate task
@@ -232,7 +232,7 @@ INSERT INTO staging_asmt ( id, natural_id, grade_id, type_id, subject_id, school
     wa.version,
     wa.import_id,
     wa.deleted,
-    11 -- TODO: this id will be passed in from the previous migrate task
+    -11 -- TODO: this id will be passed in from the previous migrate task
   FROM warehouse.asmt wa
   WHERE
     -- TODO: this ids will be passed in from the previous migrate task
@@ -247,7 +247,7 @@ INSERT INTO staging_asmt_score ( asmt_id, cut_point_1, cut_point_2, cut_point_3,
     round(was.cut_point_3),
     round(was.min_score),
     round(was.max_score),
-    11 -- TODO: this id will be passed in from the previous migrate task
+    -11 -- TODO: this id will be passed in from the previous migrate task
   FROM warehouse.asmt_score  was
     JOIN warehouse.asmt wa ON wa.id = was.asmt_id
   WHERE
@@ -268,7 +268,7 @@ INSERT INTO staging_item ( id, claim_id, target_id, natural_id, asmt_id, math_pr
     wi.dok_id,
     wi.difficulty,
     round(wi.max_points),
-    11 -- TODO: this id will be passed in from the previous migrate task
+    -11 -- TODO: this id will be passed in from the previous migrate task
   FROM warehouse.item  wi
     JOIN warehouse.asmt wa ON wa.id = wi.asmt_id
   WHERE
@@ -296,7 +296,7 @@ INSERT INTO staging_iab_exam_student (id, grade_id, student_id, school_id, iep, 
     wies.t3_program_type,
     wies.language_code,
     wies.prim_disability_type,
-    11 -- TODO: this id will be passed in from the previous migrate task
+    -11 -- TODO: this id will be passed in from the previous migrate task
   FROM warehouse.iab_exam  wie
     JOIN warehouse.iab_exam_student wies ON wie.iab_exam_student_id = wies.id
   WHERE
@@ -325,7 +325,7 @@ INSERT INTO staging_iab_exam (id, iab_exam_student_id, school_year, asmt_id, asm
     wie.completed_at,
     wie.deleted,
     wie.import_id,
-    11 -- TODO: this id will be passed in from the previous migrate task
+    -11 -- TODO: this id will be passed in from the previous migrate task
   FROM warehouse.iab_exam wie
   WHERE
     -- TODO: this ids will be passed in from the previous migrate task
@@ -350,7 +350,7 @@ INSERT INTO staging_iab_exam_item (id, iab_exam_id, item_id, score, score_status
     wiei.trait_organization_purpose_score_status,
     round(wiei.trait_conventions_score),
     wiei.trait_conventions_score_status,
-    11 -- TODO: this id will be passed in from the previous migrate task
+    -11 -- TODO: this id will be passed in from the previous migrate task
   FROM warehouse.iab_exam_item wiei
     JOIN warehouse.iab_exam wie ON wiei.iab_exam_id = wie.id
   WHERE
@@ -392,7 +392,7 @@ INSERT INTO staging_exam_student (id, grade_id, student_id, school_id, iep, lep,
     wes.t3_program_type,
     wes.language_code,
     wes.prim_disability_type,
-    11 -- TODO: this id will be passed in from the previous migrate task
+    -11 -- TODO: this id will be passed in from the previous migrate task
   FROM warehouse.exam  we
     JOIN warehouse.exam_student wes ON we.exam_student_id = wes.id
   WHERE
@@ -420,7 +420,7 @@ INSERT INTO staging_exam (id, exam_student_id, school_year, asmt_id, asmt_versio
     we.completed_at,
     we.deleted,
     we.import_id,
-    11 -- TODO: this id will be passed in from the previous migrate task
+    -11 -- TODO: this id will be passed in from the previous migrate task
   FROM warehouse.exam we
   WHERE
     -- TODO: this ids will be passed in from the previous migrate task
@@ -444,7 +444,7 @@ INSERT INTO staging_exam_item (id, exam_id, item_id, score, score_status, positi
     wei.trait_organization_purpose_score_status,
     round(wei.trait_conventions_score),
     wei.trait_conventions_score_status,
-    11 -- TODO: this id will be passed in from the previous migrate task
+    -11 -- TODO: this id will be passed in from the previous migrate task
   FROM warehouse.exam_item wei
     JOIN warehouse.exam we ON wei.exam_id = we.id
   WHERE
@@ -1415,3 +1415,12 @@ WHERE NOT EXISTS(SELECT id FROM staging_item_trait_score WHERE id = rit.id);
 
 DELETE ridc FROM reporting.item_difficulty_cuts ridc
 WHERE NOT EXISTS(SELECT id FROM staging_item_difficulty_cuts WHERE id = ridc.id);
+
+UPDATE reporting.migrate
+ SET
+   status = 20,
+   updated = CURRENT_TIMESTAMP,
+   message = 'manual migrate'
+WHERE id = -11;
+
+select * from reporting.migrate where id = -11;
