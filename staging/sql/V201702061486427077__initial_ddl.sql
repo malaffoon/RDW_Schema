@@ -8,21 +8,10 @@ USE `${schemaName}`;
 
 /** Code tables **/
 
-CREATE TABLE IF NOT EXISTS staging_subject (
-  id tinyint NOT NULL PRIMARY KEY,
-  name varchar(10) NOT NULL
-);
-
 CREATE TABLE IF NOT EXISTS staging_grade (
   id tinyint NOT NULL PRIMARY KEY,
   code varchar(2) NOT NULL,
   name varchar(100) NOT NULL
-);
-
-CREATE TABLE IF NOT EXISTS staging_asmt_type (
-  id tinyint NOT NULL PRIMARY KEY,
-  code varchar(10) NOT NULL,
-  name varchar(24) NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS staging_completeness (
