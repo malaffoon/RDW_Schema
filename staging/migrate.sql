@@ -12,9 +12,7 @@ VALUES (-11, 10, -1, -1);
 -- -----------------------------------------------------------------------------------------
 -- clean up
 -- -----------------------------------------------------------------------------------------
-TRUNCATE TABLE staging_subject;
 TRUNCATE TABLE staging_grade;
-TRUNCATE TABLE staging_asmt_type;
 TRUNCATE TABLE staging_completeness;
 TRUNCATE TABLE staging_administration_condition;
 TRUNCATE TABLE staging_ethnicity;
@@ -62,14 +60,8 @@ TRUNCATE TABLE staging_item;
 -- Since this should be a very infrequent event, we will just synchronize all the data
 -- It is assumed that the data warehouse does all the hard work of insuring that
 -- nothing will break if a code is modified
-INSERT INTO staging_subject (id, name)
-  SELECT id, name from warehouse.subject;
-
 INSERT INTO staging_grade (id, code, name)
   SELECT id, code, name from warehouse.grade;
-
-INSERT INTO staging_asmt_type (id, code, name)
-  SELECT id, code, name from warehouse.asmt_type;
 
 INSERT INTO staging_completeness (id, name)
   SELECT id, name from warehouse.completeness;
@@ -489,19 +481,6 @@ INSERT INTO staging_exam_claim_score (id, exam_id, subject_claim_score_id, scale
 -- step 2: insert new codes
 -- step 3: remove codes that do not exists in the staging/warehouse
 -- the last step must be done after all other migration to make sure that the code can be safely removed
--- ------------ Subject --------------------------------------------------------------------
-UPDATE reporting.subject rs
-  JOIN staging_subject ss ON ss.id = rs.id
-SET
-  rs.name = ss.name;
-
-INSERT INTO reporting.subject ( id, name)
-  SELECT
-    ss.id,
-    ss.name
-  FROM staging_subject ss
-    LEFT JOIN reporting.subject rs ON rs.id = ss.id
-  WHERE rs.id IS NULL;
 
 -- ------------ Grade --------------------------------------------------------------------
 UPDATE reporting.grade rg
@@ -519,21 +498,6 @@ INSERT INTO reporting.grade ( id, code, name)
     LEFT JOIN reporting.grade rg ON rg.id = sg.id
   WHERE rg.id IS NULL;
 
--- ------------ Asmt Type --------------------------------------------------------------------
-UPDATE reporting.asmt_type rat
-  JOIN staging_asmt_type sat ON sat.id = rat.id
-SET
-  rat.name = sat.name,
-  rat.code = sat.code;
-
-INSERT INTO reporting.asmt_type ( id, code, name)
-  SELECT
-    sat.id,
-    sat.code,
-    sat.name
-  FROM staging_asmt_type sat
-    LEFT JOIN reporting.asmt_type rat ON rat.id = sat.id
-  WHERE rat.id IS NULL;
 
 -- ------------ Completeness --------------------------------------------------------------------
 UPDATE reporting.completeness rc
@@ -1371,14 +1335,8 @@ WHERE exam_id in (select id from staging_exam where deleted = 0)
 WHERE exam_id = r.exam_id AND accommodation_id = r.accommodation_id);
 
 -- Remove codes (step 3 for code migration) ----------------------------------------------------------------
-DELETE rs FROM reporting.subject rs
-WHERE NOT EXISTS(SELECT id FROM staging_subject WHERE id = rs.id);
-
 DELETE rg FROM reporting.grade rg
 WHERE NOT EXISTS(SELECT id FROM staging_grade WHERE id = rg.id);
-
-DELETE rat FROM reporting.asmt_type rat
-WHERE NOT EXISTS(SELECT id FROM staging_asmt_type WHERE id = rat.id);
 
 DELETE rc FROM reporting.completeness rc
 WHERE NOT EXISTS(SELECT id FROM staging_completeness WHERE id = rc.id);
