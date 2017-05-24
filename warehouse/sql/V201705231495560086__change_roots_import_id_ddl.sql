@@ -2,41 +2,47 @@
 
 USE ${schemaName};
 
-ALTER TABLE asmt ADD upd_import_id bigint,
-    ADD CONSTRAINT fk__asmt__upd_import_id FOREIGN KEY (upd_import_id) REFERENCES import(id);
-UPDATE asmt SET upd_import_id = import_id;
-ALTER TABLE asmt MODIFY upd_import_id bigint NOT NULL;
-ALTER TABLE asmt ADD INDEX idx__asmt_imports_deleted (import_id, upd_import_id, deleted);
+ALTER TABLE asmt ADD update_import_id bigint,
+    ADD CONSTRAINT fk__asmt__upd_import_id FOREIGN KEY (update_import_id) REFERENCES import(id);
+UPDATE asmt SET update_import_id = import_id;
+ALTER TABLE asmt MODIFY update_import_id bigint NOT NULL;
+-- TODO: revisit this index
+ALTER TABLE asmt ADD INDEX idx__asmt_imports_deleted (import_id, update_import_id, deleted);
 
-ALTER TABLE school ADD upd_import_id bigint NOT NULL,
-    ADD CONSTRAINT fk__school__upd_import_id FOREIGN KEY (upd_import_id) REFERENCES import(id);
-UPDATE school SET upd_import_id = import_id;
-ALTER TABLE school MODIFY upd_import_id bigint NOT NULL;
-ALTER TABLE school ADD INDEX idx__asmt_imports_deleted (import_id, upd_import_id, deleted);
+ALTER TABLE school ADD update_import_id bigint,
+    ADD CONSTRAINT fk__school__upd_import_id FOREIGN KEY (update_import_id) REFERENCES import(id);
+UPDATE school SET update_import_id = import_id;
+ALTER TABLE school MODIFY update_import_id bigint NOT NULL;
+-- TODO: revisit this index
+ALTER TABLE school ADD INDEX idx__asmt_imports_deleted (import_id, update_import_id, deleted);
 
-ALTER TABLE student ADD upd_import_id bigint NOT NULL,
-    ADD CONSTRAINT fk__student__upd_import_id FOREIGN KEY (upd_import_id) REFERENCES import(id);
-UPDATE student SET upd_import_id = import_id;
-ALTER TABLE student MODIFY upd_import_id bigint NOT NULL;
-ALTER TABLE student ADD INDEX idx__asmt_imports_deleted (import_id, upd_import_id, deleted);
+ALTER TABLE student ADD update_import_id bigint,
+    ADD CONSTRAINT fk__student__upd_import_id FOREIGN KEY (update_import_id) REFERENCES import(id);
+UPDATE student SET update_import_id = import_id;
+ALTER TABLE student MODIFY update_import_id bigint NOT NULL;
+-- TODO: revisit this index
+ALTER TABLE student ADD INDEX idx__asmt_imports_deleted (import_id, update_import_id, deleted);
 
-ALTER TABLE student_group ADD upd_import_id bigint NOT NULL,
-    ADD CONSTRAINT fk__student_group__upd_import_id FOREIGN KEY (upd_import_id) REFERENCES import(id);
-UPDATE student_group SET upd_import_id = import_id;
-ALTER TABLE student_group MODIFY upd_import_id bigint NOT NULL;
-ALTER TABLE student_group ADD INDEX idx__asmt_imports_deleted (import_id, upd_import_id, deleted, active);
+ALTER TABLE student_group ADD update_import_id bigint,
+    ADD CONSTRAINT fk__student_group__upd_import_id FOREIGN KEY (update_import_id) REFERENCES import(id);
+UPDATE student_group SET update_import_id = import_id;
+ALTER TABLE student_group MODIFY update_import_id bigint;
+-- TODO: revisit this index
+ALTER TABLE student_group ADD INDEX idx__asmt_imports_deleted (import_id, update_import_id, deleted, active);
 
-ALTER TABLE iab_exam ADD upd_import_id bigint NOT NULL,
-    ADD CONSTRAINT fk__iab_exam__upd_import_id FOREIGN KEY (upd_import_id) REFERENCES import(id);
-UPDATE iab_exam SET upd_import_id = import_id;
-ALTER TABLE iab_exam MODIFY upd_import_id bigint NOT NULL;
-ALTER TABLE iab_exam ADD INDEX idx__asmt_imports_deleted (import_id, upd_import_id, deleted);
+ALTER TABLE iab_exam ADD update_import_id bigint,
+    ADD CONSTRAINT fk__iab_exam__upd_import_id FOREIGN KEY (update_import_id) REFERENCES import(id);
+UPDATE iab_exam SET update_import_id = import_id;
+ALTER TABLE iab_exam MODIFY update_import_id bigint NOT NULL;
+-- TODO: revisit this index
+ALTER TABLE iab_exam ADD INDEX idx__asmt_imports_deleted (import_id, update_import_id, deleted);
 
-ALTER TABLE exam ADD upd_import_id bigint NOT NULL,
-    ADD CONSTRAINT fk__exam__upd_import_id FOREIGN KEY (upd_import_id) REFERENCES import(id);
-UPDATE exam SET upd_import_id = import_id;
-ALTER TABLE exam MODIFY upd_import_id bigint NOT NULL;
-ALTER TABLE exam ADD INDEX idx__asmt_imports_deleted (import_id, upd_import_id, deleted);
+ALTER TABLE exam ADD update_import_id bigint,
+    ADD CONSTRAINT fk__exam__upd_import_id FOREIGN KEY (update_import_id) REFERENCES import(id);
+UPDATE exam SET update_import_id = import_id;
+ALTER TABLE exam MODIFY update_import_id bigint NOT NULL;
+-- TODO: revisit this index
+ALTER TABLE exam ADD INDEX idx__asmt_imports_deleted (import_id, update_import_id, deleted);
 
 /************************************* Stored procedures ***************************************/
 
@@ -93,11 +99,11 @@ CREATE PROCEDURE student_upsert(IN  p_ssid                          VARCHAR(65),
           lep_entry_at                  = p_lep_entry_at,
           lep_exit_at                   = p_lep_exit_at,
           birthday                      = p_birthday,
-          upd_import_id                 = p_import_id
+          update_import_id                 = p_import_id
         WHERE id = p_id;
       END IF;
     ELSE
-      INSERT INTO student (ssid, last_or_surname, first_name, middle_name, gender_id, first_entry_into_us_school_at, lep_entry_at, lep_exit_at, birthday, import_id, upd_import_id)
+      INSERT INTO student (ssid, last_or_surname, first_name, middle_name, gender_id, first_entry_into_us_school_at, lep_entry_at, lep_exit_at, birthday, import_id, update_import_id)
       VALUES (p_ssid, p_last_or_surname, p_first_name, p_middle_name, p_gender_id, p_first_entry_into_us_school_at, p_lep_entry_at, p_lep_exit_at, p_birthday, p_import_id, p_import_id);
 
       SELECT id INTO p_id FROM student WHERE ssid = p_ssid;
@@ -180,13 +186,13 @@ CREATE PROCEDURE school_upsert(IN  p_district_name       VARCHAR(100),
           name            = p_name,
           natural_id      = p_natural_id,
           district_id     = p_district_id,
-          upd_import_id   = p_import_id
+          update_import_id   = p_import_id
         WHERE id = p_id;
 
       END IF;
 
     ELSE
-      INSERT INTO school (district_id, name, natural_id, import_id, upd_import_id)
+      INSERT INTO school (district_id, name, natural_id, import_id, update_import_id)
       VALUES (p_district_id, p_name, p_natural_id, p_import_id, p_import_id);
 
       SELECT id INTO p_id FROM school WHERE natural_id = p_natural_id;
