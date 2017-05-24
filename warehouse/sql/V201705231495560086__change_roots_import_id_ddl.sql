@@ -26,7 +26,7 @@ ALTER TABLE student ADD INDEX idx__asmt_imports_deleted (import_id, update_impor
 ALTER TABLE student_group ADD update_import_id bigint,
     ADD CONSTRAINT fk__student_group__upd_import_id FOREIGN KEY (update_import_id) REFERENCES import(id);
 UPDATE student_group SET update_import_id = import_id;
-ALTER TABLE student_group MODIFY update_import_id bigint;
+ALTER TABLE student_group MODIFY update_import_id bigint NOT NULL;
 -- TODO: revisit this index
 ALTER TABLE student_group ADD INDEX idx__asmt_imports_deleted (import_id, update_import_id, deleted, active);
 
