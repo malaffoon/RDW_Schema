@@ -120,7 +120,7 @@ CREATE TABLE IF NOT EXISTS asmt (
   CONSTRAINT fk__asmt__type FOREIGN KEY (type_id) REFERENCES asmt_type(id),
   CONSTRAINT fk__asmt__subject FOREIGN KEY (subject_id) REFERENCES subject(id),
   CONSTRAINT fk__asmt__import FOREIGN KEY (import_id) REFERENCES import(id),
-  CONSTRAINT fk__asmt__update_import_id FOREIGN KEY (update_import_id) REFERENCES import(id)
+  CONSTRAINT fk__asmt__update_import FOREIGN KEY (update_import_id) REFERENCES import(id)
 );
 -- TODO: revisit this index
 ALTER TABLE asmt ADD INDEX idx__asmt_imports_deleted (import_id, update_import_id, deleted);
@@ -225,10 +225,15 @@ CREATE TABLE IF NOT EXISTS school (
   natural_id varchar(40) NOT NULL UNIQUE,
   name varchar(100) NOT NULL,
   import_id bigint NOT NULL,
+  update_import_id bigint NOT NULL,
   deleted tinyint NOT NULL DEFAULT 0,
   CONSTRAINT fk__school__district FOREIGN KEY (district_id) REFERENCES district(id),
-  CONSTRAINT fk__school__import FOREIGN KEY (import_id) REFERENCES import(id)
+  CONSTRAINT fk__school__import FOREIGN KEY (import_id) REFERENCES import(id),
+  CONSTRAINT fk__school__update_import FOREIGN KEY (update_import_id) REFERENCES import(id)
 );
+-- TODO: revisit this index
+ALTER TABLE school ADD INDEX idx__school_imports_deleted (import_id, update_import_id, deleted);
+
 
 CREATE TABLE IF NOT EXISTS state (
   code varchar(2) NOT NULL UNIQUE
@@ -252,7 +257,7 @@ CREATE TABLE IF NOT EXISTS student (
   update_import_id bigint NOT NULL,
   deleted tinyint NOT NULL DEFAULT 0,
   CONSTRAINT fk__student__import FOREIGN KEY (import_id) REFERENCES import(id),
-  CONSTRAINT fk__student__update_import_id FOREIGN KEY (update_import_id) REFERENCES import(id)
+  CONSTRAINT fk__student__update_import FOREIGN KEY (update_import_id) REFERENCES import(id)
  );
 -- TODO: revisit this index
 ALTER TABLE student ADD INDEX idx__asmt_imports_deleted (import_id, update_import_id, deleted);
@@ -278,9 +283,8 @@ CREATE TABLE IF NOT EXISTS student_group (
   CONSTRAINT fk__student_group__school FOREIGN KEY (school_id) REFERENCES school(id),
   CONSTRAINT fk__student_group__subject FOREIGN KEY (subject_id) REFERENCES subject(id),
   CONSTRAINT fk__student_group__import FOREIGN KEY (import_id) REFERENCES import(id),
-  CONSTRAINT fk__student_group__update_import_id FOREIGN KEY (update_import_id) REFERENCES import(id)
+  CONSTRAINT fk__student_group__update_import FOREIGN KEY (update_import_id) REFERENCES import(id)
 );
-
 -- TODO: revisit this index
 ALTER TABLE student_group ADD INDEX idx__asmt_imports_deleted (import_id, update_import_id, deleted, active);
 
@@ -340,9 +344,8 @@ CREATE TABLE IF NOT EXISTS iab_exam (
   CONSTRAINT fk__iab_exam__iab_exam_student FOREIGN KEY (iab_exam_student_id) REFERENCES iab_exam_student(id),
   CONSTRAINT fk__iab_exam__asmt FOREIGN KEY (asmt_id) REFERENCES asmt(id),
   CONSTRAINT fk__iab_exam__import FOREIGN KEY (import_id) REFERENCES import(id),
-  CONSTRAINT fk__iab_exam__update_import_id FOREIGN KEY (update_import_id) REFERENCES import(id)
+  CONSTRAINT fk__iab_exam__update_import FOREIGN KEY (update_import_id) REFERENCES import(id)
 );
-
 -- TODO: revisit this index
 ALTER TABLE iab_exam ADD INDEX idx__asmt_imports_deleted (import_id, update_import_id, deleted);
 
@@ -409,7 +412,7 @@ CREATE TABLE IF NOT EXISTS exam (
   CONSTRAINT fk__exam__exam_student FOREIGN KEY (exam_student_id) REFERENCES exam_student(id),
   CONSTRAINT fk__exam__asmt FOREIGN KEY (asmt_id) REFERENCES asmt(id),
   CONSTRAINT fk__exam__import FOREIGN KEY (import_id) REFERENCES import(id),
-  CONSTRAINT fk__exam__update_import_id FOREIGN KEY (update_import_id) REFERENCES import(id)
+  CONSTRAINT fk__exam__update_import FOREIGN KEY (update_import_id) REFERENCES import(id)
 );
 -- TODO: revisit this index
 ALTER TABLE exam ADD INDEX idx__asmt_imports_deleted (import_id, update_import_id, deleted);
