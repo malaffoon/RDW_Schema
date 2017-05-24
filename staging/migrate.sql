@@ -5,8 +5,8 @@ use staging;
 -- TODO: this is a temp hack/simulation that I needed to test
 DELETE FROM reporting.migrate WHERE id = -11;
 -- In the real life this will be done at the beginning of the migration
-INSERT INTO reporting.migrate (id, status, first_import_id, last_import_id)
-VALUES (-11, 10, -1, -1);
+INSERT INTO reporting.migrate (id, job_id, status, first_import_id, last_import_id)
+VALUES (-11, -11, 10, -1, -1);
 
 -- TODO: the steps below will be controlled by the migrate job and will be driven by the type of the import content
 -- -----------------------------------------------------------------------------------------
@@ -110,14 +110,14 @@ INSERT INTO staging_district (id, natural_id, name, migrate_id)
       WHERE district_id = wd.id
             AND ws.deleted = 0 -- delete will be taken care on the 'master' level
             -- TODO: this ids will be passed in from the previous migrate task
-            AND import_id  IN ( SELECT id FROM warehouse.import WHERE id >= -1));
+            AND import_id  IN ( SELECT id FROM warehouse.import WHERE id >= -1)  OR upd_import_id IN ( SELECT id FROM warehouse.import WHERE id >= -1)) ;
 
 INSERT INTO staging_school (id, natural_id, name, import_id, deleted, district_id, migrate_id)
   SELECT
     ws.id,
     ws.natural_id,
     ws.name,
-    ws.import_id,
+    ws.upd_import_id,
     ws.deleted,
     ws.district_id,
     -11 -- TODO: this id will be passed in from the previous migrate task
@@ -125,7 +125,7 @@ INSERT INTO staging_school (id, natural_id, name, import_id, deleted, district_i
     JOIN warehouse.district wd ON wd.id = ws.district_id
   WHERE
     -- TODO: this ids will be passed in from the previous migrate task
-    ws.import_id IN (SELECT id FROM warehouse.import WHERE id >= -1);
+    ws.import_id IN (SELECT id FROM warehouse.import WHERE id >= -1)  OR ws.upd_import_id IN ( SELECT id FROM warehouse.import WHERE id >= -1);
 
 -- Student  ---------------------------------------------------------------------------------
 INSERT INTO staging_student (id, ssid, last_or_surname, first_name, middle_name, gender_id, first_entry_into_us_school_at,
@@ -141,13 +141,14 @@ INSERT INTO staging_student (id, ssid, last_or_surname, first_name, middle_name,
     ws.lep_entry_at,
     ws.lep_exit_at,
     ws.birthday,
-    ws.import_id,
+    ws.upd_import_id,
     ws.deleted,
     -11 -- TODO: this id will be passed in from the previous migrate task
   FROM warehouse.student ws
   WHERE
     -- TODO: this ids will be passed in from the previous migrate task
-    ws.import_id IN (SELECT id FROM warehouse.import WHERE id >= -1);
+    ws.import_id IN (SELECT id FROM warehouse.import WHERE id >= -1)
+    OR ws.upd_import_id IN ( SELECT id FROM warehouse.import WHERE id >= -1);
 
 -- this includes updates/inserts but not deletes
 INSERT INTO staging_student_ethnicity (ethnicity_id, student_id)
@@ -158,7 +159,7 @@ INSERT INTO staging_student_ethnicity (ethnicity_id, student_id)
     JOIN warehouse.student ws ON ws.id = wse.student_id
   WHERE
     -- TODO: this ids will be passed in from the previous migrate task
-    ws.import_id IN (SELECT id FROM warehouse.import WHERE id >= -1)
+    ( ws.import_id IN (SELECT id FROM warehouse.import WHERE id >= -1)  OR ws.upd_import_id IN ( SELECT id FROM warehouse.import WHERE id >= -1))
     AND ws.deleted = 0;  -- delete will be taken care on the 'master' level
 
 -- Student Groups --------------------------------------------------------------------------
@@ -173,13 +174,14 @@ INSERT INTO  staging_student_group ( id, name, school_id, school_year, subject_i
     wsg.active,
     wsg.creator,
     wsg.created,
-    wsg.import_id,
+    wsg.upd_import_id,
     wsg.deleted,
     -11 -- TODO: this id will be passed in from the previous migrate task
   FROM warehouse.student_group wsg
   WHERE
     -- TODO: this ids will be passed in from the previous migrate task
-    wsg.import_id IN (SELECT id FROM warehouse.import WHERE id >= -1);
+    wsg.import_id IN (SELECT id FROM warehouse.import WHERE id >= -1)
+    OR wsg.upd_import_id IN ( SELECT id FROM warehouse.import WHERE id >= -1);
 
 INSERT INTO staging_student_group_membership (student_group_id, student_id)
   SELECT
@@ -189,7 +191,7 @@ INSERT INTO staging_student_group_membership (student_group_id, student_id)
     JOIN warehouse.student_group wsg ON wsg.id= wsgm.student_group_id
   WHERE
     -- TODO: this ids will be passed in from the previous migrate task
-    wsg.import_id IN (SELECT id FROM warehouse.import WHERE id >= -1)
+    ( wsg.import_id IN (SELECT id FROM warehouse.import WHERE id >= -1)  OR wsg.upd_import_id IN ( SELECT id FROM warehouse.import WHERE id >= -1))
     AND ( wsg.deleted = 0 and wsg.active = 1);  -- delete/inactive will be taken care on the 'master' level
 
 INSERT INTO staging_user_student_group (student_group_id, user_login)
@@ -200,7 +202,7 @@ INSERT INTO staging_user_student_group (student_group_id, user_login)
     JOIN warehouse.student_group wsg ON wsg.id= wusg.student_group_id
   WHERE
     -- TODO: this ids will be passed in from the previous migrate task
-    wsg.import_id IN (SELECT id FROM warehouse.import WHERE id >= -1)
+    (wsg.import_id IN (SELECT id FROM warehouse.import WHERE id >= -1)  OR wsg.upd_import_id IN ( SELECT id FROM warehouse.import WHERE id >= -1))
     AND ( wsg.deleted = 0 and wsg.active = 1);  -- delete/inactive will be taken care on the 'master' level
 
 -- Assessment ------------------------------------------------------------------------------
@@ -217,13 +219,14 @@ INSERT INTO staging_asmt ( id, natural_id, grade_id, type_id, subject_id, school
     wa.name,
     wa.label,
     wa.version,
-    wa.import_id,
+    wa.upd_import_id,
     wa.deleted,
     -11 -- TODO: this id will be passed in from the previous migrate task
   FROM warehouse.asmt wa
   WHERE
     -- TODO: this ids will be passed in from the previous migrate task
-    wa.import_id IN (SELECT id FROM warehouse.import WHERE id >= -1);
+    wa.import_id IN (SELECT id FROM warehouse.import WHERE id >= -1)
+    OR wa.upd_import_id IN ( SELECT id FROM warehouse.import WHERE id >= -1);
 
 -- this includes updates/inserts but not deletes
 INSERT INTO staging_asmt_score ( asmt_id, cut_point_1, cut_point_2, cut_point_3, min_score, max_score, migrate_id)
@@ -239,7 +242,7 @@ INSERT INTO staging_asmt_score ( asmt_id, cut_point_1, cut_point_2, cut_point_3,
     JOIN warehouse.asmt wa ON wa.id = was.asmt_id
   WHERE
     -- TODO: this ids will be passed in from the previous migrate task
-    wa.import_id IN (SELECT id FROM warehouse.import WHERE id >= -1)
+    ( wa.import_id IN (SELECT id FROM warehouse.import WHERE id >= -1)  OR wa.upd_import_id IN ( SELECT id FROM warehouse.import WHERE id >= -1))
     AND wa.deleted = 0;  -- delete will be taken care on the 'master' level
 
 INSERT INTO staging_item ( id, claim_id, target_id, natural_id, asmt_id, math_practice, allow_calc, dok_id,
@@ -260,7 +263,7 @@ INSERT INTO staging_item ( id, claim_id, target_id, natural_id, asmt_id, math_pr
     JOIN warehouse.asmt wa ON wa.id = wi.asmt_id
   WHERE
     -- TODO: this ids will be passed in from the previous migrate task
-    wa.import_id IN (SELECT id FROM warehouse.import WHERE id >= -1)
+    (wa.import_id IN (SELECT id FROM warehouse.import WHERE id >= -1) OR upd_import_id IN ( SELECT id FROM warehouse.import WHERE id >= -1))
     AND wa.deleted = 0;  -- delete will be taken care on the 'master' level
 
 -- IAB Exams ------------------------------------------------------------------------------
@@ -288,7 +291,7 @@ INSERT INTO staging_iab_exam_student (id, grade_id, student_id, school_id, iep, 
     JOIN warehouse.iab_exam_student wies ON wie.iab_exam_student_id = wies.id
   WHERE
     -- TODO: this ids will be passed in from the previous migrate task
-    wie.import_id IN (SELECT id FROM warehouse.import WHERE id >= -1)
+    (wie.import_id IN (SELECT id FROM warehouse.import WHERE id >= -1)  OR wie.upd_import_id IN ( SELECT id FROM warehouse.import WHERE id >= -1))
     AND wie.scale_score is not null
     AND wie.deleted = 0; -- delete will be taken care on the 'master' level
 
@@ -310,12 +313,12 @@ INSERT INTO staging_iab_exam (id, iab_exam_student_id, school_year, asmt_id, asm
     wie.scale_score_std_err,
     wie.completed_at,
     wie.deleted,
-    wie.import_id,
+    wie.upd_import_id,
     -11 -- TODO: this id will be passed in from the previous migrate task
   FROM warehouse.iab_exam wie
   WHERE
     -- TODO: this ids will be passed in from the previous migrate task
-    wie.import_id IN (SELECT id FROM warehouse.import WHERE id >= -1)
+    (wie.import_id IN (SELECT id FROM warehouse.import WHERE id >= -1)  OR wie.upd_import_id IN ( SELECT id FROM warehouse.import WHERE id >= -1))
     AND wie.scale_score is not null;
 
 INSERT INTO staging_iab_exam_item (id, iab_exam_id, item_id, score, score_status, position, response,
@@ -383,7 +386,7 @@ INSERT INTO staging_exam_student (id, grade_id, student_id, school_id, iep, lep,
     JOIN warehouse.exam_student wes ON we.exam_student_id = wes.id
   WHERE
     -- TODO: this ids will be passed in from the previous migrate task
-    we.import_id IN (SELECT id FROM warehouse.import WHERE id >= -1)
+    (we.import_id IN (SELECT id FROM warehouse.import WHERE id >= -1)  OR we.upd_import_id IN ( SELECT id FROM warehouse.import WHERE id >= -1))
     AND we.deleted = 0; -- delete will be taken care on the 'master' level
 
 INSERT INTO staging_exam (id, exam_student_id, school_year, asmt_id, asmt_version, opportunity,
@@ -404,12 +407,12 @@ INSERT INTO staging_exam (id, exam_student_id, school_year, asmt_id, asmt_versio
     we.scale_score_std_err,
     we.completed_at,
     we.deleted,
-    we.import_id,
+    we.upd_import_id,
     -11 -- TODO: this id will be passed in from the previous migrate task
   FROM warehouse.exam we
   WHERE
     -- TODO: this ids will be passed in from the previous migrate task
-    we.import_id IN (SELECT id FROM warehouse.import WHERE id >= -1);
+    we.import_id IN (SELECT id FROM warehouse.import WHERE id >= -1)  OR we.upd_import_id IN ( SELECT id FROM warehouse.import WHERE id >= -1);
 
 INSERT INTO staging_exam_item (id, exam_id, item_id, score, score_status, position, response,
                                trait_evidence_elaboration_score, trait_evidence_elaboration_score_status,
@@ -434,7 +437,7 @@ INSERT INTO staging_exam_item (id, exam_id, item_id, score, score_status, positi
     JOIN warehouse.exam we ON wei.exam_id = we.id
   WHERE
     -- TODO: this ids will be passed in from the previous migrate task
-    we.import_id IN (SELECT id FROM warehouse.import WHERE id >= -1)
+    (we.import_id IN (SELECT id FROM warehouse.import WHERE id >= -1)  OR we.upd_import_id IN ( SELECT id FROM warehouse.import WHERE id >= -1))
     AND we.deleted = 0; -- delete will be taken care on the 'master' level
 
 INSERT INTO staging_exam_available_accommodation (exam_id, accommodation_id)
@@ -445,7 +448,7 @@ INSERT INTO staging_exam_available_accommodation (exam_id, accommodation_id)
     JOIN warehouse.exam we ON weaa.exam_id = we.id
   WHERE
     -- TODO: this ids will be passed in from the previous migrate task
-    we.import_id IN (SELECT id FROM warehouse.import WHERE id >= -1)
+    (we.import_id IN (SELECT id FROM warehouse.import WHERE id >= -1)  OR we.upd_import_id IN ( SELECT id FROM warehouse.import WHERE id >= -1))
     AND we.deleted = 0; -- delete will be taken care on the 'master' level
 
 
@@ -461,7 +464,7 @@ INSERT INTO staging_exam_claim_score (id, exam_id, subject_claim_score_id, scale
     JOIN warehouse.exam we ON wecs.exam_id = we.id
   WHERE
     -- TODO: this ids will be passed in from the previous migrate task
-    we.import_id IN (SELECT id FROM warehouse.import WHERE id >= -1)
+    (we.import_id IN (SELECT id FROM warehouse.import WHERE id >= -1)  OR we.upd_import_id IN ( SELECT id FROM warehouse.import WHERE id >= -1))
     AND we.deleted = 0; -- delete will be taken care on the 'master' level
 
 -- -----------------------------------------------------------------------------------------
