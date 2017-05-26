@@ -156,8 +156,8 @@ CREATE TABLE IF NOT EXISTS subject_claim_score (
 
 CREATE TABLE IF NOT EXISTS target (
   id smallint NOT NULL AUTO_INCREMENT PRIMARY KEY,
-  claim_id smallint NOT NULL,
   natural_id varchar(20) NOT NULL,
+  claim_id smallint NOT NULL,
   code varchar(10) NOT NULL,
   description varchar(500) NOT NULL,
   CONSTRAINT fk__target__claim FOREIGN KEY (claim_id) REFERENCES claim(id)
@@ -165,8 +165,8 @@ CREATE TABLE IF NOT EXISTS target (
 
 CREATE TABLE IF NOT EXISTS common_core_standard (
   id smallint NOT NULL AUTO_INCREMENT PRIMARY KEY,
-  subject_id tinyint NOT NULL,
   natural_id varchar(20) NOT NULL,
+  subject_id tinyint NOT NULL,
   description varchar(1000) NOT NULL,
   CONSTRAINT fk__common_core_standard__subject FOREIGN KEY (subject_id) REFERENCES subject(id)
 );
