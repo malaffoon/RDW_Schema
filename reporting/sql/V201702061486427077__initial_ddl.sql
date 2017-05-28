@@ -148,6 +148,14 @@ CREATE TABLE IF NOT EXISTS target (
   CONSTRAINT fk__target__claim FOREIGN KEY (claim_id) REFERENCES claim(id)
 );
 
+CREATE TABLE IF NOT EXISTS common_core_standard (
+  id smallint NOT NULL PRIMARY KEY,
+  natural_id varchar(20) NOT NULL,
+  subject_id tinyint NOT NULL,
+  description varchar(1000) NOT NULL,
+  CONSTRAINT fk__common_core_standard__subject FOREIGN KEY (subject_id) REFERENCES subject(id)
+);
+
 CREATE TABLE IF NOT EXISTS depth_of_knowledge (
   id tinyint NOT NULL PRIMARY KEY,
   level tinyint NOT NULL,
@@ -178,6 +186,22 @@ CREATE TABLE IF NOT EXISTS item (
   CONSTRAINT fk__item__asmt FOREIGN KEY (asmt_id) REFERENCES asmt(id),
   CONSTRAINT fk__item__math_practice FOREIGN KEY (math_practice) REFERENCES math_practice(practice),
   CONSTRAINT fk__item__dok FOREIGN KEY (dok_id) REFERENCES depth_of_knowledge(id)
+);
+
+CREATE TABLE IF NOT EXISTS item_other_target (
+  item_id int NOT NULL,
+  target_id smallint NOT NULL,
+  CONSTRAINT fk__item_target__item FOREIGN KEY (item_id) REFERENCES item(id),
+  CONSTRAINT fk__item_taget__target FOREIGN KEY (target_id) REFERENCES target(id),
+  CONSTRAINT uk__item_target UNIQUE INDEX (item_id, target_id)
+);
+
+CREATE TABLE IF NOT EXISTS item_common_core_standard (
+  item_id int NOT NULL,
+  common_core_standard_id smallint NOT NULL,
+  CONSTRAINT fk__item_common_core_standard__item FOREIGN KEY (item_id) REFERENCES item(id),
+  CONSTRAINT fk__item_common_core_standard__common_core_standard FOREIGN KEY (common_core_standard_id) REFERENCES common_core_standard(id),
+  CONSTRAINT uk__item_common_core_standard UNIQUE INDEX (item_id, common_core_standard_id)
 );
 
 CREATE TABLE IF NOT EXISTS item_trait_score (

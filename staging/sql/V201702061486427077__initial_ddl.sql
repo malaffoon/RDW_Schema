@@ -92,6 +92,13 @@ CREATE TABLE IF NOT EXISTS staging_item_difficulty_cuts (
   difficult_low_end float NOT NULL
 );
 
+CREATE TABLE IF NOT EXISTS staging_common_core_standard (
+  id smallint NOT NULL PRIMARY KEY,
+  natural_id varchar(20) NOT NULL,
+  subject_id tinyint NOT NULL,
+  description varchar(1000) NOT NULL
+);
+
 /** School and District **/
 
 CREATE TABLE IF NOT EXISTS staging_district (
@@ -199,6 +206,16 @@ CREATE TABLE IF NOT EXISTS staging_item (
   difficulty float NOT NULL,
   max_points tinyint UNSIGNED NOT NULL,
   migrate_id bigint NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS staging_item_other_target (
+  item_id int NOT NULL,
+  target_id smallint NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS staging_item_common_core_standard (
+  item_id int NOT NULL,
+  common_core_standard_id smallint NOT NULL
 );
 
 /** IAB exams **/
