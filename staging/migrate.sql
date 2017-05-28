@@ -20,6 +20,7 @@ TRUNCATE TABLE staging_gender;
 TRUNCATE TABLE staging_accommodation;
 TRUNCATE TABLE staging_claim;
 TRUNCATE TABLE staging_target;
+TRUNCATE TABLE staging.staging_common_core_standard;
 TRUNCATE TABLE staging_depth_of_knowledge;
 TRUNCATE TABLE staging_math_practice;
 TRUNCATE TABLE staging_item_trait_score;
@@ -85,6 +86,9 @@ INSERT INTO staging_claim (id, subject_id, code, name, description)
 
 INSERT INTO staging_target (id, claim_id, code, description)
   SELECT id, claim_id, code, description from warehouse.target;
+
+INSERT INTO staging.staging_common_core_standard (id, natural_id, subject_id, description)
+   SELECT id, natural_id, subject_id, description from warehouse.common_core_standard;
 
 INSERT INTO staging_depth_of_knowledge (id, level, subject_id, description, reference)
   SELECT id, level, subject_id, description, reference from warehouse.depth_of_knowledge;
@@ -273,6 +277,31 @@ INSERT INTO staging_item ( id, claim_id, target_id, natural_id, asmt_id, math_pr
   WHERE
     -- TODO: this ids will be passed in from the previous migrate task
     (wa.import_id IN (SELECT id FROM warehouse.import WHERE id >= -1) OR update_import_id IN ( SELECT id FROM warehouse.import WHERE id >= -1))
+    AND wa.deleted = 0;  -- delete will be taken care on the 'master' level
+
+INSERT INTO staging_item_common_core_standard (common_core_standard_id, item_id)
+  SELECT
+    wiccs.common_core_standard_id,
+    wiccs.item_id
+  FROM warehouse.item_common_core_standard wiccs
+    JOIN warehouse.item wi ON wi.id = wiccs.item_id
+    JOIN warehouse.asmt wa ON wa.id = wi.asmt_id
+  WHERE
+    -- TODO: this ids will be passed in from the previous migrate task
+    ( wa.import_id IN (SELECT id FROM warehouse.import WHERE id >= -1)  OR wa.update_import_id IN ( SELECT id FROM warehouse.import WHERE id >= -1))
+    AND wa.deleted = 0;  -- delete will be taken care on the 'master' level
+
+
+INSERT INTO staging.staging_item_other_target (item_id, target_id)
+  SELECT
+    wiot.item_id,
+    wiot.target_id
+  FROM warehouse.item_other_target wiot
+    JOIN warehouse.item wi ON wi.id = wiot.item_id
+    JOIN warehouse.asmt wa ON wa.id = wi.asmt_id
+  WHERE
+    -- TODO: this ids will be passed in from the previous migrate task
+    ( wa.import_id IN (SELECT id FROM warehouse.import WHERE id >= -1)  OR wa.update_import_id IN ( SELECT id FROM warehouse.import WHERE id >= -1))
     AND wa.deleted = 0;  -- delete will be taken care on the 'master' level
 
 -- IAB Exams ------------------------------------------------------------------------------
@@ -616,6 +645,24 @@ INSERT INTO reporting.target ( id, claim_id, code, description)
     LEFT JOIN reporting.target rt ON rt.id = st.id
   WHERE rt.id IS NULL;
 
+-- ------------ Common Core Standard -------------------------------------------------------------------------
+UPDATE reporting.common_core_standard rc
+    JOIN staging.staging_common_core_standard sccs ON sccs.id = rccs.id
+ SET
+    rccs.subject_id = sccs.subject_id,
+    rccs.natural_id = sccs.natural_id,
+    rccs.description = sccs.description;
+
+INSERT INTO reporting.common_core_standard ( id, subject_id, natural_id, description)
+  SELECT
+    sccs.id,
+    sccs.subject_id,
+    sccs.natural_id,
+    sccs.description
+   FROM staging.staging_common_core_standard sccs
+     LEFT JOIN reporting.common_core_standard rccs ON rccs.id = sccs.id
+   WHERE rccs.id IS NULL;
+
 -- ------------ Depth of knowledge ---------------------------------------------------------------------------
 UPDATE reporting.depth_of_knowledge rdok
   JOIN staging_depth_of_knowledge sdok ON sdok.id = rdok.id
@@ -768,7 +815,12 @@ DELETE FROM reporting.student WHERE id in (SELECT id FROM staging_student WHERE 
 -- exam depend on the asmt
 -- Assume that all the dependent deletes were processed first
 DELETE FROM reporting.asmt_score WHERE asmt_id IN (SELECT id FROM staging_asmt WHERE deleted = 1);
+DELETE FROM reporting.item_other_target WHERE item_id IN
+    (SELECT id from reporting.item WHERE asmt_id IN (SELECT id FROM staging_asmt WHERE deleted = 1));
+DELETE FROM reporting.item_common_core_standard WHERE item_id IN
+    (SELECT id from reporting.item WHERE asmt_id IN (SELECT id FROM staging_asmt WHERE deleted = 1));
 DELETE FROM reporting.item WHERE asmt_id IN (SELECT id FROM staging_asmt WHERE deleted = 1);
+
 DELETE FROM reporting.asmt WHERE id IN (SELECT id FROM staging_asmt WHERE deleted = 1);
 
 -- -----------------------------------------------------------------------------------------
@@ -1000,6 +1052,37 @@ INSERT INTO reporting.item ( id, claim_id, target_id, natural_id, asmt_id, math_
 DELETE ri FROM reporting.item ri
 WHERE ri.asmt_id in (select id from staging_asmt where deleted = 0)
       AND  NOT EXISTS(SELECT id FROM staging_item WHERE id = ri.id);
+
+INSERT INTO reporting.item_other_target (item_id, target_id)
+  SELECT
+    siot.item_id,
+    siot.target_id
+  FROM staging.staging_item_other_target siot
+    LEFT JOIN reporting.item_other_target riot
+      ON (riot.item_id = siot.item_id AND riot.target_id = siot.target_id)
+  WHERE riot.item_id IS NULL;
+
+DELETE riot FROM reporting.item_other_target riot
+  WHERE item_id in
+      (select id from reporting.item
+          where asmt_id in (select id from staging.staging_asmt where deleted = 0))
+     AND NOT EXISTS(SELECT item_id FROM staging.staging_item_other_target WHERE item_id = riot.item_id AND target_id = riot.target_id);
+
+
+INSERT INTO reporting.item_common_core_standard (item_id, common_core_standard_id)
+  SELECT
+    siccs.item_id,
+    siccs.common_core_standard_id
+  FROM staging.staging_item_common_core_standard siccs
+    LEFT JOIN reporting.item_common_core_standard riccs
+      ON (riccs.item_id = siccs.item_id AND riccs.common_core_standard_id = siccs.common_core_standard_id)
+  WHERE riccs.item_id IS NULL;
+
+DELETE riccs FROM reporting.item_common_core_standard riccs
+WHERE item_id in
+      (select id from reporting.item
+      where asmt_id in (select id from staging.staging_asmt where deleted = 0))
+      AND NOT EXISTS(SELECT item_id FROM staging.staging_item_common_core_standard WHERE item_id = riccs.item_id AND common_core_standard_id = riccs.common_core_standard_id);
 
 -- IAB Exams -----------------------------------------------------------------------------------------------
 
@@ -1379,6 +1462,9 @@ WHERE NOT EXISTS(SELECT id FROM staging_claim WHERE id = rc.id);
 
 DELETE rt FROM reporting.target rt
 WHERE NOT EXISTS(SELECT id FROM staging_target WHERE id = rt.id);
+
+DELETE rccs FROM reporting.common_core_standard rccs
+WHERE NOT EXISTS(SELECT id FROM staging.staging_common_core_standard WHERE id = rccs.id);
 
 DELETE rdok FROM reporting.depth_of_knowledge rdok
 WHERE NOT EXISTS(SELECT id FROM staging_depth_of_knowledge WHERE id = rdok.id);
