@@ -66,17 +66,17 @@ TRUNCATE TABLE staging_language;
 INSERT INTO staging_grade (id, code, name)
   SELECT id, code, name from warehouse.grade;
 
-INSERT INTO staging_completeness (id, name)
-  SELECT id, name from warehouse.completeness;
+INSERT INTO staging_completeness (id, code)
+  SELECT id, code from warehouse.completeness;
 
-INSERT INTO staging_administration_condition (id, name)
-  SELECT id, name from warehouse.administration_condition;
+INSERT INTO staging_administration_condition (id, code)
+  SELECT id, code from warehouse.administration_condition;
 
-INSERT INTO staging_ethnicity (id, name)
-  SELECT id, name from warehouse.ethnicity;
+INSERT INTO staging_ethnicity (id, code)
+  SELECT id, code from warehouse.ethnicity;
 
-INSERT INTO staging_gender (id, name)
-  SELECT id, name from warehouse.gender;
+INSERT INTO staging_gender (id, code)
+  SELECT id, code from warehouse.gender;
 
 INSERT INTO staging_accommodation (id, code)
   SELECT id, code from warehouse.accommodation;
@@ -537,12 +537,12 @@ INSERT INTO reporting.grade ( id, code, name)
 UPDATE reporting.completeness rc
   JOIN staging_completeness sc ON sc.id = rc.id
 SET
-  rc.name = sc.name;
+  rc.code = sc.code;
 
-INSERT INTO reporting.completeness ( id, name)
+INSERT INTO reporting.completeness ( id, code)
   SELECT
     sc.id,
-    sc.name
+    sc.code
   FROM staging_completeness sc
     LEFT JOIN reporting.completeness rc ON rc.id = sc.id
   WHERE rc.id IS NULL;
@@ -551,12 +551,12 @@ INSERT INTO reporting.completeness ( id, name)
 UPDATE reporting.administration_condition rac
   JOIN staging_administration_condition sac ON sac.id = rac.id
 SET
-  rac.name = sac.name;
+  rac.code = sac.code;
 
-INSERT INTO reporting.administration_condition ( id, name)
+INSERT INTO reporting.administration_condition ( id, code)
   SELECT
     sac.id,
-    sac.name
+    sac.code
   FROM staging_administration_condition sac
     LEFT JOIN reporting.administration_condition rac ON rac.id = sac.id
   WHERE rac.id IS NULL;
@@ -566,12 +566,12 @@ INSERT INTO reporting.administration_condition ( id, name)
 UPDATE reporting.ethnicity re
   JOIN staging_ethnicity se ON se.id = re.id
 SET
-  re.name = se.name;
+  re.code = se.code;
 
-INSERT INTO reporting.ethnicity ( id, name)
+INSERT INTO reporting.ethnicity ( id, code)
   SELECT
     se.id,
-    se.name
+    se.code
   FROM staging_ethnicity se
     LEFT JOIN reporting.ethnicity re ON re.id = se.id
   WHERE re.id IS NULL;
@@ -581,12 +581,12 @@ INSERT INTO reporting.ethnicity ( id, name)
 UPDATE reporting.gender rg
   JOIN staging_gender sg ON sg.id = rg.id
 SET
-  rg.name = sg.name;
+  rg.code = sg.code;
 
-INSERT INTO reporting.gender ( id, name)
+INSERT INTO reporting.gender ( id, code)
   SELECT
     sg.id,
-    sg.name
+    sg.code
   FROM staging_gender sg
     LEFT JOIN reporting.gender rg ON rg.id = sg.id
   WHERE rg.id IS NULL;
