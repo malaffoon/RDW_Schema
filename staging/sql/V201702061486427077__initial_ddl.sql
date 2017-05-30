@@ -16,22 +16,22 @@ CREATE TABLE IF NOT EXISTS staging_grade (
 
 CREATE TABLE IF NOT EXISTS staging_completeness (
   id tinyint NOT NULL PRIMARY KEY,
-  name varchar(10) NOT NULL
+  code varchar(10) NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS staging_administration_condition (
   id tinyint NOT NULL PRIMARY KEY,
-  name varchar(20) NOT NULL
+  code varchar(20) NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS staging_ethnicity (
   id tinyint NOT NULL PRIMARY KEY,
-  name varchar(255) NOT NULL
+  code varchar(255) NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS staging_gender (
   id tinyint NOT NULL PRIMARY KEY,
-  name varchar(255) NOT NULL
+  code varchar(255) NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS staging_accommodation (

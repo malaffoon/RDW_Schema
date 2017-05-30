@@ -44,7 +44,7 @@ CREATE TABLE IF NOT EXISTS import (
 
 CREATE TABLE IF NOT EXISTS subject (
   id tinyint NOT NULL PRIMARY KEY,
-  name varchar(10) NOT NULL UNIQUE
+  code varchar(10) NOT NULL UNIQUE
  );
 
 CREATE TABLE IF NOT EXISTS grade (
@@ -61,22 +61,22 @@ CREATE TABLE IF NOT EXISTS asmt_type (
 
 CREATE TABLE IF NOT EXISTS completeness (
   id tinyint NOT NULL PRIMARY KEY,
-  name varchar(10) NOT NULL UNIQUE
+  code varchar(10) NOT NULL UNIQUE
  );
 
 CREATE TABLE IF NOT EXISTS administration_condition (
   id tinyint NOT NULL PRIMARY KEY,
-  name varchar(20) NOT NULL UNIQUE
+  code varchar(20) NOT NULL UNIQUE
  );
 
 CREATE TABLE IF NOT EXISTS ethnicity (
   id tinyint NOT NULL PRIMARY KEY,
-  name varchar(255) NOT NULL UNIQUE
+  code varchar(255) NOT NULL UNIQUE
 );
 
 CREATE TABLE IF NOT EXISTS gender (
   id tinyint NOT NULL PRIMARY KEY,
-  name varchar(255) NOT NULL UNIQUE
+  code varchar(255) NOT NULL UNIQUE
 );
 
 CREATE TABLE IF NOT EXISTS accommodation (

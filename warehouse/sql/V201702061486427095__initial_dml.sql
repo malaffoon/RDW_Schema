@@ -7,7 +7,7 @@ USE ${schemaName};
 
 INSERT INTO application_schema_version (major_version) VALUES (0);
 
-INSERT INTO subject (id, name) VALUES
+INSERT INTO subject (id, code) VALUES
   (1, 'Math'),
   (2, 'ELA');
 
@@ -54,17 +54,17 @@ INSERT INTO subject_claim_score (id, subject_id, asmt_type_id, code, name) VALUE
   (13, 2, 3, '2-W', 'Writing'),
   (14, 2, 3, '4-CR', 'Research');
 
-INSERT INTO completeness (id, name) VALUES
+INSERT INTO completeness (id, code) VALUES
   (1, 'Partial'),
   (2, 'Complete');
 
-INSERT INTO administration_condition (id, name) VALUES
+INSERT INTO administration_condition (id, code) VALUES
   (1, 'Valid'),
   (2, 'SD'),
   (3, 'NS'),
   (4, 'IN');
 
-INSERT INTO ethnicity (id, name) VALUES
+INSERT INTO ethnicity (id, code) VALUES
   (1, 'HispanicOrLatinoEthnicity'),
   (2, 'AmericanIndianOrAlaskaNative'),
   (3, 'Asian'),
@@ -74,7 +74,7 @@ INSERT INTO ethnicity (id, name) VALUES
   (7, 'DemographicRaceTwoOrMoreRaces'),
   (8, 'Filipino');
 
-INSERT INTO gender (id, name) VALUES
+INSERT INTO gender (id, code) VALUES
   (1, 'Male'),
   (2, 'Female');
 
