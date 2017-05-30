@@ -51,7 +51,7 @@ TRUNCATE TABLE staging_asmt;
 TRUNCATE TABLE staging_asmt_score;
 TRUNCATE TABLE staging_item;
 
-TRUNCATE TABLE staging_acommodation_translation;
+TRUNCATE TABLE staging_accommodation_translation;
 TRUNCATE TABLE staging_language;
 
 -- ----------------------------------------------------------------------
@@ -88,7 +88,7 @@ INSERT INTO staging_target (id, claim_id, code, description)
   SELECT id, claim_id, code, description from warehouse.target;
 
 INSERT INTO staging.staging_common_core_standard (id, natural_id, subject_id, description)
-   SELECT id, natural_id, subject_id, description from warehouse.common_core_standard;
+  SELECT id, natural_id, subject_id, description from warehouse.common_core_standard;
 
 INSERT INTO staging_depth_of_knowledge (id, level, subject_id, description, reference)
   SELECT id, level, subject_id, description, reference from warehouse.depth_of_knowledge;
@@ -103,10 +103,10 @@ INSERT INTO staging_item_difficulty_cuts (id, asmt_type_id, subject_id,grade_id,
   SELECT id, asmt_type_id, subject_id,grade_id, moderate_low_end, difficult_low_end from warehouse.item_difficulty_cuts;
 
 INSERT INTO staging_language (id, code)
-    SELECT id, code from warehouse.language;
+  SELECT id, code from warehouse.language;
 
 INSERT INTO staging_accommodation_translation (accommodation_id, language_id, label)
-    SELECT accommodation_id, language_id, label from warehouse.accommodation_translation;
+  SELECT accommodation_id, language_id, label from warehouse.accommodation_translation;
 
 -- School  --------------------------------------------------------------
 
@@ -646,12 +646,12 @@ INSERT INTO reporting.target ( id, claim_id, code, description)
   WHERE rt.id IS NULL;
 
 -- ------------ Common Core Standard -------------------------------------------------------------------------
-UPDATE reporting.common_core_standard rc
-    JOIN staging.staging_common_core_standard sccs ON sccs.id = rccs.id
- SET
-    rccs.subject_id = sccs.subject_id,
-    rccs.natural_id = sccs.natural_id,
-    rccs.description = sccs.description;
+UPDATE reporting.common_core_standard rccs
+  JOIN staging.staging_common_core_standard sccs ON sccs.id = rccs.id
+SET
+  rccs.subject_id = sccs.subject_id,
+  rccs.natural_id = sccs.natural_id,
+  rccs.description = sccs.description;
 
 INSERT INTO reporting.common_core_standard ( id, subject_id, natural_id, description)
   SELECT
@@ -659,9 +659,9 @@ INSERT INTO reporting.common_core_standard ( id, subject_id, natural_id, descrip
     sccs.subject_id,
     sccs.natural_id,
     sccs.description
-   FROM staging.staging_common_core_standard sccs
-     LEFT JOIN reporting.common_core_standard rccs ON rccs.id = sccs.id
-   WHERE rccs.id IS NULL;
+  FROM staging.staging_common_core_standard sccs
+    LEFT JOIN reporting.common_core_standard rccs ON rccs.id = sccs.id
+  WHERE rccs.id IS NULL;
 
 -- ------------ Depth of knowledge ---------------------------------------------------------------------------
 UPDATE reporting.depth_of_knowledge rdok
@@ -816,9 +816,9 @@ DELETE FROM reporting.student WHERE id in (SELECT id FROM staging_student WHERE 
 -- Assume that all the dependent deletes were processed first
 DELETE FROM reporting.asmt_score WHERE asmt_id IN (SELECT id FROM staging_asmt WHERE deleted = 1);
 DELETE FROM reporting.item_other_target WHERE item_id IN
-    (SELECT id from reporting.item WHERE asmt_id IN (SELECT id FROM staging_asmt WHERE deleted = 1));
+                                              (SELECT id from reporting.item WHERE asmt_id IN (SELECT id FROM staging_asmt WHERE deleted = 1));
 DELETE FROM reporting.item_common_core_standard WHERE item_id IN
-    (SELECT id from reporting.item WHERE asmt_id IN (SELECT id FROM staging_asmt WHERE deleted = 1));
+                                                      (SELECT id from reporting.item WHERE asmt_id IN (SELECT id FROM staging_asmt WHERE deleted = 1));
 DELETE FROM reporting.item WHERE asmt_id IN (SELECT id FROM staging_asmt WHERE deleted = 1);
 
 DELETE FROM reporting.asmt WHERE id IN (SELECT id FROM staging_asmt WHERE deleted = 1);
@@ -1063,10 +1063,10 @@ INSERT INTO reporting.item_other_target (item_id, target_id)
   WHERE riot.item_id IS NULL;
 
 DELETE riot FROM reporting.item_other_target riot
-  WHERE item_id in
+WHERE item_id in
       (select id from reporting.item
-          where asmt_id in (select id from staging.staging_asmt where deleted = 0))
-     AND NOT EXISTS(SELECT item_id FROM staging.staging_item_other_target WHERE item_id = riot.item_id AND target_id = riot.target_id);
+      where asmt_id in (select id from staging.staging_asmt where deleted = 0))
+      AND NOT EXISTS(SELECT item_id FROM staging.staging_item_other_target WHERE item_id = riot.item_id AND target_id = riot.target_id);
 
 
 INSERT INTO reporting.item_common_core_standard (item_id, common_core_standard_id)
@@ -1449,7 +1449,7 @@ WHERE NOT EXISTS(SELECT id FROM staging_gender WHERE id = rg.id);
 
 DELETE rat FROM reporting.accommodation_translation rat
 WHERE NOT EXISTS(SELECT accommodation_id, language_id FROM staging.staging_accommodation_translation
-  WHERE accommodation_id = rat.accommodation_id AND language_id = rat.language_id);
+WHERE accommodation_id = rat.accommodation_id AND language_id = rat.language_id);
 
 DELETE rl FROM reporting.language rl
 WHERE NOT EXISTS(SELECT id FROM staging.staging_language WHERE id = rl.id);
