@@ -189,7 +189,7 @@ CREATE TABLE IF NOT EXISTS item (
   id int NOT NULL AUTO_INCREMENT PRIMARY KEY,
   claim_id smallint, -- TODO: change this to NOT NULL when we do not need a hack code that creates assmt
   target_id smallint, -- TODO: change this to NOT NULL  when we do not need a hack code that creates assmt
-  natural_id varchar(40) NOT NULL UNIQUE,
+  natural_id varchar(40) NOT NULL,
   asmt_id int NOT NULL,
   math_practice tinyint,
   allow_calc tinyint,
