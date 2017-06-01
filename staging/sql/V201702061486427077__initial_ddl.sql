@@ -186,9 +186,9 @@ CREATE TABLE IF NOT EXISTS staging_asmt (
 
 CREATE TABLE IF NOT EXISTS staging_asmt_score (
   asmt_id int NOT NULL PRIMARY KEY,
-  cut_point_1 smallint NOT NULL,
+  cut_point_1 smallint,
   cut_point_2 smallint NOT NULL,
-  cut_point_3 smallint NOT NULL,
+  cut_point_3 smallint,
   min_score smallint NOT NULL,
   max_score smallint NOT NULL,
   migrate_id bigint NOT NULL

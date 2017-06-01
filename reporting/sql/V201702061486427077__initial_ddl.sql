@@ -113,9 +113,9 @@ CREATE TABLE IF NOT EXISTS asmt (
 
 CREATE TABLE IF NOT EXISTS asmt_score (
   asmt_id int NOT NULL PRIMARY KEY,
-  cut_point_1 smallint NOT NULL,
+  cut_point_1 smallint,
   cut_point_2 smallint NOT NULL,
-  cut_point_3 smallint NOT NULL,
+  cut_point_3 smallint,
   min_score smallint NOT NULL,
   max_score smallint NOT NULL,
   CONSTRAINT fk__asmt_score__asmt FOREIGN KEY (asmt_id) REFERENCES asmt(id)
