@@ -329,75 +329,7 @@ CREATE TABLE IF NOT EXISTS user_student_group (
   CONSTRAINT fk__user_student_group__student_group FOREIGN KEY (student_group_id) REFERENCES student_group(id)
 );
 
-/** IAB exams **/
-
-CREATE TABLE IF NOT EXISTS iab_exam_student (
-  id bigint NOT NULL AUTO_INCREMENT PRIMARY KEY,
-  grade_id tinyint NOT NULL,
-  student_id int NOT NULL,
-  school_id int NOT NULL,
-  iep tinyint NOT NULL,
-  lep tinyint NOT NULL,
-  section504 tinyint NOT NULL,
-  economic_disadvantage tinyint NOT NULL,
-  migrant_status tinyint,
-  eng_prof_lvl varchar(20),
-  t3_program_type varchar(20),
-  language_code varchar(3),
-  prim_disability_type varchar(3),
-  CONSTRAINT fk__iab_exam_student__student FOREIGN KEY (student_id) REFERENCES student(id),
-  CONSTRAINT fk__iab_exam_student__school FOREIGN KEY (school_id) REFERENCES school(id)
- );
-
-CREATE TABLE IF NOT EXISTS iab_exam (
-  id bigint NOT NULL AUTO_INCREMENT PRIMARY KEY,
-  iab_exam_student_id bigint NOT NULL,
-  school_year smallint NOT NULL,
-  asmt_id int NOT NULL,
-  asmt_version varchar(30),
-  opportunity int,
-  completeness_id tinyint NOT NULL,
-  administration_condition_id tinyint NOT NULL,
-  session_id varchar(128) NOT NULL,
-  category tinyint,
-  scale_score float,
-  scale_score_std_err float,
-  completed_at timestamp(0) NOT NULL,
-  import_id bigint NOT NULL,
-  update_import_id bigint NOT NULL,
-  deleted tinyint NOT NULL DEFAULT 0,
-  CONSTRAINT fk__iab_exam__iab_exam_student FOREIGN KEY (iab_exam_student_id) REFERENCES iab_exam_student(id),
-  CONSTRAINT fk__iab_exam__asmt FOREIGN KEY (asmt_id) REFERENCES asmt(id),
-  CONSTRAINT fk__iab_exam__import FOREIGN KEY (import_id) REFERENCES import(id),
-  CONSTRAINT fk__iab_exam__update_import FOREIGN KEY (update_import_id) REFERENCES import(id)
-);
--- TODO: revisit this index
-ALTER TABLE iab_exam ADD INDEX idx__asmt_imports_deleted (import_id, update_import_id, deleted);
-
-CREATE TABLE IF NOT EXISTS iab_exam_item (
-  id bigint NOT NULL AUTO_INCREMENT PRIMARY KEY,
-  iab_exam_id bigint NOT NULL,
-  item_id int NOT NULL,
-  score float NOT NULL,
-  score_status varchar(50),
-  position int NOT NULL,
-  response text,
-  trait_evidence_elaboration_score float,
-  trait_evidence_elaboration_score_status varchar(50),
-  trait_organization_purpose_score float,
-  trait_organization_purpose_score_status varchar(50),
-  trait_conventions_score float,
-  trait_conventions_score_status varchar(50),
-  CONSTRAINT fk__iab_exam_item__exam FOREIGN KEY (iab_exam_id) REFERENCES iab_exam(id)
-);
-
-CREATE TABLE IF NOT EXISTS iab_exam_available_accommodation (
-  iab_exam_id bigint NOT NULL,
-  accommodation_id smallint NOT NULL,
-  CONSTRAINT fk__iab_exam_available_accommodation__iab_exam FOREIGN KEY (iab_exam_id) REFERENCES iab_exam(id)
-);
-
-/** ICA and Summative exams **/
+/** Exams **/
 
 CREATE TABLE IF NOT EXISTS exam_student (
   id bigint NOT NULL AUTO_INCREMENT PRIMARY KEY,
@@ -419,6 +351,7 @@ CREATE TABLE IF NOT EXISTS exam_student (
 
 CREATE TABLE IF NOT EXISTS exam (
   id bigint NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  type_id tinyint NOT NULL,
   exam_student_id bigint NOT NULL,
   school_year smallint NOT NULL,
   asmt_id int NOT NULL,
@@ -429,13 +362,14 @@ CREATE TABLE IF NOT EXISTS exam (
   session_id varchar(128) NOT NULL,
   scale_score float,
   scale_score_std_err float,
-  achievement_level tinyint,
+  performance_level tinyint,
   completed_at timestamp(0) NOT NULL,
   import_id bigint NOT NULL,
   update_import_id bigint NOT NULL,
   deleted tinyint NOT NULL DEFAULT 0,
   CONSTRAINT fk__exam__exam_student FOREIGN KEY (exam_student_id) REFERENCES exam_student(id),
   CONSTRAINT fk__exam__asmt FOREIGN KEY (asmt_id) REFERENCES asmt(id),
+  CONSTRAINT fk__exam__type FOREIGN KEY (type_id) REFERENCES asmt_type(id),
   CONSTRAINT fk__exam__import FOREIGN KEY (import_id) REFERENCES import(id),
   CONSTRAINT fk__exam__update_import FOREIGN KEY (update_import_id) REFERENCES import(id)
 );

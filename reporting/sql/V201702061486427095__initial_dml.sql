@@ -13,7 +13,7 @@ INSERT INTO migrate_status (id, name) VALUES
   (10, 'STARTED'),
   (20, 'COMPLETED');
 
-INSERT INTO subject (id, name) VALUES
+INSERT INTO subject (id, code) VALUES
   (1, 'Math'),
   (2, 'ELA');
 
