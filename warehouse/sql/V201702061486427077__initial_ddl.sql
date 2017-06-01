@@ -127,9 +127,9 @@ ALTER TABLE asmt ADD INDEX idx__asmt_imports_deleted (import_id, update_import_i
 
 CREATE TABLE IF NOT EXISTS asmt_score (
   asmt_id int NOT NULL PRIMARY KEY,
-  cut_point_1 float NOT NULL,
+  cut_point_1 float,
   cut_point_2 float NOT NULL,
-  cut_point_3 float NOT NULL,
+  cut_point_3 float,
   min_score float NOT NULL,
   max_score float NOT NULL,
   CONSTRAINT fk__asmt_score__asmt FOREIGN KEY (asmt_id) REFERENCES asmt(id)
@@ -189,7 +189,7 @@ CREATE TABLE IF NOT EXISTS item (
   id int NOT NULL AUTO_INCREMENT PRIMARY KEY,
   claim_id smallint, -- TODO: change this to NOT NULL when we do not need a hack code that creates assmt
   target_id smallint, -- TODO: change this to NOT NULL  when we do not need a hack code that creates assmt
-  natural_id varchar(40) NOT NULL,
+  natural_id varchar(40) NOT NULL UNIQUE,
   asmt_id int NOT NULL,
   math_practice tinyint,
   allow_calc tinyint,
