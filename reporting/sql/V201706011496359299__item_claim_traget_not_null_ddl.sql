@@ -4,7 +4,8 @@
 
 USE ${schemaName};
 
--- please note that this is not instantenious, expect some delay..in seconds
+-- please note that this is not instantaneous, expect some delay..in seconds.
+-- This is temporary so I did not try to optimize it
 UPDATE item i
   JOIN asmt a
 SET
