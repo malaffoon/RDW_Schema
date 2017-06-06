@@ -122,8 +122,7 @@ CREATE TABLE IF NOT EXISTS asmt (
   CONSTRAINT fk__asmt__import FOREIGN KEY (import_id) REFERENCES import(id),
   CONSTRAINT fk__asmt__update_import FOREIGN KEY (update_import_id) REFERENCES import(id)
 );
--- TODO: revisit this index
-ALTER TABLE asmt ADD INDEX idx__asmt_imports_deleted (import_id, update_import_id, deleted);
+
 
 CREATE TABLE IF NOT EXISTS asmt_score (
   asmt_id int NOT NULL PRIMARY KEY,
@@ -187,8 +186,8 @@ CREATE TABLE IF NOT EXISTS math_practice (
 
 CREATE TABLE IF NOT EXISTS item (
   id int NOT NULL AUTO_INCREMENT PRIMARY KEY,
-  claim_id smallint, -- TODO: change this to NOT NULL when we do not need a hack code that creates assmt
-  target_id smallint, -- TODO: change this to NOT NULL  when we do not need a hack code that creates assmt
+  claim_id smallint NOT NULL,
+  target_id smallint NOT NULL,
   natural_id varchar(40) NOT NULL,
   asmt_id int NOT NULL,
   math_practice tinyint,
@@ -256,8 +255,6 @@ CREATE TABLE IF NOT EXISTS school (
   CONSTRAINT fk__school__import FOREIGN KEY (import_id) REFERENCES import(id),
   CONSTRAINT fk__school__update_import FOREIGN KEY (update_import_id) REFERENCES import(id)
 );
--- TODO: revisit this index
-ALTER TABLE school ADD INDEX idx__school_imports_deleted (import_id, update_import_id, deleted);
 
 
 CREATE TABLE IF NOT EXISTS state (
@@ -284,8 +281,6 @@ CREATE TABLE IF NOT EXISTS student (
   CONSTRAINT fk__student__import FOREIGN KEY (import_id) REFERENCES import(id),
   CONSTRAINT fk__student__update_import FOREIGN KEY (update_import_id) REFERENCES import(id)
  );
--- TODO: revisit this index
-ALTER TABLE student ADD INDEX idx__asmt_imports_deleted (import_id, update_import_id, deleted);
 
 CREATE TABLE IF NOT EXISTS student_ethnicity (
   ethnicity_id tinyint NOT NULL,
@@ -310,8 +305,6 @@ CREATE TABLE IF NOT EXISTS student_group (
   CONSTRAINT fk__student_group__import FOREIGN KEY (import_id) REFERENCES import(id),
   CONSTRAINT fk__student_group__update_import FOREIGN KEY (update_import_id) REFERENCES import(id)
 );
--- TODO: revisit this index
-ALTER TABLE student_group ADD INDEX idx__asmt_imports_deleted (import_id, update_import_id, deleted, active);
 
 
 CREATE TABLE IF NOT EXISTS student_group_membership (
@@ -373,9 +366,6 @@ CREATE TABLE IF NOT EXISTS exam (
   CONSTRAINT fk__exam__import FOREIGN KEY (import_id) REFERENCES import(id),
   CONSTRAINT fk__exam__update_import FOREIGN KEY (update_import_id) REFERENCES import(id)
 );
--- TODO: revisit this index
-ALTER TABLE exam ADD INDEX idx__asmt_imports_deleted (import_id, update_import_id, deleted);
-
 
 CREATE TABLE IF NOT EXISTS exam_item (
   id bigint NOT NULL AUTO_INCREMENT PRIMARY KEY, 
@@ -498,7 +488,6 @@ CREATE PROCEDURE district_upsert(IN  p_name       VARCHAR(100),
 
     IF (p_id IS NOT NULL)
     THEN
-    -- TODO: this needs to be revisited; afraid it is an overkill to do an update here
       UPDATE district SET name = p_name WHERE id = p_id;
     ELSE
       INSERT INTO district (name, natural_id)
@@ -566,4 +555,98 @@ CREATE PROCEDURE school_upsert(IN  p_district_name       VARCHAR(100),
 
     END IF;
   END; //
+DELIMITER ;
+
+/** Student upsert **/
+DROP PROCEDURE IF EXISTS student_group_upsert;
+
+DELIMITER //
+CREATE PROCEDURE student_group_upsert(IN  p_name        VARCHAR(255),
+                                      IN  p_school_id   INT,
+                                      IN  p_school_year SMALLINT,
+                                      IN  p_subject_id  TINYINT,
+                                      IN  p_active      TINYINT,
+                                      IN  p_creator     VARCHAR(250),
+                                      IN  p_import_id   BIGINT,
+                                      OUT p_id          INT)
+  BEGIN
+
+    DECLARE isUpdate TINYINT;
+
+    --  handle duplicate entry: if there are two competing inserts, one will end up here
+    DECLARE CONTINUE HANDLER FOR 1062
+    BEGIN
+      SELECT id INTO p_id FROM student_group WHERE name = p_name AND school_id = p_school_id AND school_year = p_school_year;
+    END;
+
+    SELECT id INTO p_id FROM student_group WHERE name = p_name AND school_id = p_school_id AND school_year = p_school_year;
+
+    IF (p_id IS NOT NULL)
+    THEN
+      -- check if there is anything to update
+      SELECT CASE WHEN count(*) > 0 THEN 0 ELSE 1 END INTO isUpdate FROM student_group
+      WHERE name = p_name
+            AND school_id = p_school_id
+            AND school_year = p_school_year
+            AND subject_id = p_subject_id
+            AND active = p_active;
+            -- creator cannot / should not be updated
+
+      IF (isUpdate = 1)
+      THEN
+        UPDATE student_group
+        SET
+          name        = p_name,
+          school_id   = p_school_id,
+          school_year = p_school_year,
+          subject_id  = p_subject_id,
+          active       = p_active
+        WHERE id = p_id;
+      END IF;
+    ELSE
+      INSERT INTO student_group (name, school_id, school_year, subject_id, active, creator, import_id, update_import_id)
+      VALUES (p_name, p_school_id, p_school_year, p_subject_id, p_active, p_creator, p_import_id, p_import_id);
+
+      SELECT id INTO p_id FROM student_group WHERE name = p_name AND school_id = p_school_id AND school_year = p_school_year;
+    END IF;
+  END;
+//
+DELIMITER ;
+
+
+/** Assessment safe create **/
+DROP PROCEDURE IF EXISTS asmt_safe_create;
+
+DELIMITER //
+CREATE PROCEDURE asmt_safe_create(IN  p_natural_id    VARCHAR(250),
+                                  IN  p_grade_id      TINYINT,
+                                  IN  p_type_id       TINYINT,
+                                  IN  p_subject_id    TINYINT,
+                                  IN  p_school_year   SMALLINT,
+                                  IN  p_name          VARCHAR(250),
+                                  IN  p_label         VARCHAR(255),
+                                  IN  p_import_id     BIGINT,
+                                  OUT p_id            INT)
+  BEGIN
+
+    DECLARE isUpdate TINYINT;
+
+    --  handle duplicate entry: if there are two competing inserts, one will end up here
+    DECLARE CONTINUE HANDLER FOR 1062
+    BEGIN
+      SELECT id INTO p_id FROM asmt WHERE natural_id = p_natural_id;
+    END;
+
+    SELECT id INTO p_id FROM asmt WHERE natural_id = p_natural_id;
+
+    IF (p_id IS NULL)
+    THEN
+      INSERT INTO asmt (natural_id, name, label, grade_id, type_id, subject_id, school_year, import_id, update_import_id)
+      VALUES (p_natural_id, p_name, p_label, p_grade_id, p_type_id, p_subject_id, p_school_year, p_import_id, p_import_id);
+    END IF;
+
+   SELECT id INTO p_id FROM asmt WHERE natural_id = p_natural_id;
+
+  END;
+//
 DELIMITER ;
