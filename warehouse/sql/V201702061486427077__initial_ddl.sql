@@ -195,6 +195,7 @@ CREATE TABLE IF NOT EXISTS item (
   dok_id tinyint NOT NULL,
   difficulty float NOT NULL,
   max_points float UNSIGNED NOT NULL,
+  CONSTRAINT uk__item__natural_id_asmt UNIQUE INDEX (natural_id, asmt_id),
   CONSTRAINT fk__item__claim FOREIGN KEY (claim_id) REFERENCES claim(id),
   CONSTRAINT fk__item__target FOREIGN KEY (target_id) REFERENCES target(id),
   CONSTRAINT fk__item__asmt FOREIGN KEY (asmt_id) REFERENCES asmt(id),
