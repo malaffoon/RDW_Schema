@@ -87,9 +87,8 @@ publishing {
 }
 
 
-//For testing purposes only
+//For ci use only
 artifactory {
-    //contextUrl = "https://airdev.jfrog.io/airdev"   //The base Artifactory URL if not overridden by the publisher/resolver
     publish {
         repository {
             repoKey = 'libs-releases-local'
