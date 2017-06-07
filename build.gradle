@@ -9,6 +9,7 @@ buildscript {
 
 plugins {
     id 'org.flywaydb.flyway' version '4.2.0'
+    id 'com.jfrog.artifactory' version '4.4.18'
 }
 
 apply plugin: 'distribution'
@@ -81,6 +82,29 @@ publishing {
     publications {
         schema(MavenPublication) {
             artifact distZip
+        }
+    }
+}
+
+
+//For testing purposes only
+artifactory {
+    //contextUrl = "https://airdev.jfrog.io/airdev"   //The base Artifactory URL if not overridden by the publisher/resolver
+    publish {
+        repository {
+            repoKey = 'libs-releases-local'
+            maven = true
+
+        }
+        defaults {
+            publications('schema')
+        }
+    }
+    resolve {
+        repository {
+            repoKey = 'libs-releases'
+            maven = true
+
         }
     }
 }
