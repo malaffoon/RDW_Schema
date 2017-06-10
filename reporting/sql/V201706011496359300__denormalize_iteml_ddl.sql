@@ -10,7 +10,7 @@ update item i
   join asmt a on i.asmt_id = a.id
   join item_difficulty_cuts c on c.asmt_type_id = a.type_id and a.subject_id = c.subject_id and a.grade_id = c.grade_id
 set
-  i.difficulty_code = if(i.difficulty < c.moderate_low_end, 'L', if(i.difficulty < c.difficult_low_end, 'M', 'D' ));
+  i.difficulty_code = if(i.difficulty < c.moderate_low_end, 'E', if(i.difficulty < c.difficult_low_end, 'M', 'D' ));
 
 
 ALTER TABLE item MODIFY COLUMN  difficulty_code varchar(1) NOT NULL;
