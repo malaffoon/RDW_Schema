@@ -7,7 +7,7 @@ USE ${schemaName};
 CREATE INDEX idx__asmt_type_subject_grade ON asmt (type_id, subject_id, grade_id);
 
 
---  it is nullable here because we want to insert all the records without it and then update beased on the difficulty
+--  it is nullable here because we want to insert all the records without it and then update based on the difficulty
 --  supported values are E(asy), M(oderate), D(ifficult)
 ALTER TABLE item ADD COLUMN difficulty_code varchar(1);
 
