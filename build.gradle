@@ -80,6 +80,7 @@ distributions {
                 include 'spring_batch_reporting/**'
                 include 'LICENSE'
                 include 'build.gradle'
+                include 'gradle.properties'
             }
         }
     }
