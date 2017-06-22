@@ -48,7 +48,7 @@ The migrate process is managed by the “migrate-reporting” service.
 >Only data updates are supported, not structural table changes.
 
 **Note 2:**  
->The best practice is to use the Import API to ingest the data. In a rare case you need to update the data manually, follow the instructions below.
+>The best practice is to use the Import API to ingest the data. In a rare case that requires a manual data update, follow the instructions below.
 
 **Note 3:** 
 >Changes to the tables of the PACKAGE content type is not supported at this time. Making the change may cause the system to fail or malfunction. 
