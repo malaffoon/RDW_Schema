@@ -1,5 +1,8 @@
 /**
 ** 	Initial script for the SBAC Reporting Staging schema used during migration
+**
+**  This schema is intentionally light on indexes.
+**  The only indexes included here are meant to support 'INSERT IGNORE' feature since it is used in the migrate scripts.
 **/
 
 ALTER DATABASE ${schemaName} CHARACTER SET utf8  COLLATE utf8_unicode_ci;
@@ -126,7 +129,7 @@ CREATE TABLE IF NOT EXISTS staging_student (
 CREATE TABLE IF NOT EXISTS staging_student_ethnicity (
   ethnicity_id tinyint NOT NULL,
   student_id int NOT NULL,
-  UNIQUE INDEX idx__staging_student_ethnicity__student_ethnicity (student_id, ethnicity_id)
+  UNIQUE INDEX idx__staging_student_ethnicity (student_id, ethnicity_id) -- to support INSERT IGNORE
 );
 
 /** Student Group **/
@@ -148,13 +151,13 @@ CREATE TABLE IF NOT EXISTS staging_student_group (
 CREATE TABLE IF NOT EXISTS staging_student_group_membership (
   student_group_id int NOT NULL,
   student_id int NOT NULL,
-  UNIQUE INDEX idx__staging_student_group_membership__student_student_group (student_id, student_group_id)
+  UNIQUE INDEX idx__staging_student_group_membership (student_id, student_group_id)
 );
 
 CREATE TABLE IF NOT EXISTS staging_user_student_group (
   student_group_id int NOT NULL,
   user_login varchar(255) NOT NULL,
-  UNIQUE INDEX idx__staging_user_student_group__student_group_user_login (student_group_id, user_login)
+  UNIQUE INDEX idx__staging_user_student_group (student_group_id, user_login)
 );
 
 /** Assessment Packages related data **/
@@ -271,7 +274,7 @@ CREATE TABLE IF NOT EXISTS staging_exam_item (
 CREATE TABLE IF NOT EXISTS staging_exam_available_accommodation (
   exam_id bigint NOT NULL,
   accommodation_id smallint NOT NULL,
-  UNIQUE INDEX idx__exam_available_accommodation (exam_id, accommodation_id)
+  UNIQUE INDEX idx__staging_exam_available_accommodation (exam_id, accommodation_id)
 );
 
 CREATE TABLE IF NOT EXISTS staging_exam_claim_score (

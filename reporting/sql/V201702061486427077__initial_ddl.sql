@@ -5,6 +5,13 @@
 **  This schema assumes the following:
 **     1. one state (aka tenant) per data warehouse
 **     2. not all data elements from TRT are included, only those that are required for the current reporting
+**     3. MySQL treats FK this way:
+**           In the referencing table, there must be an index where the foreign key columns are listed as the first columns in the same order.
+**           Such an index is created on the referencing table automatically if it does not exist.
+**           This index is silently dropped later, if you create another index that can be used to enforce the foreign key constraint.
+**           When restoring a DB from a back up, MySQL does not see an automatically created FK index as such and treats it as a user defined.
+**           So when running this on the restored DB, you will end up with duplicate indexes.
+**      To avoid this problem we explicitly create all the indexes.
 **/
 
 ALTER DATABASE ${schemaName} CHARACTER SET utf8 COLLATE utf8_unicode_ci;
@@ -195,14 +202,14 @@ CREATE TABLE IF NOT EXISTS item (
   claim_code varchar(10) NOT NULL,
   target_code varchar(10) NOT NULL,
   common_core_standard_ids varchar(200),
+  UNIQUE INDEX idx__item__asmt_natural_id (asmt_id, natural_id),
   INDEX idx__item__claim (claim_id),
   INDEX idx__item__target (target_id),
-  UNIQUE INDEX idx__item__asmt_natural_id (asmt_id, natural_id),
   INDEX idx__item__math_practice (math_practice),
   INDEX idx__item__dok (dok_id),
+  CONSTRAINT fk__item__asmt FOREIGN KEY (asmt_id) REFERENCES asmt(id),
   CONSTRAINT fk__item__claim FOREIGN KEY (claim_id) REFERENCES claim(id),
   CONSTRAINT fk__item__target FOREIGN KEY (target_id) REFERENCES target(id),
-  CONSTRAINT fk__item__asmt FOREIGN KEY (asmt_id) REFERENCES asmt(id),
   CONSTRAINT fk__item__math_practice FOREIGN KEY (math_practice) REFERENCES math_practice(practice),
   CONSTRAINT fk__item__dok FOREIGN KEY (dok_id) REFERENCES depth_of_knowledge(id)
 );
@@ -210,10 +217,10 @@ CREATE TABLE IF NOT EXISTS item (
 CREATE TABLE IF NOT EXISTS item_other_target (
   item_id int NOT NULL,
   target_id smallint NOT NULL,
-  UNIQUE INDEX idx__item_target (item_id, target_id),
-  INDEX idx__item_taget__target (target_id),
+  UNIQUE INDEX idx__item_other_target (item_id, target_id),
+  INDEX idx__item_other_target__target (target_id),
   CONSTRAINT fk__item_target__item FOREIGN KEY (item_id) REFERENCES item(id),
-  CONSTRAINT fk__item_taget__target FOREIGN KEY (target_id) REFERENCES target(id)
+  CONSTRAINT fk__item_target__target FOREIGN KEY (target_id) REFERENCES target(id)
 );
 
 CREATE TABLE IF NOT EXISTS item_common_core_standard (
@@ -241,7 +248,7 @@ CREATE TABLE IF NOT EXISTS district (
 );
 
 CREATE TABLE IF NOT EXISTS school (
-  id int NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  id int NOT NULL PRIMARY KEY,
   district_id int NOT NULL,
   natural_id varchar(40) NOT NULL,
   name varchar(100) NOT NULL,
@@ -259,7 +266,7 @@ CREATE TABLE IF NOT EXISTS student (
   last_or_surname varchar(60),
   first_name varchar(60),
   middle_name varchar(60),
-  gender_id tinyint,
+  gender_id tinyint, -- intentionally not constrained since it is denormalized
   gender_code varchar(80),
   first_entry_into_us_school_at date,
   lep_entry_at date,
@@ -298,7 +305,7 @@ CREATE TABLE IF NOT EXISTS student_group (
 CREATE TABLE IF NOT EXISTS student_group_membership (
   student_group_id int NOT NULL,
   student_id int NOT NULL,
-  UNIQUE INDEX idx__student_group_id__student_id (student_group_id, student_id),
+  UNIQUE INDEX idx__student_group_membership (student_group_id, student_id),
   INDEX idx_student_group_membership__student (student_id),
   CONSTRAINT fk__student_group_membership__student_group FOREIGN KEY (student_group_id) REFERENCES student_group(id),
   CONSTRAINT fk__student_group_membership__student FOREIGN KEY (student_id) REFERENCES student(id)
@@ -307,7 +314,7 @@ CREATE TABLE IF NOT EXISTS student_group_membership (
 CREATE TABLE IF NOT EXISTS user_student_group (
   student_group_id int NOT NULL,
   user_login varchar(255) NOT NULL,
-  UNIQUE INDEX idx__user_student_group__student_group_user_login (student_group_id, user_login),
+  UNIQUE INDEX idx__user_student_group (student_group_id, user_login),
   CONSTRAINT fk__user_student_group__student_group FOREIGN KEY (student_group_id) REFERENCES student_group(id)
 );
 
@@ -367,7 +374,7 @@ CREATE TABLE IF NOT EXISTS exam (
 CREATE TABLE IF NOT EXISTS exam_claim_score_mapping (
   subject_claim_score_id tinyint NOT NULL,
   num tinyint NOT NULL,
-  UNIQUE INDEX idx__exam_claim_score_mapping__subject_claim_score_id (subject_claim_score_id, num),
+  UNIQUE INDEX idx__exam_claim_score_mapping (subject_claim_score_id, num),
   CONSTRAINT fk__exam_claim_score_mapping__subject_claim_score FOREIGN KEY (subject_claim_score_id) REFERENCES subject_claim_score(id)
 );
 
@@ -394,7 +401,7 @@ CREATE TABLE IF NOT EXISTS exam_item (
 CREATE TABLE IF NOT EXISTS exam_available_accommodation (
   exam_id bigint NOT NULL,
   accommodation_id smallint NOT NULL,
-  UNIQUE INDEX idx__exam_available_accommodation__exam_accommodation (exam_id, accommodation_id),
+  UNIQUE INDEX idx__exam_available_accommodation (exam_id, accommodation_id),
   INDEX idx__exam_available_accommodation__accommodation (accommodation_id),
   CONSTRAINT fk__exam_available_accommodation__exam FOREIGN KEY (exam_id) REFERENCES exam(id),
   CONSTRAINT fk__exam_available_accommodation__accomodation FOREIGN KEY (accommodation_id) REFERENCES accommodation(id)
