@@ -5,8 +5,6 @@
 
 USE ${schemaName};
 
-INSERT INTO application_schema_version (major_version) VALUES (0);
-
 INSERT INTO migrate_status (id, name) VALUES
   (-20, 'FAILED'),
   (-10, 'ABANDONED'),
