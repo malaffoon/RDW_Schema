@@ -149,8 +149,7 @@ INSERT INTO import_status (id, name) VALUES
   (-2, 'BAD_FORMAT'),
   (-1, 'INVALID'),
   (0, 'ACCEPTED'),
-  (1, 'PROCESSED'),
-  (2, 'PUBLISHED');
+  (1, 'PROCESSED');
 
 -- This is intended to trigger a migration of all the tables that define codified data
 INSERT INTO import(status, content, contentType, digest) VALUES
