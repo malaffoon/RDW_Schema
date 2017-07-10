@@ -28,9 +28,9 @@ All the data modifications to the children tables are tracked by import id via a
 
 Tables of the content type CODES are different in a sense that there is no ‘main’ table. Changes to any of these tables are tracked via the same import content type.
 
-### Reporting DB and migrate process
+### Reporting DB and Migrate Process
 Reporting DB is the data source for the customer facing Reporting Data Warehouse web site. The data must never be manually loaded or modified in this DB. 
-Instead they must be migrate from the warehouse. 
+Instead they must be migrated from the warehouse. 
 
 There is a minimum set of the ‘core’ tables that are created as part of the initial schema and are not supported for modifications:
 - asmt_type
