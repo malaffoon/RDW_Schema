@@ -114,7 +114,7 @@ FROM student_group_load
 WHERE batch_id = 34
 GROUP BY name;
 
-# validate that groups have either users or students
+# validate that groups have either users or students -optional
 SELECT *
 FROM student_group_load
 WHERE batch_id = 34 AND student_ssid IS NULL AND group_user_login IS NULL
@@ -152,7 +152,7 @@ INSERT INTO batch_group_load_progress (batch_id, message) VALUE (34, 'count DIST
 UPDATE student_group_load sgl
   JOIN student s ON sgl.student_ssid = s.ssid
 SET student_id = s.id
-WHERE batch_id = 34;
+WHERE batch_id = 34 and s.deleted = 0;
 INSERT INTO batch_group_load_progress (batch_id, message) VALUE (34, 'update student id in the load table, first time');
 
 # update existing groups
