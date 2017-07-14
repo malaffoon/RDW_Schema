@@ -43,7 +43,7 @@ CREATE TABLE IF NOT EXISTS student_group_load_import (
   batch_id  BIGINT       NOT NULL,
   school_id INT,
   import_id BIGINT,
-  ref       VARCHAR(255) NOT NULL,
+  ref       VARCHAR(255) NOT NULL, -- either a student ssid or group name, use this along with the unique index below to de-dupe
   ref_type  TINYINT, -- 1 = new student, 0 = restore deleted student, 2 = new groups, 3 = modified groups membership, 4 = modified user, 5 = modified group
   UNIQUE INDEX idx__student_group_load_import__batch_ref (batch_id, ref)
 );
@@ -59,7 +59,7 @@ INSERT INTO batch_group_load_progress (batch_id, message) VALUE (34, 'start');
 # SET batch_id = 34,
 # creator = 'test';
 
-# TODO: research loading empty vs null and the end of line chars
+# TODO: research loading empty vs null and the end of line chars. Have some issues with the large file in this regards
 INSERT INTO batch_group_load_progress (batch_id, message) VALUE (34, 'load csv');
 
 LOAD DATA INFILE '/Users/allagorina/development/patch/student_groups_sample.csv'
@@ -71,7 +71,7 @@ SET batch_id = 34,
 
 ########################################### validation ###########################################
 
-# update school ids and subject_id. (combining two updates into one improves the performance)
+# update school ids and subject_id (combining two updates into one improves the performance)
 UPDATE student_group_load sgl
   JOIN school s ON sgl.school_natural_id = s.natural_id
   LEFT JOIN subject sub ON sub.code = sgl.subject_code
@@ -167,18 +167,15 @@ INSERT INTO batch_group_load_progress (batch_id, message) VALUE (34, 'update stu
 # - groups depend on the student, so it is safer to have student import id lower than the group import id
 # - for the benefit of the migrate process, one import id should not be assigned to too many records ('too many' is larger than a school size)
 # - while moving from the load to warehouse, we can do up to 1 mill in one transaction: # http://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/Aurora.BestPractices.html - 1 million  (
-
-#TODO: test the size
-
 # Because of the above, break the import into steps: first import students, then import groups
 
+#TODO: test the whole process with the large batch file - 1 mil records?
 
 ########################################### import students ###########################################
 
 # First I was creating as many import ids as there are unique schools in the batch.
 # For the case when there are not too many new students, I ended up with too many unused import ids
 # Because of this, here I am trying to determine all schools that have any students that need to be changed
-# TODO: review this, modify import to have batch_ref_id and ref_id fields
 
 # cache a school that have students that need an import id. If the same student happens in two schools (for some reason) only one school will be selected
 INSERT IGNORE INTO student_group_load_import (batch_id, school_id, ref, ref_type)
@@ -204,14 +201,15 @@ INSERT IGNORE INTO student_group_load_import (batch_id, school_id, ref, ref_type
 INSERT INTO batch_group_load_progress (batch_id, message) VALUE (34, 'load student_group_load_import with ids for students');
 
 # create one import id per each cached schools
+# TODO: review this, modify import table to have batch_ref_id and ref_id fields
 INSERT INTO import (status, content, contentType, digest, batch)
   SELECT DISTINCT
     -- we want one school for all students, hence the distinct
     0                     AS status,
     5                     AS content,
     'group batch student' AS contentType,
-    school_id             AS digest,
-    34                    AS batch
+    school_id             AS digest, -- this will be ref_id instead of digest ?
+    34                    AS batch -- this will be batch_ref_id ?
   FROM student_group_load_import sgl
   WHERE batch_id = 34 AND ref_type IN (0, 1);
 INSERT INTO batch_group_load_progress (batch_id, message) VALUE (34, 'create import ids for students');
@@ -248,8 +246,8 @@ INSERT INTO student (ssid, import_id, update_import_id, gender_id) -- TODO: remo
   FROM student_group_load sgl
     LEFT JOIN student s ON sgl.student_ssid = s.ssid
   WHERE s.id IS NULL AND sgl.student_ssid IS NOT NULL AND sgl.import_id IS NOT NULL AND sgl.batch_id = 34; -- todo: is there a better way ?
-##### TODO: transaction end
 INSERT INTO batch_group_load_progress (batch_id, message) VALUE (34, 'insert new students into warehouse');
+##### TODO: transaction end
 
 ##### TODO: transaction begin
 # now handle the deleted ones by resetting the delete flag
@@ -259,8 +257,8 @@ SET
   s.deleted          = 0,
   s.update_import_id = sgl.import_id
 WHERE s.deleted = 1 AND sgl.student_ssid IS NOT NULL AND sgl.import_id IS NOT NULL AND sgl.batch_id = 34;
-##### TODO: transaction end
 INSERT INTO batch_group_load_progress (batch_id, message) VALUE (34, 'updated deleted students in warehouse');
+##### TODO: transaction end
 
 # trigger students migrate
 UPDATE import i
@@ -268,7 +266,6 @@ UPDATE import i
 SET i.status = 1 -- or -1 if anything above failed
 WHERE i.status = 0 AND sgli.batch_id = 34 AND sgli.ref_type = 1;
 INSERT INTO batch_group_load_progress (batch_id, message) VALUE (34, 'update import id to migrate students');
-
 
 ########################################### group processing ###########################################
 
@@ -291,6 +288,10 @@ WHERE batch_id = 34;
 # we want one import id shared among all groups and all changes within a school?
 
 # this returns all school ids that have any groups changes
+# TODO:  we will need to adjust group_concat_max_len to something larger than the default = 1024
+#  SHOW VARIABLES group_concat_max_len;
+# SET [GLOBAL | SESSION] group_concat_max_len = val; 1024
+# max_allowed_packet	4194304 - this is the max limit
 INSERT IGNORE INTO student_group_load_import (batch_id, school_id, ref, ref_type)
 # school with new groups
   SELECT
@@ -419,17 +420,18 @@ INSERT IGNORE INTO student_group (name, school_id, active, school_year, subject_
   FROM student_group_load sgl
   WHERE sgl.group_id IS NULL;
 
+# update existing groups
+#  TODO: add modifier and modified date to student group table
 UPDATE student_group sg
   JOIN student_group_load sgl ON sgl.group_id = sg.id
 SET sg.subject_id = CASE WHEN sgl.subject_id = -1
   THEN NULL
                     ELSE sgl.subject_id END
 WHERE sgl.batch_id = 34;
-
-##### TODO: transaction end?
 INSERT INTO batch_group_load_progress (batch_id, message) VALUE (34, 'moved groups over');
+##### TODO: transaction end? - not sure about the end here, maybe wrap it around all group changes?
 
-# update existing group ids - again. At this point we must have all grups with ids
+# update existing group ids - again. At this point we must have all groups with ids
 UPDATE student_group_load sgl
   JOIN student_group sg ON sgl.name = sg.name AND sg.school_id = sgl.school_id AND sg.school_year = sgl.school_year
 SET group_id = sg.id
@@ -506,13 +508,8 @@ INSERT INTO batch_group_load_progress (batch_id, message) VALUE (34, 'update imp
 #  TODO: DELETE FROM student_group_load WHERE batch_id = 34;
 #  TODO: DELETE FROM student_group_load_import WHERE batch_id = 34;
 
+UPDATE batch_group_load_progress
+SET message = 'done'
+WHERE batch_id = 34;
 
-#  TODO: add modifier and modified date to student group table
-
-#
 # TODO: abandoned/not finished loads - use created timestamp and delete based on that?
-
-# SHOW VARIABLES group_concat_max_len;
-
-# SET [GLOBAL | SESSION] group_concat_max_len = val; 1024
-# max_allowed_packet	4194304
