@@ -48,26 +48,28 @@ CREATE TABLE IF NOT EXISTS student_group_load_import (
   UNIQUE INDEX idx__student_group_load_import__batch_ref (batch_id, ref)
 );
 
+
 ########################################### start batch processing ###########################################
-INSERT INTO batch_group_load (id, STATUS) VALUE (34, 0);
-INSERT INTO batch_group_load_progress (batch_id, message) VALUE (34, 'start');
 
-# LOAD DATA FROM S3 's3-us-west-2://rdw-dev-archive/student_groups_sample.csv'
-# INTO TABLE student_group_load
-# FIELDS TERMINATED BY ',' IGNORE 1 LINES
-# ( NAME, school_natural_id, school_year, subject_code, student_ssid, group_user_login)
-# SET batch_id = 34,
-# creator = 'test';
+INSERT INTO batch_group_load (id, STATUS) VALUE (40, 0);
+INSERT INTO batch_group_load_progress (batch_id, message) VALUE (40, 'start');
 
-# TODO: research loading empty vs null and the end of line chars. Have some issues with the large file in this regards
-INSERT INTO batch_group_load_progress (batch_id, message) VALUE (34, 'load csv');
-
-LOAD DATA INFILE '/Users/allagorina/development/patch/student_groups_sample.csv'
+LOAD DATA FROM S3 's3-us-west-2://rdw-dev-archive/student_groups_sample_dev.csv'
 INTO TABLE student_group_load
 FIELDS TERMINATED BY ',' IGNORE 1 LINES
-(NAME, school_natural_id, school_year, subject_code, student_ssid, group_user_login)
-SET batch_id = 34,
-  creator    = 'test';
+( NAME, school_natural_id, school_year, subject_code, student_ssid, group_user_login)
+SET batch_id = 40,
+creator = 'test';
+
+# TODO: research loading empty vs null and the end of line chars
+INSERT INTO batch_group_load_progress (batch_id, message) VALUE (40, 'load csv');
+
+# LOAD DATA INFILE '/Users/allagorina/development/patch/student_groups_sample.csv'
+# INTO TABLE student_group_load
+# FIELDS TERMINATED BY ',' IGNORE 1 LINES
+# (NAME, school_natural_id, school_year, subject_code, student_ssid, group_user_login)
+# SET batch_id = 40,
+#   creator    = 'test';
 
 ########################################### validation ###########################################
 
@@ -78,46 +80,46 @@ UPDATE student_group_load sgl
 SET school_id = s.id,
   subject_id  = CASE WHEN sub.code IS NULL
     THEN -1 ELSE sub.id END
-WHERE batch_id = 34;
-INSERT INTO batch_group_load_progress (batch_id, message) VALUE (34, 'update school and subject');
+WHERE batch_id = 40;
+INSERT INTO batch_group_load_progress (batch_id, message) VALUE (40, 'update school and subject');
 
 # TODO: validate user access here
 
 # check if there is at least on null school id, if yes - we have unknown schools
 SELECT 1
 FROM student_group_load
-WHERE school_id IS NULL AND batch_id = 34
+WHERE school_id IS NULL AND batch_id = 40
 LIMIT 1;
-INSERT INTO batch_group_load_progress (batch_id, message) VALUE (34, 'validate school');
+INSERT INTO batch_group_load_progress (batch_id, message) VALUE (40, 'validate school');
 
 # check if there is at least one null subject, if yes - we have unknown subjects
 SELECT 1
 FROM student_group_load
-WHERE subject_id IS NULL AND batch_id = 34
+WHERE subject_id IS NULL AND batch_id = 40
 LIMIT 1;
-INSERT INTO batch_group_load_progress (batch_id, message) VALUE (34, 'validate subject');
+INSERT INTO batch_group_load_progress (batch_id, message) VALUE (40, 'validate subject');
 
 # replace empty values with null
 UPDATE student_group_load
 SET group_user_login = NULL
-WHERE group_user_login = '' AND batch_id = 34;
+WHERE group_user_login = '' AND batch_id = 40;
 
 UPDATE student_group_load
 SET student_ssid = NULL
-WHERE student_ssid = '' AND batch_id = 34;
+WHERE student_ssid = '' AND batch_id = 40;
 
 # validate groups size, must be less than 200
 SELECT
   count(*),
   name
 FROM student_group_load
-WHERE batch_id = 34
+WHERE batch_id = 40
 GROUP BY name;
 
 # validate that groups have either users or students -optional
 SELECT *
 FROM student_group_load
-WHERE batch_id = 34 AND student_ssid IS NULL AND group_user_login IS NULL
+WHERE batch_id = 40 AND student_ssid IS NULL AND group_user_login IS NULL
 LIMIT 1;
 
 # validate that there is only one subject for a group name, school and year
@@ -130,8 +132,8 @@ FROM (
          name,
          subject_id
        FROM student_group_load sgl
-       WHERE batch_id = 34) AS count;
-INSERT INTO batch_group_load_progress (batch_id, message) VALUE (34, 'count DISTINCT with subject');
+       WHERE batch_id = 40) AS count;
+INSERT INTO batch_group_load_progress (batch_id, message) VALUE (40, 'count DISTINCT with subject');
 
 SELECT count(*)
 FROM (
@@ -140,8 +142,8 @@ FROM (
          school_year,
          name
        FROM student_group_load sgl
-       WHERE batch_id = 34) AS count;
-INSERT INTO batch_group_load_progress (batch_id, message) VALUE (34, 'count DISTINCT');
+       WHERE batch_id = 40) AS count;
+INSERT INTO batch_group_load_progress (batch_id, message) VALUE (40, 'count DISTINCT');
 
 # TODO: consider validating the size of the file and rejecting if larger than 1 mil?
 
@@ -152,15 +154,15 @@ INSERT INTO batch_group_load_progress (batch_id, message) VALUE (34, 'count DIST
 UPDATE student_group_load sgl
   JOIN student s ON sgl.student_ssid = s.ssid
 SET student_id = s.id
-WHERE batch_id = 34 and s.deleted = 0;
-INSERT INTO batch_group_load_progress (batch_id, message) VALUE (34, 'update student id in the load table, first time');
+WHERE batch_id = 40 and s.deleted = 0;;
+INSERT INTO batch_group_load_progress (batch_id, message) VALUE (40, 'update student id in the load table, first time');
 
 # update existing groups
 UPDATE student_group_load sgl
   JOIN student_group sg ON sgl.name = sg.name
 SET group_id = sg.id
-WHERE batch_id = 34;
-INSERT INTO batch_group_load_progress (batch_id, message) VALUE (34, 'update student id in the load table, first time');
+WHERE batch_id = 40;
+INSERT INTO batch_group_load_progress (batch_id, message) VALUE (40, 'update student id in the load table, first time');
 
 # Considerations:
 # - migrate will be suspended if we have import ids in state 0 for a long time
@@ -186,7 +188,7 @@ INSERT IGNORE INTO student_group_load_import (batch_id, school_id, ref, ref_type
     student_ssid,
     1
   FROM student_group_load sgl
-  WHERE sgl.student_id IS NULL AND sgl.student_ssid IS NOT NULL AND sgl.batch_id = 34
+  WHERE sgl.student_id IS NULL AND sgl.student_ssid IS NOT NULL AND sgl.batch_id = 40
   UNION ALL
   #     deleted students that are in the groups
   SELECT
@@ -196,9 +198,9 @@ INSERT IGNORE INTO student_group_load_import (batch_id, school_id, ref, ref_type
     0
   FROM student_group_load sgl
     JOIN student s ON sgl.student_ssid = s.ssid
-  WHERE s.deleted = 1 AND sgl.student_ssid IS NOT NULL AND sgl.batch_id = 34;
+  WHERE s.deleted = 1 AND sgl.student_ssid IS NOT NULL AND sgl.batch_id = 40;
 
-INSERT INTO batch_group_load_progress (batch_id, message) VALUE (34, 'load student_group_load_import with ids for students');
+INSERT INTO batch_group_load_progress (batch_id, message) VALUE (40, 'load student_group_load_import with ids for students');
 
 # create one import id per each cached schools
 # TODO: review this, modify import table to have batch_ref_id and ref_id fields
@@ -208,11 +210,11 @@ INSERT INTO import (status, content, contentType, digest, batch)
     0                     AS status,
     5                     AS content,
     'group batch student' AS contentType,
-    school_id             AS digest, -- this will be ref_id instead of digest ?
-    34                    AS batch -- this will be batch_ref_id ?
+    school_id             AS digest,
+    40                    AS batch
   FROM student_group_load_import sgl
-  WHERE batch_id = 34 AND ref_type IN (0, 1);
-INSERT INTO batch_group_load_progress (batch_id, message) VALUE (34, 'create import ids for students');
+  WHERE batch_id = 40 AND ref_type IN (0, 1);
+INSERT INTO batch_group_load_progress (batch_id, message) VALUE (40, 'create import ids for students');
 
 # assign import ids to all records that have school
 UPDATE student_group_load_import sgl
@@ -220,19 +222,19 @@ UPDATE student_group_load_import sgl
           id,
           cast(digest AS UNSIGNED) AS school_id
         FROM import
-        WHERE batch = '34' AND status = 0 AND contentType = 'group batch student') AS si
+        WHERE batch = '40' AND status = 0 AND contentType = 'group batch student') AS si
     ON si.school_id = sgl.school_id
 SET sgl.import_id = si.id
-WHERE sgl.batch_id = 34 AND i.ref_type IN (0, 1);
-INSERT INTO batch_group_load_progress (batch_id, message) VALUE (34, 'update student_group_load_import with import ids for students');
+WHERE sgl.batch_id = 40 AND sgl.ref_type IN (0, 1);
+INSERT INTO batch_group_load_progress (batch_id, message) VALUE (40, 'update student_group_load_import with import ids for students');
 
 # distribute import ids among the batch - one id per school, AND only for the records that will be imported
 UPDATE student_group_load sgl
   JOIN student_group_load_import i
     ON i.school_id = sgl.school_id
 SET sgl.import_id = i.import_id
-WHERE sgl.batch_id = 34 AND student_id IS NULL;
-INSERT INTO batch_group_load_progress (batch_id, message) VALUE (34, 'updated student_group_load import id, one per school');
+WHERE sgl.batch_id = 40 AND student_id IS NULL;
+INSERT INTO batch_group_load_progress (batch_id, message) VALUE (40, 'updated student_group_load import id, one per school');
 
 ##### TODO: transaction begin
 # first insert anything with missing ssid
@@ -245,8 +247,8 @@ INSERT INTO student (ssid, import_id, update_import_id, gender_id) -- TODO: remo
     1
   FROM student_group_load sgl
     LEFT JOIN student s ON sgl.student_ssid = s.ssid
-  WHERE s.id IS NULL AND sgl.student_ssid IS NOT NULL AND sgl.import_id IS NOT NULL AND sgl.batch_id = 34; -- todo: is there a better way ?
-INSERT INTO batch_group_load_progress (batch_id, message) VALUE (34, 'insert new students into warehouse');
+  WHERE s.id IS NULL AND sgl.student_ssid IS NOT NULL AND sgl.import_id IS NOT NULL AND sgl.batch_id = 40; -- todo: is there a better way ?
+INSERT INTO batch_group_load_progress (batch_id, message) VALUE (40, 'insert new students into warehouse');
 ##### TODO: transaction end
 
 ##### TODO: transaction begin
@@ -256,16 +258,17 @@ UPDATE student s
 SET
   s.deleted          = 0,
   s.update_import_id = sgl.import_id
-WHERE s.deleted = 1 AND sgl.student_ssid IS NOT NULL AND sgl.import_id IS NOT NULL AND sgl.batch_id = 34;
-INSERT INTO batch_group_load_progress (batch_id, message) VALUE (34, 'updated deleted students in warehouse');
+WHERE s.deleted = 1 AND sgl.student_ssid IS NOT NULL AND sgl.import_id IS NOT NULL AND sgl.batch_id = 40;
 ##### TODO: transaction end
+INSERT INTO batch_group_load_progress (batch_id, message) VALUE (40, 'updated deleted students in warehouse');
 
 # trigger students migrate
 UPDATE import i
   JOIN student_group_load_import sgli ON sgli.import_id = i.id
 SET i.status = 1 -- or -1 if anything above failed
-WHERE i.status = 0 AND sgli.batch_id = 34 AND sgli.ref_type = 1;
-INSERT INTO batch_group_load_progress (batch_id, message) VALUE (34, 'update import id to migrate students');
+WHERE i.status = 0 AND sgli.batch_id = 40 AND sgli.ref_type = 1;
+INSERT INTO batch_group_load_progress (batch_id, message) VALUE (40, 'update import id to migrate students');
+
 
 ########################################### group processing ###########################################
 
@@ -273,13 +276,13 @@ INSERT INTO batch_group_load_progress (batch_id, message) VALUE (34, 'update imp
 UPDATE student_group_load sgl
   JOIN student s ON sgl.student_ssid = s.ssid
 SET sgl.student_id = s.id
-WHERE batch_id = 34 AND student_id IS NULL;
-INSERT INTO batch_group_load_progress (batch_id, message) VALUE (34, 'update student id in the load table');
+WHERE batch_id = 40 AND student_id IS NULL;
+INSERT INTO batch_group_load_progress (batch_id, message) VALUE (40, 'update student id in the load table');
 
 # remove processed import ids
 UPDATE student_group_load sgl
 SET import_id = NULL
-WHERE batch_id = 34;
+WHERE batch_id = 40;
 
 # We want to only migrate groups that have changed
 # that means we want to update the import id only on those groups, hence we need to determine the delta
@@ -318,7 +321,7 @@ INSERT IGNORE INTO student_group_load_import (batch_id, school_id, ref, ref_type
            name,
            GROUP_CONCAT(student_id ORDER BY student_id SEPARATOR ',') AS students
          FROM student_group_load
-         WHERE student_id IS NOT NULL AND batch_id = 34
+         WHERE student_id IS NOT NULL AND batch_id = 40
          GROUP BY group_id) AS loading
     LEFT JOIN
     (
@@ -347,7 +350,7 @@ INSERT IGNORE INTO student_group_load_import (batch_id, school_id, ref, ref_type
            name,
            GROUP_CONCAT(group_user_login ORDER BY group_user_login SEPARATOR ',') AS users
          FROM student_group_load
-         WHERE group_user_login IS NOT NULL AND batch_id = 34
+         WHERE group_user_login IS NOT NULL AND batch_id = 40
          GROUP BY group_id) AS loading
     LEFT JOIN
     (
@@ -362,7 +365,7 @@ INSERT IGNORE INTO student_group_load_import (batch_id, school_id, ref, ref_type
 
   UNION ALL
 
-  #schools with the existing groups that have changes     
+  #schools with the existing groups that have changes
   SELECT
     sgl.batch_id,
     sgl.school_id,
@@ -371,19 +374,19 @@ INSERT IGNORE INTO student_group_load_import (batch_id, school_id, ref, ref_type
   FROM student_group_load sgl
     JOIN student_group sg ON sg.id = sgl.group_id
   WHERE ifnull(sg.subject_id, -1) != sgl.subject_id;
-INSERT INTO batch_group_load_progress (batch_id, message) VALUE (34, 'generated cached import ids for the groups in the batch, one per school');
+INSERT INTO batch_group_load_progress (batch_id, message) VALUE (40, 'generated cached import ids for the groups in the batch, one per school');
 
-# generate a new set of import ids for the groups 
+# generate a new set of import ids for the groups
 INSERT INTO import (status, content, contentType, digest, batch)
   SELECT DISTINCT
     0             AS status,
     5             AS content,
     'group batch' AS contentType,
     school_id     AS digest,
-    34            AS batch
+    40            AS batch
   FROM student_group_load_import sgl
-  WHERE batch_id = 34 AND ref_type IN (2, 3, 4, 5);
-INSERT INTO batch_group_load_progress (batch_id, message) VALUE (34, 'generated import ids for the groups in the batch, one per school');
+  WHERE batch_id = 40 AND ref_type IN (2, 3, 4, 5);
+INSERT INTO batch_group_load_progress (batch_id, message) VALUE (40, 'generated import ids for the groups in the batch, one per school');
 
 # assign import ids to all records that have school
 UPDATE student_group_load_import sgl
@@ -391,17 +394,17 @@ UPDATE student_group_load_import sgl
           id,
           cast(digest AS UNSIGNED) AS school_id
         FROM import
-        WHERE batch = '34' AND status = 0 AND contentType = 'group batch') AS si
+        WHERE batch = '40' AND status = 0 AND contentType = 'group batch') AS si
     ON si.school_id = sgl.school_id
 SET sgl.import_id = si.id
-WHERE sgl.batch_id = 34 AND i.ref_type IN (2, 3, 4, 5);
-INSERT INTO batch_group_load_progress (batch_id, message) VALUE (34, 'update student_group_load_import with import ids for students');
+WHERE sgl.batch_id = 40 AND sgl.ref_type IN (2, 3, 4, 5);
+INSERT INTO batch_group_load_progress (batch_id, message) VALUE (40, 'update student_group_load_import with import ids for students');
 
 UPDATE student_group_load sgl
   JOIN student_group_load_import i ON sgl.school_id = i.school_id
 SET sgl.import_id = i.import_id
-WHERE sgl.batch_id = 34 AND i.ref_type IN (2, 3, 4, 5);
-INSERT INTO batch_group_load_progress (batch_id, message) VALUE (34, 'updated import id for groups, one per school');
+WHERE sgl.batch_id = 40 AND i.ref_type IN (2, 3, 4, 5);
+INSERT INTO batch_group_load_progress (batch_id, message) VALUE (40, 'updated import id for groups, one per school');
 
 # create new groups
 ##### TODO: transaction begin
@@ -427,16 +430,17 @@ UPDATE student_group sg
 SET sg.subject_id = CASE WHEN sgl.subject_id = -1
   THEN NULL
                     ELSE sgl.subject_id END
-WHERE sgl.batch_id = 34;
-INSERT INTO batch_group_load_progress (batch_id, message) VALUE (34, 'moved groups over');
-##### TODO: transaction end? - not sure about the end here, maybe wrap it around all group changes?
+WHERE sgl.batch_id = 40;
 
-# update existing group ids - again. At this point we must have all groups with ids
+##### TODO: transaction end?
+INSERT INTO batch_group_load_progress (batch_id, message) VALUE (40, 'moved groups over');
+
+# update existing group ids - again. At this point we must have all grups with ids
 UPDATE student_group_load sgl
   JOIN student_group sg ON sgl.name = sg.name AND sg.school_id = sgl.school_id AND sg.school_year = sgl.school_year
 SET group_id = sg.id
-WHERE batch_id = 34 AND group_id IS NULL;
-INSERT INTO batch_group_load_progress (batch_id, message) VALUE (34, 'update group id in the load table after creating new groups');
+WHERE batch_id = 40 AND group_id IS NULL;
+INSERT INTO batch_group_load_progress (batch_id, message) VALUE (40, 'update group id in the load table after creating new groups');
 
 ##### TODO: transaction begin
 # add/delete user_student_group
@@ -447,14 +451,14 @@ INSERT IGNORE INTO user_student_group (student_group_id, user_login)
   FROM student_group_load susg
     LEFT JOIN user_student_group rusg ON (rusg.student_group_id = susg.group_id AND rusg.user_login = susg.group_user_login)
   WHERE rusg.user_login IS NULL
-        AND susg.batch_id = 34
+        AND susg.batch_id = 40
         AND group_user_login IS NOT NULL;
 
 
 DELETE rsug FROM user_student_group rsug
   JOIN student_group_load ssg ON ssg.group_id = rsug.student_group_id
 WHERE
-  ssg.batch_id = 34
+  ssg.batch_id = 40
   AND
   NOT EXISTS(
       SELECT 1
@@ -472,7 +476,7 @@ INSERT IGNORE INTO student_group_membership (student_group_id, student_id)
   FROM student_group_load susg
     LEFT JOIN student_group_membership rusg ON (rusg.student_group_id = susg.group_id AND rusg.student_id = susg.student_id)
   WHERE rusg.student_id IS NULL
-        AND susg.batch_id = 34
+        AND susg.batch_id = 40
         AND susg.student_id IS NOT NULL;
 
 DELETE rsug
@@ -480,7 +484,7 @@ FROM
   student_group_membership rsug
   JOIN student_group_load ssg ON ssg.group_id = rsug.student_group_id
 WHERE
-  ssg.batch_id = 34
+  ssg.batch_id = 40
   AND
   NOT EXISTS(
       SELECT 1
@@ -494,19 +498,19 @@ WHERE
 UPDATE student_group sg
   JOIN student_group_load sgl ON sgl.group_id = sg.id
 SET sg.update_import_id = sgl.import_id
-WHERE sgl.import_id IS NOT NULL AND sgl.batch_id = 34;
+WHERE sgl.import_id IS NOT NULL AND sgl.batch_id = 40;
 ##### TODO: transaction end
 
 # trigger students migrate
 UPDATE import i
   JOIN student_group_load_import sgli ON sgli.import_id = i.id
 SET i.status = 1 -- or -1 if anything above failed
-WHERE i.status = 0 AND sgli.batch_id = 34 AND sgli.ref_type IN (2, 3, 4, 5);
-INSERT INTO batch_group_load_progress (batch_id, message) VALUE (34, 'update import id to migrate students');
+WHERE i.status = 0 AND sgli.batch_id = 40 AND sgli.ref_type IN (2, 3, 4, 5);
+INSERT INTO batch_group_load_progress (batch_id, message) VALUE (40, 'update import id to migrate students');
 
 # clean up
-#  TODO: DELETE FROM student_group_load WHERE batch_id = 34;
-#  TODO: DELETE FROM student_group_load_import WHERE batch_id = 34;
+#  TODO: DELETE FROM student_group_load WHERE batch_id = 40;
+#  TODO: DELETE FROM student_group_load_import WHERE batch_id = 40;
 
 UPDATE batch_group_load_progress
 SET message = 'done'
