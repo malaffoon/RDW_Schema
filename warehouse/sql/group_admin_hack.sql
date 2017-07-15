@@ -23,22 +23,22 @@ CREATE TABLE IF NOT EXISTS student_group_load (
 alter table student_group_load add  INDEX idx__student_group_load_name (name);
 alter table student_group_load add  INDEX idx__student_group_load_batch_student (batch_id, student_id);
 
-# TODO: add creator
-DROP TABLE IF EXISTS batch_group_load;
-CREATE TABLE IF NOT EXISTS batch_group_load (
-  id      BIGINT AUTO_INCREMENT PRIMARY KEY,
-  STATUS  TINYINT                                   NOT NULL,
-  created TIMESTAMP(6) DEFAULT CURRENT_TIMESTAMP(6) NOT NULL,
-  updated TIMESTAMP(6) DEFAULT CURRENT_TIMESTAMP(6) NOT NULL
-);
-
-# TODO: this table is my temporary way of tracking the execution time of each step
-DROP TABLE IF EXISTS batch_group_load_progress;
-CREATE TABLE IF NOT EXISTS batch_group_load_progress (
-  batch_id BIGINT,
-  created  TIMESTAMP(6) DEFAULT CURRENT_TIMESTAMP(6) NOT NULL,
-  message  VARCHAR(256)
-);
+# # TODO: add creator
+# DROP TABLE IF EXISTS batch_group_load;
+# CREATE TABLE IF NOT EXISTS batch_group_load (
+#   id      BIGINT AUTO_INCREMENT PRIMARY KEY,
+#   STATUS  TINYINT                                   NOT NULL,
+#   created TIMESTAMP(6) DEFAULT CURRENT_TIMESTAMP(6) NOT NULL,
+#   updated TIMESTAMP(6) DEFAULT CURRENT_TIMESTAMP(6) NOT NULL
+# );
+#
+# # TODO: this table is my temporary way of tracking the execution time of each step
+# DROP TABLE IF EXISTS batch_group_load_progress;
+# CREATE TABLE IF NOT EXISTS batch_group_load_progress (
+#   batch_id BIGINT,
+#   created  TIMESTAMP(6) DEFAULT CURRENT_TIMESTAMP(6) NOT NULL,
+#   message  VARCHAR(256)
+# );
 
 DROP TABLE IF EXISTS student_group_load_import;
 CREATE TABLE IF NOT EXISTS student_group_load_import (
@@ -412,7 +412,7 @@ INSERT INTO batch_group_load_progress (batch_id, message) VALUE (40, 'update stu
 
 UPDATE student_group_load sgl
   JOIN  (select DISTINCT school_id, import_id from student_group_load_import where batch_id = 40 and ref_type IN (2, 3, 4, 5)) i
-  ON sgl.school_id = i.school_id
+    ON sgl.school_id = i.school_id
 SET sgl.import_id = i.import_id
 WHERE sgl.batch_id = 40;
 INSERT INTO batch_group_load_progress (batch_id, message) VALUE (40, 'updated import id for groups, one per school');
@@ -543,7 +543,7 @@ WHERE id = 40;
 
 # TODO: abandoned/not finished loads - use created timestamp and delete based on that?
 
-#
+
 # SELECT
 #   sg.name,
 #   sch.natural_id,
@@ -557,33 +557,74 @@ WHERE id = 40;
 #   JOIN school sch ON sch.id = sg.school_id
 # ORDER BY natural_id, natural_id
 
-
+#
 # delete sgm
 #   from student_group_membership sgm
 # join student s on s.id = sgm.student_id
 # join import i on i.id = s.id
-# where i.batch = '40'
+# where i.batch in ('43','45','46','47','40')
 #
 # delete sgm
 # from student_group_membership sgm
 #   join student_group s on s.id = sgm.student_group_id
 #   join import i on i.id = s.update_import_id
-# where i.batch = '40'
+# where i.batch in ('43','45','46','47','40')
 #
 # delete usg from user_student_group usg
 # JOIN student_group_load sg on sg.id = usg.student_group_id
 #   join student_group s on s.id = usg.student_group_id
 #   join import i on i.id = sg.import_id
-# where i.batch = '40'
+# where i.batch  in ('43','45','46','47','40')
+#
+# delete usg from user_student_group usg
+#   join student_group s on s.id = usg.student_group_id
+#   join import i on i.id = s.import_id
+# where i.batch  in ('43','45','46','47','40')
+#
+# delete usg from user_student_group usg
+#   join student_group s on s.id = usg.student_group_id
+#   join import i on i.id = s.update_import_id
+# where i.batch  in ('43','45','46','47','40')
 #
 # delete s from student s
 #   join import i on i.id = s.import_id
-# where i.batch = '40'
+# where i.batch in ('43','45','46','47','40')
 #
 # delete s from student_group s
 #   join import i on i.id = s.update_import_id
-# where i.batch = '40'
+# where i.batch in ('43','45','46','47','40')
 #
-# delete from import where batch = '40'
-# delete from batch_group_load_progress WHERE batch_id = 40
-# delete from batch_group_load where id = 40
+# delete from import where batch in ('43','45','46','47','40')
+# delete from batch_group_load_progress WHERE batch_id in ('43','45','46','47','40')
+# delete from batch_group_load where id in (43,45,46,47,40)
+
+
+# select count(*) from warehouse.student_group_membership; -- 889109
+# select count(*) from reporting.student_group_membership; -- 889109
+#
+# select count(*) from reporting.user_student_group; -- 19080
+# select count(*) from warehouse.user_student_group; -- 19080
+#
+# select count(*) FROM reporting.student_group; -- 38154
+# select count(*) FROM warehouse.student_group; -- 38154
+#
+# select count(*) from reporting.student; -- 454546
+# select count(*) from warehouse.student where deleted = 0; -- 454546
+#
+# select count(*) FROM student_group_load; -- 889,108
+#
+# select count(*) from reporting.student_group_membership sgm join student s on s.id = sgm.student_id
+# where s.last_or_surname  is  null; -- 444,561
+
+# select count(*) from reporting.student_group_membership sgm join student s on s.id = sgm.student_id
+# where s.last_or_surname  is  not null; -- 444,548
+
+
+# select message, timestampdiff(SECOND,prevdatenew,created)
+# from (
+#        select message, created, @prevDateNew as prevdatenew,
+#          @prevDateNew := created
+#        from batch_group_load_progress
+#        where batch_id = 40
+#        order by created
+#      ) t1
