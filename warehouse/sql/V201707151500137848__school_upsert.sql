@@ -1,5 +1,7 @@
 -- improve performance of school_upsert
 
+USE ${schemaName};
+
 DROP PROCEDURE IF EXISTS district_upsert;
 DELIMITER //
 CREATE PROCEDURE district_upsert(IN  p_name       VARCHAR(100),
