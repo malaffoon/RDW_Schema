@@ -60,7 +60,7 @@ alter table student_group_load_import add  INDEX idx__student_group_load_import_
 INSERT INTO batch_group_load (id, STATUS) VALUE (40, 0);
 INSERT INTO batch_group_load_progress (batch_id, message) VALUE (40, 'start');
 
-LOAD DATA FROM S3 's3-us-west-2://rdw-dev-archive/all_new_sg.csv'
+LOAD DATA FROM S3 's3-us-west-2://rdw-dev-archive/new_sg_batch_43.csv'
 INTO TABLE student_group_load
 FIELDS TERMINATED BY ',' IGNORE 1 LINES
 ( NAME, school_natural_id, school_year, subject_code, student_ssid, group_user_login)
@@ -168,7 +168,7 @@ UPDATE student_group_load sgl
   JOIN student_group sg ON sgl.name = sg.name and sgl.school_year = sg.school_year and sgl.school_id = sg.school_id
 SET group_id = sg.id
 WHERE batch_id = 40;
-INSERT INTO batch_group_load_progress (batch_id, message) VALUE (40, 'update student id in the load table, first time');
+INSERT INTO batch_group_load_progress (batch_id, message) VALUE (40, 'update group id in the load table, first time');
 
 # Considerations:
 # - migrate will be suspended if we have import ids in state 0 for a long time
@@ -326,7 +326,7 @@ INSERT IGNORE INTO student_group_load_import (batch_id, school_id, ref, ref_type
            school_id,
            group_id,
            name,
-           GROUP_CONCAT(student_id ORDER BY student_id SEPARATOR ',') AS students,
+           GROUP_CONCAT(student_id ORDER BY student_id SEPARATOR '') AS students,
            school_year
          FROM student_group_load
          WHERE student_id IS NOT NULL AND batch_id = 40
@@ -335,7 +335,7 @@ INSERT IGNORE INTO student_group_load_import (batch_id, school_id, ref, ref_type
     (
       SELECT
         student_group_id,
-        GROUP_CONCAT(student_id ORDER BY student_id SEPARATOR ',') AS students
+        GROUP_CONCAT(student_id ORDER BY student_id SEPARATOR '') AS students
       FROM student_group_membership
       GROUP BY student_group_id
     ) AS existing
@@ -356,16 +356,17 @@ INSERT IGNORE INTO student_group_load_import (batch_id, school_id, ref, ref_type
            school_id,
            group_id,
            name,
-           GROUP_CONCAT(group_user_login ORDER BY group_user_login SEPARATOR ',') AS users,
+           GROUP_CONCAT(group_user_login ORDER BY group_user_login SEPARATOR '') AS users,
            school_year
-         FROM student_group_load
+         FROM
+           (select DISTINCT  batch_id,school_id, group_id, name, school_year,group_user_login from student_group_load ) u
          WHERE group_user_login IS NOT NULL AND batch_id = 40
          GROUP BY group_id) AS loading
     LEFT JOIN
     (
       SELECT
         student_group_id,
-        GROUP_CONCAT(user_login ORDER BY user_login SEPARATOR ',') AS users
+        GROUP_CONCAT(user_login ORDER BY user_login SEPARATOR '') AS users
       FROM user_student_group
       GROUP BY student_group_id
     ) AS existing
@@ -496,20 +497,27 @@ INSERT IGNORE INTO student_group_membership (student_group_id, student_id)
         AND susg.student_id IS NOT NULL;
 
 # ALLA: TODO this is similar to the above
-DELETE rsug
-FROM
-  student_group_membership rsug
-  JOIN student_group_load ssg ON ssg.group_id = rsug.student_group_id
+# DELETE rsug
+# FROM
+#   student_group_membership rsug
+#   JOIN student_group_load ssg ON ssg.group_id = rsug.student_group_id
+# WHERE
+#   ssg.batch_id = 40
+#   AND
+#   NOT EXISTS(
+#       SELECT 1
+#       FROM student_group_load susg
+#       WHERE
+#         susg.group_id = rsug.student_group_id
+#         AND susg.student_id = rsug.student_id
+#   );
+
+DELETE rsug FROM student_group_membership rsug
+  LEFT JOIN student_group_load ssg ON ssg.group_id = rsug.student_group_id
 WHERE
   ssg.batch_id = 40
-  AND
-  NOT EXISTS(
-      SELECT 1
-      FROM student_group_load susg
-      WHERE
-        susg.group_id = rsug.student_group_id
-        AND susg.student_id = rsug.student_id
-  );
+  and ssg.group_id is null;
+
 
 # update student groups update_import_id
 UPDATE student_group sg
@@ -529,8 +537,53 @@ INSERT INTO batch_group_load_progress (batch_id, message) VALUE (40, 'update imp
 #  TODO: DELETE FROM student_group_load WHERE batch_id = 40;
 #  TODO: DELETE FROM student_group_load_import WHERE batch_id = 40;
 
-UPDATE batch_group_load_progress
-SET message = 'done'
-WHERE batch_id = 40;
+UPDATE batch_group_load
+SET STATUS = 20
+WHERE id = 40;
 
 # TODO: abandoned/not finished loads - use created timestamp and delete based on that?
+
+#
+# SELECT
+#   sg.name,
+#   sch.natural_id,
+#   2018,
+#   case when sg.subject_id = 1 then 'Math'  when sg.subject_id = 2 then 'ELA' else 'All' end,
+#   CONCAT('a_',s.ssid),
+#   'dwtest@example.com'
+# FROM student_group sg
+#   JOIN student_group_membership sgm ON sgm.student_group_id = sg.id
+#   JOIN student s ON s.id = sgm.student_id
+#   JOIN school sch ON sch.id = sg.school_id
+# ORDER BY natural_id, natural_id
+
+
+# delete sgm
+#   from student_group_membership sgm
+# join student s on s.id = sgm.student_id
+# join import i on i.id = s.id
+# where i.batch = '40'
+#
+# delete sgm
+# from student_group_membership sgm
+#   join student_group s on s.id = sgm.student_group_id
+#   join import i on i.id = s.update_import_id
+# where i.batch = '40'
+#
+# delete usg from user_student_group usg
+# JOIN student_group_load sg on sg.id = usg.student_group_id
+#   join student_group s on s.id = usg.student_group_id
+#   join import i on i.id = sg.import_id
+# where i.batch = '40'
+#
+# delete s from student s
+#   join import i on i.id = s.import_id
+# where i.batch = '40'
+#
+# delete s from student_group s
+#   join import i on i.id = s.update_import_id
+# where i.batch = '40'
+#
+# delete from import where batch = '40'
+# delete from batch_group_load_progress WHERE batch_id = 40
+# delete from batch_group_load where id = 40
