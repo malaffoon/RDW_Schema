@@ -514,6 +514,6 @@ INSERT INTO batch_group_load_progress (batch_id, message) VALUE (40, 'update imp
 
 UPDATE batch_group_load_progress
 SET message = 'done'
-WHERE batch_id = 34;
+WHERE batch_id = 40;
 
 # TODO: abandoned/not finished loads - use created timestamp and delete based on that?
