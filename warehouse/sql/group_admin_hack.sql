@@ -141,7 +141,7 @@ FROM (
          subject_id
        FROM student_group_load sgl
        WHERE batch_id = 33) AS count;
-INSERT INTO batch_group_load_progress (batch_id, message) VALUE (33, 'count DISTINCT with subject');
+INSERT INTO batch_group_load_progress (batch_id, message) VALUE (33, 'count DISTINCT school_id, school_year, name, subject_id');
 
 SELECT count(*)
 FROM (
@@ -151,7 +151,7 @@ FROM (
          name
        FROM student_group_load sgl
        WHERE batch_id = 33) AS count;
-INSERT INTO batch_group_load_progress (batch_id, message) VALUE (33, 'count DISTINCT');
+INSERT INTO batch_group_load_progress (batch_id, message) VALUE (33, 'count DISTINCT school_id, school_year, name');
 
 # TODO: consider validating the size of the file and rejecting if larger than 1 mil?
 
@@ -291,6 +291,7 @@ INSERT INTO batch_group_load_progress (batch_id, message) VALUE (33, 'update stu
 UPDATE student_group_load sgl
 SET import_id = NULL
 WHERE batch_id = 33;
+INSERT INTO batch_group_load_progress (batch_id, message) VALUE (33, 'reset import ids to null');
 
 # We want to only migrate groups that have changed
 # that means we want to update the import id only on those groups, hence we need to determine the delta
@@ -312,6 +313,8 @@ INSERT IGNORE INTO student_group_load_import (batch_id, school_id, ref, ref_type
     2
   FROM student_group_load sgl
   WHERE sgl.group_id IS NULL and batch_id = 33;
+INSERT INTO batch_group_load_progress (batch_id, message) VALUE (33, 'load student_group_load_import with ids of groups, ref type = 2');
+
 
 INSERT IGNORE INTO student_group_load_import (batch_id, school_id, ref, ref_type)
 
@@ -342,6 +345,9 @@ INSERT IGNORE INTO student_group_load_import (batch_id, school_id, ref, ref_type
     ) AS existing
       ON existing.student_group_id = loading.group_id
   WHERE existing.students <> loading.students;
+INSERT INTO batch_group_load_progress (batch_id, message) VALUE (33, 'load student_group_load_import with ids of groups, ref type = 3');
+
+
 
 INSERT IGNORE INTO student_group_load_import (batch_id, school_id, ref, ref_type)
 
@@ -373,6 +379,7 @@ INSERT IGNORE INTO student_group_load_import (batch_id, school_id, ref, ref_type
     ) AS existing
       ON existing.student_group_id = loading.group_id
   WHERE existing.users <> loading.users;
+INSERT INTO batch_group_load_progress (batch_id, message) VALUE (33, 'load student_group_load_import with ids of groups, ref type = 4');
 
 INSERT IGNORE INTO student_group_load_import (batch_id, school_id, ref, ref_type)
 #schools with the existing groups that have changes
@@ -384,7 +391,7 @@ INSERT IGNORE INTO student_group_load_import (batch_id, school_id, ref, ref_type
   FROM student_group_load sgl
     JOIN student_group sg ON sg.id = sgl.group_id
   WHERE ifnull(sg.subject_id, -1) != sgl.subject_id;
-INSERT INTO batch_group_load_progress (batch_id, message) VALUE (33, 'generated cached import ids for the groups in the batch, one per school');
+INSERT INTO batch_group_load_progress (batch_id, message) VALUE (33, 'load student_group_load_import with ids of groups, ref type = 5');
 
 # generate a new set of import ids for the groups
 INSERT INTO import (status, content, contentType, digest, batch)
