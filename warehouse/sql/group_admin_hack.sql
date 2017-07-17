@@ -20,9 +20,9 @@ CREATE TABLE IF NOT EXISTS student_group_load (
   import_id         BIGINT
 );
 
-alter table student_group_load add  INDEX idx__student_group_load__name_batch_id (name, batch_id);
-alter table student_group_load add  INDEX idx__student_group_load__student_id_batch_id (student_id, batch_id);
-alter table student_group_load add  INDEX idx__student_group_load__student_ssid_batch_id (student_ssid, batch_id);
+# alter table student_group_load add  INDEX idx__student_group_load__name_batch_id (name, batch_id);
+# alter table student_group_load add  INDEX idx__student_group_load__student_id_batch_id (student_id, batch_id);
+# alter table student_group_load add  INDEX idx__student_group_load__student_ssid_batch_id (student_ssid, batch_id);
 
 # # TODO: add creator
 DROP TABLE IF EXISTS batch_group_load;
@@ -51,9 +51,8 @@ CREATE TABLE IF NOT EXISTS student_group_load_import (
   ref_type  TINYINT, -- 1 = new student, 0 = restore deleted student, 2 = new groups, 3 = modified groups membership, 4 = modified user, 5 = modified group
   UNIQUE INDEX idx__student_group_load_import__batch_ref (batch_id, ref)
 );
-alter table student_group_load_import add  INDEX idx__student_group_load_import__school_batch (school_id, batch_id);
-alter table student_group_load_import add  INDEX idx__student_group_load_import__school_import_batch (school_id, import_id, batch_id);
-
+# alter table student_group_load_import add  INDEX idx__student_group_load_import__school_batch (school_id, batch_id);
+# alter table student_group_load_import add  INDEX idx__student_group_load_import__school_import_batch (school_id, import_id, batch_id);
 
 
 ########################################### start batch processing ###########################################
@@ -170,6 +169,7 @@ UPDATE student_group_load sgl
 SET group_id = sg.id
 WHERE batch_id = 33;
 INSERT INTO batch_group_load_progress (batch_id, message) VALUE (33, 'update group id in the load table, first time');
+
 
 # Considerations:
 # - migrate will be suspended if we have import ids in state 0 for a long time
