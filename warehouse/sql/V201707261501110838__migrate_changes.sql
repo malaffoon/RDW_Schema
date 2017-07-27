@@ -39,3 +39,5 @@ ALTER TABLE exam ADD COLUMN updated TIMESTAMP(6) NOT NULL DEFAULT CURRENT_TIMEST
 UPDATE exam s
   JOIN import i ON i.id = s.update_import_id
 SET s.updated = i.updated;
+
+ALTER TABLE exam ADD INDEX idx__exam__updated (updated);
