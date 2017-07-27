@@ -6,7 +6,7 @@ TRUNCATE instructional_resource;
 ALTER table instructional_resource DROP COLUMN id;
 ALTER table instructional_resource ADD COLUMN name varchar(250) NOT NULL PRIMARY KEY;
 
-INSERT IGNORE INTO instructional_resource (name, resource) VALUES
+INSERT INTO instructional_resource (name, resource) VALUES
  ('SBAC-IAB-FIXED-G3M-NBT-MATH-3', 'https://portal.smarterbalanced.org/library/en/v1.0/digital-library-connections-grade-3-number-and-operations-in-base-ten.docx'),
  ('SBAC-IAB-FIXED-G4E-Revision-ELA-4', 'https://portal.smarterbalanced.org/library/en/digital-library-connections-grade-4-revision.docx'),
  ('SBAC-IAB-FIXED-G4E-BriefWrites-ELA-4', 'https://portal.smarterbalanced.org/library/en/v1.0/digital-library-connections-grade-4-brief-writes.docx'),
