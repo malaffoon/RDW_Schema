@@ -32,7 +32,7 @@ def flywayActions = [migrate: org.flywaydb.gradle.task.FlywayMigrateTask,
                baseline: org.flywaydb.gradle.task.FlywayBaselineTask,
                repair: org.flywaydb.gradle.task.FlywayRepairTask]
 
-def dataMartSchemas = ["reporting", "staging", "spring_batch_reporting"]
+def dataMartSchemas = ["reporting"]
 def warehouseSchemas = ["warehouse"]
 
 //Gradle can't call a single task more than once, because of its design, so
@@ -76,8 +76,6 @@ distributions {
             from ('.') {
                 include 'reporting/**'
                 include 'warehouse/**'
-                include 'staging/**'
-                include 'spring_batch_reporting/**'
                 include 'LICENSE'
                 include 'build.gradle'
                 include 'gradle.properties'
