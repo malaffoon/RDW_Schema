@@ -74,6 +74,7 @@ CREATE TABLE IF NOT EXISTS staging_depth_of_knowledge (
 
 CREATE TABLE IF NOT EXISTS staging_math_practice (
   practice tinyint NOT NULL PRIMARY KEY,
+  code VARCHAR(4) NOT NULL,
   description varchar(250) NOT NULL
 );
 
@@ -105,7 +106,8 @@ CREATE TABLE IF NOT EXISTS staging_school (
   name varchar(100) NOT NULL,
   import_id bigint NOT NULL,
   deleted tinyint NOT NULL,
-  migrate_id bigint NOT NULL
+  migrate_id bigint NOT NULL,
+  updated TIMESTAMP(6) NOT NULL
 );
 
 /** Student **/
@@ -123,7 +125,8 @@ CREATE TABLE IF NOT EXISTS staging_student (
   birthday date,
   import_id bigint NOT NULL,
   deleted tinyint NOT NULL,
-  migrate_id bigint NOT NULL
+  migrate_id bigint NOT NULL,
+  updated TIMESTAMP(6) NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS staging_student_ethnicity (
@@ -145,7 +148,8 @@ CREATE TABLE IF NOT EXISTS staging_student_group (
   created timestamp(6) NOT NULL,
   import_id bigint NOT NULL,
   deleted tinyint NOT NULL,
-  migrate_id bigint NOT NULL
+  migrate_id bigint NOT NULL,
+  updated TIMESTAMP(6) NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS staging_student_group_membership (
@@ -174,7 +178,8 @@ CREATE TABLE IF NOT EXISTS staging_asmt (
   version varchar(30),
   import_id bigint NOT NULL,
   deleted tinyint NOT NULL,
-  migrate_id bigint NOT NULL
+  migrate_id bigint NOT NULL,
+  updated TIMESTAMP(6) NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS staging_asmt_score (
@@ -198,7 +203,7 @@ CREATE TABLE IF NOT EXISTS staging_item (
   dok_id tinyint NOT NULL,
   difficulty_code varchar(1) NOT NULL,
   max_points tinyint UNSIGNED NOT NULL,
-  position tinyint,
+  position smallint,
   migrate_id bigint NOT NULL,
   common_core_standard_ids varchar(200)
 );
@@ -224,7 +229,7 @@ CREATE TABLE IF NOT EXISTS staging_exam_student (
   school_id int NOT NULL,
   iep tinyint NOT NULL,
   lep tinyint NOT NULL,
-  section504 tinyint NOT NULL,
+  section504 tinyint,
   economic_disadvantage tinyint NOT NULL,
   migrant_status tinyint,
   eng_prof_lvl varchar(20),
@@ -251,7 +256,8 @@ CREATE TABLE IF NOT EXISTS staging_exam (
   completed_at timestamp(0) NOT NULL,
   import_id bigint NOT NULL,
   deleted tinyint NOT NULL,
-  migrate_id bigint NOT NULL
+  migrate_id bigint NOT NULL,
+  updated TIMESTAMP(6) NOT NULL
  );
 
 CREATE TABLE IF NOT EXISTS staging_exam_item (
@@ -260,7 +266,7 @@ CREATE TABLE IF NOT EXISTS staging_exam_item (
   item_id int NOT NULL,
   score tinyint NOT NULL,
   score_status varchar(50),
-  position int NOT NULL,
+  position smallint NOT NULL,
   response text,
   trait_evidence_elaboration_score tinyint,
   trait_evidence_elaboration_score_status varchar(50),
