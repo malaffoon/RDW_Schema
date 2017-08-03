@@ -7,14 +7,6 @@ CREATE TABLE IF NOT EXISTS upload_student_group_status (
   name varchar(20) NOT NULL UNIQUE
 );
 
-INSERT INTO upload_student_group_status (id, name) VALUES
-  (-4, 'UNAUTHORIZED'),
-  (-3, 'BAD_DATA'),
-  (-2, 'BAD_FORMAT'),
-  (-1, 'INVALID'),
-  (0, 'ACCEPTED'),
-  (1, 'PROCESSED');
-  
 CREATE TABLE IF NOT EXISTS upload_student_group_batch (
   id bigint NOT NULL AUTO_INCREMENT PRIMARY KEY,
   digest varchar(32) NOT NULL,
@@ -23,7 +15,7 @@ CREATE TABLE IF NOT EXISTS upload_student_group_batch (
   created timestamp(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
   updated timestamp(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6),
   message text,
-  INDEX idx__import__digest (digest)
+  INDEX idx__upload_student_group_batch__digest (digest)
 );
 
 CREATE TABLE IF NOT EXISTS upload_student_group (
