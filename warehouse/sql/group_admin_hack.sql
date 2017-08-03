@@ -1,3 +1,7 @@
+
+########################################### NOTE ###########################################
+# It maybe outdated due to some ongoing changes and needs to be tested
+
 USE warehouse;
 
 ########################################### schema changes ###########################################
