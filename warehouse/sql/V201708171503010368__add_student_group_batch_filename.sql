@@ -2,4 +2,4 @@
 
 USE ${schemaName};
 
-ALTER TABLE upload_student_group_batch ADD filename VARCHAR(200);
+ALTER TABLE upload_student_group_batch ADD filename VARCHAR(255);
