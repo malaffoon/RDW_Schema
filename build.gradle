@@ -34,11 +34,12 @@ def flywayActions = [migrate: org.flywaydb.gradle.task.FlywayMigrateTask,
 
 def reportingSchemas = ["reporting"]
 def warehouseSchemas = ["warehouse"]
+def legacyLoadSchemas = ["legacy_load"]
 
 //Gradle can't call a single task more than once, because of its design, so
 //we dynamically create individual tasks for each of the available flyway commands
 //on all of our databases (dev and test). Task names end up like migrateStaging and cleanWarehouse_test.
-(reportingSchemas + warehouseSchemas).each { schema ->
+(reportingSchemas + warehouseSchemas + legacyLoadSchemas).each { schema ->
     flywayActions.keySet().each { action ->
         ["", "_test"].each { type ->
             task(action + schema.capitalize() + type, type: flywayActions[action]) {
@@ -72,6 +73,7 @@ distributions {
             from ('.') {
                 include 'reporting/**'
                 include 'warehouse/**'
+                include 'legacy_load/**'
                 include 'LICENSE'
                 include 'build.gradle'
                 include 'gradle.properties'
