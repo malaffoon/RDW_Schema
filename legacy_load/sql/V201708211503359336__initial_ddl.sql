@@ -1,13 +1,35 @@
 /**
 ** 	Initial script for the SBAC Reporting Data Legacy Load schema
 **
-** Open Questions:
-** 1. How to related old asm to the loaded : asmt_guid?
+** Open Items:
+** 1. How to relate old asm to the loaded one: asmt_guid does not work.
 ** 2. How to map the claims (JSON or asmt table)
-** 3. For the overlapping data (school id, student id: what to use -db native or natural)
-** 4. Student data: what takes precedence : dim_student or fact tables? (for those that overlap)
-** 5. Opportunity - derive from the same asmt diff date?
-** 6. session id - hardcode to 'legacy' or derive?
+** 3. [DONE] For the overlapping data - does not matter, seem to be identical
+** 4. [DONE] Student data: what takes precedence : dim_student or fact tables? - does not matter, seem to be identical
+** 5. [DONE] Opportunity - derive from the same asmt, date_taken_year and student and diff date, start from 0 and increment
+** 6. [DONE] Session id - hardcode to 'legacy'
+** 7. what is the largest chunk of records in one transaction and how to chunk the data for updates/inserts?
+**   stored procedure or java?
+**   some resources to check out: https://stackoverflow.com/questions/29754570/bulk-update-to-an-unindexed-column-in-a-large-innodb-table
+**   http://mysql.rjweb.org/doc.php/deletebig
+** 8. how to assign import ids for migrate. Note: in the import table somehow capture that this is legacy migration
+** 9. add support for the 'catch up' load
+** 10. Mapping of the old accommodations to the new codes:
+**  acc_asl_video_embed smallint NOT NULL,                          TDS_ASL1
+**  acc_braile_embed smallint NOT NULL,                             ENU-Braille
+**  acc_closed_captioning_embed smallint NOT NULL,                  TDS_ClosedCap1
+**  acc_text_to_speech_embed smallint NOT NULL,                     TDS_TTS_Stim&amp;TDS_TTS_Item
+**  acc_abacus_nonembed smallint NOT NULL,                          NEA_Abacus
+**  acc_alternate_response_options_nonembed smallint NOT NULL,      NEA_AR
+**  acc_calculator_nonembed smallint NOT NULL,                      NEA_Calc
+**  acc_multiplication_table_nonembed smallint NOT NULL,            NEA_MT
+**  acc_print_on_demand_nonembed smallint NOT NULL,                 TDS_PoD_Stim
+**  acc_print_on_demand_items_nonembed smallint NOT NULL,           TDS_PoD_Item
+**  acc_read_aloud_nonembed smallint NOT NULL,                      NEA_RA_Stimuli
+**  acc_scribe_nonembed smallint NOT NULL,                          NEA_SC_WritItems
+**  acc_speech_to_text_nonembed smallint NOT NULL,                  NEA_STT
+**  acc_streamline_mode smallint NOT NULL,                          TDS_SLM1
+**  acc_noise_buffer_nonembed smallint NOT NULL,                    NEDS_NoiseBuf
 **
 **/
 
@@ -204,6 +226,7 @@ CREATE TABLE IF NOT EXISTS fact_asmt_outcome_vw (
   complete tinyint,
   administration_condition varchar(2)
 );
+
 
 CREATE TABLE IF NOT EXISTS fact_block_asmt_outcome (
   asmt_outcome_rec_id bigint NOT NULL PRIMARY KEY,
