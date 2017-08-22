@@ -6,8 +6,8 @@
 ** 2. How to map the claims (JSON or asmt table). (this is subject_claim_score in the new system). Need to check that the mapping has never changed, otherwise we are in trouble
 ** 3. [DONE] For the overlapping data - does not matter, seem to be identical
 ** 4. [DONE] Student data: what takes precedence : dim_student or fact tables? - does not matter, seem to be identical
-** 5. [DONE] Opportunity - derive from the same asmt, date_taken_year and student and diff date, start from 0 and increment
-** 6. [DONE] Session id - hardcode to 'legacy'
+** 5. [DONE] Opportunity - will be null for now
+** 6. [DONE] Session id - hardcode to 'unknown'
 ** 7. what is the largest chunk of records in one transaction and how to chunk the data for updates/inserts?
 **   stored procedure or java?
 **   some resources to check out: https://stackoverflow.com/questions/29754570/bulk-update-to-an-unindexed-column-in-a-large-innodb-table
@@ -210,7 +210,7 @@ CREATE TABLE IF NOT EXISTS fact_asmt_outcome_vw (
   date_taken varchar(8) NOT NULL, -- exam, completed_at
 #  date_taken_day smallint NOT NULL,
 #  date_taken_month smallint NOT NULL,
-  date_taken_year smallint NOT NULL, -- this is used to derive the opportunity
+#  date_taken_year smallint NOT NULL,
   asmt_score smallint NOT NULL,  -- exam, scale_score
   asmt_score_range_min smallint NOT NULL, -- exam, scale_score_std_err (calculated)
 #   asmt_score_range_max smallint NOT NULL,
@@ -299,7 +299,7 @@ CREATE TABLE IF NOT EXISTS fact_block_asmt_outcome (
   date_taken varchar(8) NOT NULL, -- exam, completed_at
 #  date_taken_day smallint NOT NULL,
 #  date_taken_month smallint NOT NULL,
-  date_taken_year smallint NOT NULL,  -- this is used to derive the opportunity
+#  date_taken_year smallint NOT NULL,
   asmt_claim_1_score smallint, -- exam, scale_score
   asmt_claim_1_score_range_min smallint, -- exam, scale_score_std_err (calculated)
 #   asmt_claim_1_score_range_max smallint,
