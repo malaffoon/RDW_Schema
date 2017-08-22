@@ -1,6 +1,6 @@
 USE legacy_load;
 
-########################################### pre-validation ###########################################
+########################################### pre-validation #####################################################################
 # TODO: do we need to replace any empty values with null
 
 UPDATE dim_inst_hier dih
@@ -53,7 +53,7 @@ ELSE (SELECT id FROM warehouse.administration_condition WHERE code = f.administr
 WHERE warehouse_load_id = 33;
 INSERT INTO load_progress (warehouse_load_id, message) VALUE (33, 'updated fact_block_asmt_outcome warehouse_administration_condition_id');
 
-########################################### validation ###########################################
+########################################### validation ###############################################################################
 # TODO: if exists, then fail ?
 SELECT exists(SELECT 1
               FROM dim_inst_hier
@@ -67,7 +67,7 @@ SELECT exists(SELECT 1
               FROM dim_student
               WHERE warehouse_gender_id IS NULL AND warehouse_load_id = 33);
 
-########################################### initialize import ids, we will have one per student ###########################################
+#################################### initialize import ids, we will have one per student ###########################################
 
 # create import ids - one per student
 INSERT INTO warehouse.import (status, content, contentType, digest, batch)
@@ -82,7 +82,7 @@ INSERT INTO warehouse.import (status, content, contentType, digest, batch)
   WHERE warehouse_load_id = 33;
 INSERT INTO load_progress (warehouse_load_id, message) VALUE (33, 'create warehouse import ids');
 
-########################################### load students ###########################################
+########################################### load students #######################################################################
 
 # assign import ids students
 UPDATE dim_student ds
@@ -147,7 +147,7 @@ INSERT INTO warehouse.student_ethnicity(student_id, ethnicity_id)
 
 INSERT INTO load_progress (warehouse_load_id, message) VALUE (33, 'loaded warehouse.student_ethnicity');
 
-########################################### load iab  ###########################################
+########################################### load iab  #######################################################################
 
 # assign import ids iab exams
 UPDATE fact_block_asmt_outcome f
@@ -192,7 +192,7 @@ INSERT INTO load_progress (warehouse_load_id, message) VALUE (33, 'update fact_b
 # wipe out t3_program_type
 # TODO: this is not safe if we have data loaded, may need to revisit for the second run
 UPDATE warehouse.exam_student
- SET t3_program_type = null;
+SET t3_program_type = null;
 
 # Horrendous hack again, but ...I am temporarily using session_id to be able to relate back to the fact table
 INSERT INTO warehouse.exam (type_id, exam_student_id, school_year, asmt_id, completeness_id, administration_condition_id, scale_score, scale_score_std_err, performance_level, completed_at, session_id, import_id, update_import_id)
@@ -291,3 +291,15 @@ INSERT INTO warehouse.exam_available_accommodation (exam_id, accommodation_id)
   from fact_block_asmt_outcome f where acc_noise_buffer_nonembed is not null;
 
 INSERT INTO load_progress (warehouse_load_id, message) VALUE (33, 'loaded exam_available_accommodation for iab');
+
+
+########################################### load ica  ############################################################################
+
+# TODO - complete when iab is tested, the only difference is that we need to include claim scores
+
+
+########################################### update imports as completed  #########################################################
+UPDATE warehouse.import
+SET status = 1
+WHERE status = 0 and content = 1 and contentType = 'legacy load student' and batch = 33;
+INSERT INTO load_progress (warehouse_load_id, message) VALUE (33, 'update import status to 1 for the batch');
