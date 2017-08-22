@@ -3,7 +3,7 @@
 **
 ** Open Items:
 ** 1. How to relate old asm to the loaded one: asmt_guid does not work.
-** 2. How to map the claims (JSON or asmt table)
+** 2. How to map the claims (JSON or asmt table). (this is subject_claim_score in the new system). Need to check that the mapping has never changed, otherwise we are in trouble
 ** 3. [DONE] For the overlapping data - does not matter, seem to be identical
 ** 4. [DONE] Student data: what takes precedence : dim_student or fact tables? - does not matter, seem to be identical
 ** 5. [DONE] Opportunity - derive from the same asmt, date_taken_year and student and diff date, start from 0 and increment
@@ -30,6 +30,16 @@
 **  acc_speech_to_text_nonembed smallint NOT NULL,                  NEA_STT
 **  acc_streamline_mode smallint NOT NULL,                          TDS_SLM1
 **  acc_noise_buffer_nonembed smallint NOT NULL,                    NEDS_NoiseBuf
+** 11. [DONE] dmg_eth_derived will be ignored and instead will use the other dmg columns.
+**  Mapping of the old demographic to the new codes :
+**  dmg_eth_hsp - HispanicOrLatinoEthnicity
+**  dmg_eth_ami - AmericanIndianOrAlaskaNative
+**  dmg_eth_asn - Asian
+**  dmg_eth_blk - BlackOrAfricanAmerican
+**  dmg_eth_pcf - NativeHawaiianOrOtherPacificIslander
+**  dmg_eth_wht - White
+**  dmg_eth_2om - DemographicRaceTwoOrMoreRaces
+**  NOTE: Filipino does not exist in the legacy system
 **
 **/
 
@@ -37,22 +47,38 @@ ALTER DATABASE ${schemaName} CHARACTER SET utf8 COLLATE utf8_unicode_ci;
 
 USE ${schemaName};
 
+/**
+** This table will be used to mapped to the warehouse school_ids
+
+** Data from this table will NOT be loaded into warehouse.
+** They will be used for the pre-validation and look up.
+**/
 CREATE TABLE IF NOT EXISTS dim_inst_hier (
   inst_hier_rec_id bigint NOT NULL PRIMARY KEY,
-  state_code varchar(2) NOT NULL,
+#  state_code varchar(2) NOT NULL, -- we are expecting CA only
   district_id varchar(40) NOT NULL,
   district_name varchar(60) NOT NULL,
   school_id varchar(40) NOT NULL,
   school_name varchar(60) NOT NULL,
+
   from_date varchar(8) NOT NULL,
   to_date varchar(8),
 #   rec_status varchar(1) NOT NULL,
   batch_guid varchar(36) NOT NULL,
 
+  load_id smallint  NOT NULL, -- the id of the legacy load
 # used for loading into warehouse
-  warehouse_school_id int
+-- TODO: not sure if we should have it here or in the fact tables. This table is way smaller but then we will have to join?
+  warehouse_school_id int,
+  UNIQUE INDEX idx__dim_inst_hier__school_id_district_id (school_id, district_id)
 );
 
+/**
+** This table will be used to mapped to the warehouse asmt_id and exam_claim_score mapping
+
+** Data from this table will NOT be loaded into warehouse.
+** They will be used for the pre-validation and look up.
+**/
 CREATE TABLE IF NOT EXISTS dim_asmt (
   asmt_rec_id bigint NOT NULL PRIMARY KEY,
   asmt_guid varchar(255) NOT NULL,
@@ -93,11 +119,17 @@ CREATE TABLE IF NOT EXISTS dim_asmt (
 #   rec_status varchar(1) NOT NULL,
   batch_guid varchar(36) NOT NULL,
 
+  load_id smallint  NOT NULL, -- the id of the legacy load
 # used for loading into warehouse
-  warehouse_asmt_id int
+-- TODO: not sure if we should have it here or in the fact tables. This table is way smaller but then we will have to join?
+  warehouse_asmt_id int,
+  UNIQUE INDEX idx__dim_asmt__asmt_guid(asmt_guid)
 );
 
 
+/**
+** this table will be loaded into warehouse student and student_ethnicity
+**/
 CREATE TABLE IF NOT EXISTS dim_student (
   student_rec_id bigint NOT NULL PRIMARY KEY,
   student_id varchar(40) NOT NULL,
@@ -127,7 +159,7 @@ CREATE TABLE IF NOT EXISTS dim_student (
 #   group_9_text varchar(60),
 #   group_10_id varchar(40),
 #   group_10_text varchar(60),
-  dmg_eth_derived smallint,
+#   dmg_eth_derived smallint,
   dmg_eth_hsp tinyint,
   dmg_eth_ami tinyint,
   dmg_eth_asn tinyint,
@@ -140,40 +172,50 @@ CREATE TABLE IF NOT EXISTS dim_student (
   dmg_prg_504 tinyint,
   dmg_sts_ecd tinyint,
   dmg_sts_mig tinyint,
+
   from_date varchar(8) NOT NULL,
   to_date varchar(8),
 #   rec_status varchar(1) NOT NULL,
   batch_guid varchar(36) NOT NULL,
 
+  load_id smallint  NOT NULL, -- the id of the legacy load
 # used for loading into warehouse
-  warehouse_student_id int
+  warehouseimport_id bigint,
+  warehouse_student_id int,
+  warehouse_gender_id tinyint,
+  UNIQUE INDEX idx__dim_student__student_id(student_id)
 );
 
+/**
+** This table is loaded into warehouse exam, exam_student, exam_available_accommodation and exam_claim_score
+** NOTE: all exams are of the type ICA.
+**/
 CREATE TABLE IF NOT EXISTS fact_asmt_outcome_vw (
   asmt_outcome_vw_rec_id bigint NOT NULL PRIMARY KEY,
   asmt_rec_id bigint NOT NULL,
   student_rec_id bigint NOT NULL,
   inst_hier_rec_id bigint NOT NULL,
-  asmt_guid varchar(255) NOT NULL,
-  student_id varchar(40) NOT NULL,
-  state_code varchar(2) NOT NULL,
-  district_id varchar(40) NOT NULL,
-  school_id varchar(40) NOT NULL,
-#   where_taken_id varchar(40),
-#   where_taken_name varchar(60),
-  asmt_type varchar(32) NOT NULL,
-  asmt_year smallint NOT NULL,
-  asmt_subject varchar(64) NOT NULL,
-  asmt_grade varchar(10) NOT NULL,
-  enrl_grade varchar(10) NOT NULL,
-  date_taken varchar(8) NOT NULL,
-  date_taken_day smallint NOT NULL,
-  date_taken_month smallint NOT NULL,
-  date_taken_year smallint NOT NULL,
-  asmt_score smallint NOT NULL,
-  asmt_score_range_min smallint NOT NULL,
+#  asmt_guid varchar(255) NOT NULL,
+#  student_id varchar(40) NOT NULL,
+#  state_code varchar(2) NOT NULL,
+#  district_id varchar(40) NOT NULL,
+#  school_id varchar(40) NOT NULL,
+#  where_taken_id varchar(40),
+#  where_taken_name varchar(60),
+#  asmt_type varchar(32) NOT NULL,
+  asmt_year smallint NOT NULL, -- exam, school_year?
+  asmt_subject varchar(64) NOT NULL, -- this is needed to map to the exam_claim_score
+#  asmt_grade varchar(10) NOT NULL,
+  enrl_grade varchar(10) NOT NULL, -- exam_student
+  date_taken varchar(8) NOT NULL, -- exam, completed_at
+#  date_taken_day smallint NOT NULL,
+#  date_taken_month smallint NOT NULL,
+  date_taken_year smallint NOT NULL, -- this is used to derive the opportunity
+  asmt_score smallint NOT NULL,  -- exam, scale_score
+  asmt_score_range_min smallint NOT NULL, -- exam, scale_score_std_err (calculated)
 #   asmt_score_range_max smallint NOT NULL,
-  asmt_perf_lvl smallint NOT NULL,
+  asmt_perf_lvl smallint NOT NULL, -- exam, performance_level
+  -- exam_claim_score, need to map to the subject_claim_score based on the asmt_subject
   asmt_claim_1_score smallint,
   asmt_claim_1_score_range_min smallint,
 #   asmt_claim_1_score_range_max smallint,
@@ -190,20 +232,23 @@ CREATE TABLE IF NOT EXISTS fact_asmt_outcome_vw (
   asmt_claim_4_score_range_min smallint,
 #   asmt_claim_4_score_range_max smallint,
   asmt_claim_4_perf_lvl smallint,
-  sex varchar(10) NOT NULL,
-  dmg_eth_derived smallint,
-  dmg_eth_hsp tinyint,
-  dmg_eth_ami tinyint,
-  dmg_eth_asn tinyint,
-  dmg_eth_blk tinyint,
-  dmg_eth_pcf tinyint,
-  dmg_eth_wht tinyint,
-  dmg_eth_2om tinyint,
-  dmg_prg_iep tinyint,
-  dmg_prg_lep tinyint,
-  dmg_prg_504 tinyint,
-  dmg_sts_ecd tinyint,
-  dmg_sts_mig tinyint,
+#  sex varchar(10) NOT NULL,
+#  dmg_eth_derived smallint,
+#  dmg_eth_hsp tinyint,
+#  dmg_eth_ami tinyint,
+#  dmg_eth_asn tinyint,
+#  dmg_eth_blk tinyint,
+#  dmg_eth_pcf tinyint,
+#  dmg_eth_wht tinyint,
+#  dmg_eth_2om tinyint,
+  dmg_prg_iep tinyint,  -- exam_student
+  dmg_prg_lep tinyint, -- exam_student
+  dmg_prg_504 tinyint, -- exam_student
+  dmg_sts_ecd tinyint, -- exam_student
+  dmg_sts_mig tinyint, -- exam_student
+  complete tinyint,
+  administration_condition varchar(2),
+  -- exam_available_accommodation
   acc_asl_video_embed smallint NOT NULL,
   acc_braile_embed smallint NOT NULL,
   acc_closed_captioning_embed smallint NOT NULL,
@@ -219,54 +264,63 @@ CREATE TABLE IF NOT EXISTS fact_asmt_outcome_vw (
   acc_speech_to_text_nonembed smallint NOT NULL,
   acc_streamline_mode smallint NOT NULL,
   acc_noise_buffer_nonembed smallint NOT NULL,
+
   from_date varchar(8) NOT NULL,
   to_date varchar(8),
 #   rec_status varchar(1) NOT NULL,
   batch_guid varchar(36) NOT NULL,
-  complete tinyint,
-  administration_condition varchar(2)
+
+  load_id smallint  NOT NULL, -- the id of the legacy load
+  warehouse_completeness_id tinyint,
+  warehouse_administration_condition_id tinyint
 );
 
-
+/**
+** This table is loaded into warehouse exam, exam_student, exam_available_accommodation
+** NOTE they are all of the type IAB.
+**/
 CREATE TABLE IF NOT EXISTS fact_block_asmt_outcome (
   asmt_outcome_rec_id bigint NOT NULL PRIMARY KEY,
   asmt_rec_id bigint NOT NULL,
   student_rec_id bigint NOT NULL,
-  inst_hier_rec_id bigint NOT NULL,
-  asmt_guid varchar(255) NOT NULL,
-  student_id varchar(40) NOT NULL,
-  state_code varchar(2) NOT NULL,
-  district_id varchar(40) NOT NULL,
-  school_id varchar(40) NOT NULL,
-#   where_taken_id varchar(40),
-#   where_taken_name varchar(60),
-  asmt_type varchar(32) NOT NULL,
-  asmt_year smallint NOT NULL,
-  asmt_subject varchar(64) NOT NULL,
-  asmt_grade varchar(10) NOT NULL,
-  enrl_grade varchar(10) NOT NULL,
-  date_taken varchar(8) NOT NULL,
-  date_taken_day smallint NOT NULL,
-  date_taken_month smallint NOT NULL,
-  date_taken_year smallint NOT NULL,
-  asmt_claim_1_score smallint,
-  asmt_claim_1_score_range_min smallint,
+  inst_hier_rec_id bigint NOT NULL, -- exam_student
+#  asmt_guid varchar(255) NOT NULL,
+#  student_id varchar(40) NOT NULL,
+#  state_code varchar(2) NOT NULL,
+#  district_id varchar(40) NOT NULL,
+#  school_id varchar(40) NOT NULL,
+#  where_taken_id varchar(40),
+#  where_taken_name varchar(60),
+#  asmt_type varchar(32) NOT NULL,
+  asmt_year smallint NOT NULL, -- exam, school_year?
+#  asmt_subject varchar(64) NOT NULL,
+#  asmt_grade varchar(10) NOT NULL,
+  enrl_grade varchar(10) NOT NULL, -- exam_student
+  date_taken varchar(8) NOT NULL, -- exam, completed_at
+#  date_taken_day smallint NOT NULL,
+#  date_taken_month smallint NOT NULL,
+  date_taken_year smallint NOT NULL,  -- this is used to derive the opportunity
+  asmt_claim_1_score smallint, -- exam, scale_score
+  asmt_claim_1_score_range_min smallint, -- exam, scale_score_std_err (calculated)
 #   asmt_claim_1_score_range_max smallint,
-  asmt_claim_1_perf_lvl smallint,
-  sex varchar(10) NOT NULL,
-  dmg_eth_derived smallint,
-  dmg_eth_hsp tinyint,
-  dmg_eth_ami tinyint,
-  dmg_eth_asn tinyint,
-  dmg_eth_blk tinyint,
-  dmg_eth_pcf tinyint,
-  dmg_eth_wht tinyint,
-  dmg_eth_2om tinyint,
-  dmg_prg_iep tinyint,
-  dmg_prg_lep tinyint,
-  dmg_prg_504 tinyint,
-  dmg_sts_ecd tinyint,
-  dmg_sts_mig tinyint,
+  asmt_claim_1_perf_lvl smallint,-- exam, performance_level
+#  sex varchar(10) NOT NULL,
+#  dmg_eth_derived smallint,
+#  dmg_eth_hsp tinyint,
+#  dmg_eth_ami tinyint,
+#  dmg_eth_asn tinyint,
+#  dmg_eth_blk tinyint,
+#  dmg_eth_pcf tinyint,
+#  dmg_eth_wht tinyint,
+#  dmg_eth_2om tinyint,
+  dmg_prg_iep tinyint,  -- exam_student
+  dmg_prg_lep tinyint, -- exam_student
+  dmg_prg_504 tinyint, -- exam_student
+  dmg_sts_ecd tinyint, -- exam_student
+  dmg_sts_mig tinyint, -- exam_student
+  complete tinyint,
+  administration_condition varchar(2),
+  -- exam_available_accommodation
   acc_asl_video_embed smallint NOT NULL,
   acc_braile_embed smallint NOT NULL,
   acc_closed_captioning_embed smallint NOT NULL,
@@ -282,10 +336,13 @@ CREATE TABLE IF NOT EXISTS fact_block_asmt_outcome (
   acc_speech_to_text_nonembed smallint NOT NULL,
   acc_streamline_mode smallint NOT NULL,
   acc_noise_buffer_nonembed smallint NOT NULL,
+
   from_date varchar(8) NOT NULL,
   to_date varchar(8),
   rec_status varchar(1) NOT NULL,
   batch_guid varchar(36) NOT NULL,
-  complete tinyint,
-  administration_condition varchar(2)
+
+  load_id smallint  NOT NULL, -- the id of the legacy load
+  warehouse_completeness_id tinyint,
+  warehouse_administration_condition_id tinyint
 );
