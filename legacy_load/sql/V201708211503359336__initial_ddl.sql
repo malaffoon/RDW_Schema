@@ -14,7 +14,7 @@
 **   http://mysql.rjweb.org/doc.php/deletebig
 ** 8. how to assign import ids for migrate. Note: in the import table somehow capture that this is legacy migration
 ** 9. add support for the 'catch up' load
-** 10. Mapping of the old accommodations to the new codes:
+** 10. [DONE] Mapping of the old accommodations to the new codes:
 **  acc_asl_video_embed smallint NOT NULL,                          TDS_ASL1
 **  acc_braile_embed smallint NOT NULL,                             ENU-Braille
 **  acc_closed_captioning_embed smallint NOT NULL,                  TDS_ClosedCap1
