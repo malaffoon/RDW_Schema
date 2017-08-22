@@ -232,63 +232,63 @@ INSERT INTO load_progress (warehouse_load_id, message) VALUE (33, 'reset exam_st
 
 INSERT INTO warehouse.exam_available_accommodation (exam_id, accommodation_id)
   SELECT warehouse_exam_id, (SELECT id from warehouse.accommodation where code = 'TDS_ASL1') as  accommodation_id
-  from fact_block_asmt_outcome f where acc_asl_video_embed is not null;
+  from fact_block_asmt_outcome f where acc_asl_video_embed != 0;
 
 INSERT INTO warehouse.exam_available_accommodation (exam_id, accommodation_id)
   SELECT warehouse_exam_id, (SELECT id from warehouse.accommodation where code = 'ENU-Braille') as  accommodation_id
-  from fact_block_asmt_outcome f where acc_braile_embed is not null;
+  from fact_block_asmt_outcome f where acc_braile_embed != 0;
 
 INSERT INTO warehouse.exam_available_accommodation (exam_id, accommodation_id)
   SELECT warehouse_exam_id, (SELECT id from warehouse.accommodation where code = 'TDS_ClosedCap1') as  accommodation_id
-  from fact_block_asmt_outcome f where acc_closed_captioning_embed is not null;
+  from fact_block_asmt_outcome f where acc_closed_captioning_embed != 0;
 
 INSERT INTO warehouse.exam_available_accommodation (exam_id, accommodation_id)
   SELECT warehouse_exam_id, (SELECT id from warehouse.accommodation where code = 'TDS_TTS_Stim&amp;TDS_TTS_Item') as  accommodation_id
-  from fact_block_asmt_outcome f where acc_text_to_speech_embed is not null;
+  from fact_block_asmt_outcome f where acc_text_to_speech_embed != 0;
 
 INSERT INTO warehouse.exam_available_accommodation (exam_id, accommodation_id)
   SELECT warehouse_exam_id, (SELECT id from warehouse.accommodation where code = 'NEA_Abacus') as  accommodation_id
-  from fact_block_asmt_outcome f where acc_abacus_nonembed is not null;
+  from fact_block_asmt_outcome f where acc_abacus_nonembed != 0;
 
 INSERT INTO warehouse.exam_available_accommodation (exam_id, accommodation_id)
   SELECT warehouse_exam_id, (SELECT id from warehouse.accommodation where code = 'NEA_AR') as  accommodation_id
-  from fact_block_asmt_outcome f where acc_alternate_response_options_nonembed is not null;
+  from fact_block_asmt_outcome f where acc_alternate_response_options_nonembed != 0;
 
 INSERT INTO warehouse.exam_available_accommodation (exam_id, accommodation_id)
   SELECT warehouse_exam_id, (SELECT id from warehouse.accommodation where code = 'NEA_Calc') as  accommodation_id
-  from fact_block_asmt_outcome f where acc_calculator_nonembed is not null;
+  from fact_block_asmt_outcome f where acc_calculator_nonembed != 0;
 
 INSERT INTO warehouse.exam_available_accommodation (exam_id, accommodation_id)
   SELECT warehouse_exam_id, (SELECT id from warehouse.accommodation where code = 'NEA_MT') as  accommodation_id
-  from fact_block_asmt_outcome f where acc_multiplication_table_nonembed is not null;
+  from fact_block_asmt_outcome f where acc_multiplication_table_nonembed != 0;
 
 INSERT INTO warehouse.exam_available_accommodation (exam_id, accommodation_id)
   SELECT warehouse_exam_id, (SELECT id from warehouse.accommodation where code = 'TDS_PoD_Stim') as  accommodation_id
-  from fact_block_asmt_outcome f where acc_print_on_demand_nonembed is not null;
+  from fact_block_asmt_outcome f where acc_print_on_demand_nonembed != 0;
 
 INSERT INTO warehouse.exam_available_accommodation (exam_id, accommodation_id)
   SELECT warehouse_exam_id, (SELECT id from warehouse.accommodation where code = 'TDS_PoD_Item') as  accommodation_id
-  from fact_block_asmt_outcome f where acc_print_on_demand_items_nonembed is not null;
+  from fact_block_asmt_outcome f where acc_print_on_demand_items_nonembed != 0;
 
 INSERT INTO warehouse.exam_available_accommodation (exam_id, accommodation_id)
   SELECT warehouse_exam_id, (SELECT id from warehouse.accommodation where code = 'NEA_RA_Stimuli') as  accommodation_id
-  from fact_block_asmt_outcome f where acc_read_aloud_nonembed is not null;
+  from fact_block_asmt_outcome f where acc_read_aloud_nonembed != 0;
 
 INSERT INTO warehouse.exam_available_accommodation (exam_id, accommodation_id)
   SELECT warehouse_exam_id, (SELECT id from warehouse.accommodation where code = 'NEA_SC_WritItems') as  accommodation_id
-  from fact_block_asmt_outcome f where acc_scribe_nonembed is not null;
+  from fact_block_asmt_outcome f where acc_scribe_nonembed != 0;
 
 INSERT INTO warehouse.exam_available_accommodation (exam_id, accommodation_id)
   SELECT warehouse_exam_id, (SELECT id from warehouse.accommodation where code = 'NEA_STT') as  accommodation_id
-  from fact_block_asmt_outcome f where acc_speech_to_text_nonembed is not null;
+  from fact_block_asmt_outcome f where acc_speech_to_text_nonembed != 0;
 
 INSERT INTO warehouse.exam_available_accommodation (exam_id, accommodation_id)
   SELECT warehouse_exam_id, (SELECT id from warehouse.accommodation where code = 'TDS_SLM1') as  accommodation_id
-  from fact_block_asmt_outcome f where acc_streamline_mode is not null;
+  from fact_block_asmt_outcome f where acc_streamline_mode != 0;
 
 INSERT INTO warehouse.exam_available_accommodation (exam_id, accommodation_id)
   SELECT warehouse_exam_id, (SELECT id from warehouse.accommodation where code = 'NEDS_NoiseBuf') as  accommodation_id
-  from fact_block_asmt_outcome f where acc_noise_buffer_nonembed is not null;
+  from fact_block_asmt_outcome f where acc_noise_buffer_nonembed != 0;
 
 INSERT INTO load_progress (warehouse_load_id, message) VALUE (33, 'loaded exam_available_accommodation for iab');
 
