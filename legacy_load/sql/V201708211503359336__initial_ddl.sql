@@ -56,11 +56,12 @@ CREATE TABLE IF NOT EXISTS load_progress (
 );
 
 CREATE TABLE IF NOT EXISTS dim_asmt_guid_to_natural_id_mapping (
-   guid varchar(255) NOT NULL,
-   subject varchar(4) NOT NULL,
-   grade varchar(2) NOT NULL,
-   natural_id varchar(250) NOT NULL,
-   name varchar(250) NOT NULL
+  guid varchar(255) NOT NULL,
+  subject varchar(4) NOT NULL,
+  grade varchar(2) NOT NULL,
+  natural_id varchar(250) NOT NULL,
+  name varchar(250) NOT NULL,
+  school_year varchar(9) NOT NULL
 );
 
 /**
