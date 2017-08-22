@@ -40,12 +40,28 @@
 **  dmg_eth_wht - White
 **  dmg_eth_2om - DemographicRaceTwoOrMoreRaces
 **  NOTE: Filipino does not exist in the legacy system
+** 12. blank or null administration_condition is treated as Valid
+** 13. not 't' complete is treated as 'Partial'
 **
 **/
 
 ALTER DATABASE ${schemaName} CHARACTER SET utf8 COLLATE utf8_unicode_ci;
 
 USE ${schemaName};
+
+CREATE TABLE IF NOT EXISTS load_progress (
+  warehouse_load_id smallint NOT NULL,
+  created  TIMESTAMP(6) DEFAULT CURRENT_TIMESTAMP(6) NOT NULL,
+  message  VARCHAR(256)
+);
+
+CREATE TABLE IF NOT EXISTS dim_asmt_guid_to_natural_id_mapping (
+   guid varchar(255) NOT NULL,
+   subject varchar(4) NOT NULL,
+   grade varchar(2) NOT NULL,
+   natural_id varchar(250) NOT NULL,
+   name varchar(250) NOT NULL
+);
 
 /**
 ** This table will be used to mapped to the warehouse school_ids
@@ -177,6 +193,7 @@ CREATE TABLE IF NOT EXISTS dim_student (
   batch_guid varchar(36) NOT NULL,
 
   warehouse_load_id smallint  NOT NULL, -- the id of the legacy load
+  warehouse_partition_id int,
   warehouse_import_id bigint,
   warehouse_student_id int,
   warehouse_gender_id tinyint,
@@ -267,6 +284,7 @@ CREATE TABLE IF NOT EXISTS fact_asmt_outcome_vw (
   batch_guid varchar(36) NOT NULL,
 
   warehouse_load_id smallint  NOT NULL, -- the id of the legacy load
+  warehouse_partition_id int,
   warehouse_import_id bigint,
   warehouse_completeness_id tinyint,
   warehouse_administration_condition_id tinyint
@@ -310,7 +328,7 @@ CREATE TABLE IF NOT EXISTS fact_block_asmt_outcome (
   dmg_eth_pcf tinyint,
   dmg_eth_wht tinyint,
   dmg_eth_2om tinyint,
-  dmg_prg_iep tinyint,  -- exam_student
+  dmg_prg_iep tinyint, -- exam_student
   dmg_prg_lep tinyint, -- exam_student
   dmg_prg_504 tinyint, -- exam_student
   dmg_sts_ecd tinyint, -- exam_student
@@ -339,6 +357,7 @@ CREATE TABLE IF NOT EXISTS fact_block_asmt_outcome (
   batch_guid varchar(36) NOT NULL,
 
   warehouse_load_id smallint  NOT NULL, -- the id of the legacy load
+  warehouse_partition_id int,
   warehouse_import_id bigint,
   warehouse_completeness_id tinyint,
   warehouse_administration_condition_id tinyint
