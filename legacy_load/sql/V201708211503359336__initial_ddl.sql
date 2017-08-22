@@ -289,7 +289,8 @@ CREATE TABLE IF NOT EXISTS fact_asmt_outcome_vw (
   warehouse_import_id bigint,
   warehouse_completeness_id tinyint,
   warehouse_administration_condition_id tinyint,
-  warehouse_exam_student_id bigint
+  warehouse_exam_student_id bigint,
+  warehouse_exam_id bigint
 );
 
 /**
@@ -363,5 +364,6 @@ CREATE TABLE IF NOT EXISTS fact_block_asmt_outcome (
   warehouse_import_id bigint,
   warehouse_completeness_id tinyint,
   warehouse_administration_condition_id tinyint,
-  warehouse_exam_student_id bigint
+  warehouse_exam_student_id bigint,
+  warehouse_exam_id bigint
 );
