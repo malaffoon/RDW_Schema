@@ -1,5 +1,32 @@
 USE legacy_load;
 
+
+DROP PROCEDURE IF EXISTS loop_by_partition;
+
+DELIMITER //
+CREATE PROCEDURE loop_by_partition(IN p_sql VARCHAR(1000), IN p_size INTEGER)
+  BEGIN
+    DECLARE iteration INTEGER;
+    SET iteration = 0;
+
+    label1: LOOP
+      SET iteration = iteration + 1;
+      SET @stmt = concat( p_sql, ' and warehouse_partition_id =', iteration);
+      PREPARE stmt FROM @stmt;
+      EXECUTE stmt;
+      DEALLOCATE PREPARE stmt;
+      SELECT concat('executed partition:', iteration);
+
+      IF iteration < p_size THEN
+        ITERATE label1;
+      END IF;
+      LEAVE label1;
+    END LOOP label1;
+  END;
+//
+DELIMITER ;
+
+
 ########################################### pre-validation #####################################################################
 # TODO: do we need to replace any empty values with null
 
@@ -7,20 +34,32 @@ UPDATE dim_inst_hier dih
   JOIN warehouse.school ws ON dih.school_id = ws.natural_id
 SET warehouse_school_id = ws.id
 WHERE warehouse_load_id = 33;
+
 INSERT INTO load_progress (warehouse_load_id, message) VALUE (33, 'updated dim_inst_hier warehouse_school_id');
 
 UPDATE dim_asmt da
-  JOIN dim_asmt_guid_to_natural_id_mapping m ON m.guid = da.asmt_guid -- TODO: this needs to be adjusted
+  JOIN (select concat('(SBAC)', natural_id, '-Winter-', school_year) as natural_id, guid from  dim_asmt_guid_to_natural_id_mapping ) as m ON m.guid = da.asmt_guid -- TODO: this needs to be adjusted
+  JOIN warehouse.asmt wa ON wa.natural_id = m.natural_id
+SET warehouse_asmt_id = wa.id
+WHERE warehouse_load_id = 33;
+
+# some asmt_guid are not guids
+UPDATE dim_asmt da
+  JOIN (select asmt_rec_id, concat('(SBAC)', asmt_guid, '-Winter-', asmt_period_year, '-', asmt_period_year+1) as natural_id from  dim_asmt ) as m ON m.asmt_rec_id = da.asmt_rec_id -- TODO: this needs to be adjusted
   JOIN warehouse.asmt wa ON wa.natural_id = m.natural_id
 SET warehouse_asmt_id = wa.id
 WHERE warehouse_load_id = 33;
 INSERT INTO load_progress (warehouse_load_id, message) VALUE (33, 'updated dim_asmt warehouse_asmt_id');
 
+# partition
 UPDATE dim_student ds
+  SET warehouse_partition_id = MOD(ds.student_rec_id, 5);
+
+CALL loop_by_partition('UPDATE dim_student ds
 SET warehouse_gender_id =
-CASE WHEN ds.sex = 'male' THEN (SELECT id FROM warehouse.gender WHERE code = 'Male')
-ELSE (SELECT id FROM warehouse.gender WHERE CODE = 'Female') END
-WHERE warehouse_load_id = 33;
+CASE WHEN ds.sex = ''male'' THEN (SELECT id FROM warehouse.gender WHERE code = ''Male'')
+ELSE (SELECT id FROM warehouse.gender WHERE CODE = ''Female'') END
+WHERE warehouse_load_id = 33', 5);
 INSERT INTO load_progress (warehouse_load_id, message) VALUE (33, 'updated dim_student warehouse_gender_id');
 
 # TODO: legacy has two values null and t. Is null false or true? When processing TRT null is 'Complete'?
@@ -59,13 +98,10 @@ SELECT exists(SELECT 1
               FROM dim_inst_hier
               WHERE warehouse_school_id IS NULL AND warehouse_load_id = 33);
 
+
 SELECT exists(SELECT 1
               FROM dim_asmt
               WHERE warehouse_asmt_id IS NULL AND warehouse_load_id = 33);
-
-SELECT exists(SELECT 1
-              FROM dim_student
-              WHERE warehouse_gender_id IS NULL AND warehouse_load_id = 33);
 
 #################################### initialize import ids, we will have one per student ###########################################
 
@@ -232,63 +268,63 @@ INSERT INTO load_progress (warehouse_load_id, message) VALUE (33, 'reset exam_st
 
 INSERT INTO warehouse.exam_available_accommodation (exam_id, accommodation_id)
   SELECT warehouse_exam_id, (SELECT id from warehouse.accommodation where code = 'TDS_ASL1') as  accommodation_id
-  from fact_block_asmt_outcome f where acc_asl_video_embed != 0;
+  from fact_block_asmt_outcome f where acc_asl_video_embed in (6, 7, 8, 15, 16, 17, 24, 25, 26);
 
 INSERT INTO warehouse.exam_available_accommodation (exam_id, accommodation_id)
   SELECT warehouse_exam_id, (SELECT id from warehouse.accommodation where code = 'ENU-Braille') as  accommodation_id
-  from fact_block_asmt_outcome f where acc_braile_embed != 0;
+  from fact_block_asmt_outcome f where acc_braile_embed in (6, 7, 8, 15, 16, 17, 24, 25, 26);
 
 INSERT INTO warehouse.exam_available_accommodation (exam_id, accommodation_id)
   SELECT warehouse_exam_id, (SELECT id from warehouse.accommodation where code = 'TDS_ClosedCap1') as  accommodation_id
-  from fact_block_asmt_outcome f where acc_closed_captioning_embed != 0;
+  from fact_block_asmt_outcome f where acc_closed_captioning_embed in (6, 7, 8, 15, 16, 17, 24, 25, 26);
 
 INSERT INTO warehouse.exam_available_accommodation (exam_id, accommodation_id)
   SELECT warehouse_exam_id, (SELECT id from warehouse.accommodation where code = 'TDS_TTS_Stim&amp;TDS_TTS_Item') as  accommodation_id
-  from fact_block_asmt_outcome f where acc_text_to_speech_embed != 0;
+  from fact_block_asmt_outcome f where acc_text_to_speech_embed in (6, 7, 8, 15, 16, 17, 24, 25, 26);
 
 INSERT INTO warehouse.exam_available_accommodation (exam_id, accommodation_id)
   SELECT warehouse_exam_id, (SELECT id from warehouse.accommodation where code = 'NEA_Abacus') as  accommodation_id
-  from fact_block_asmt_outcome f where acc_abacus_nonembed != 0;
+  from fact_block_asmt_outcome f where acc_abacus_nonembed in (6, 7, 8, 15, 16, 17, 24, 25, 26);
 
 INSERT INTO warehouse.exam_available_accommodation (exam_id, accommodation_id)
   SELECT warehouse_exam_id, (SELECT id from warehouse.accommodation where code = 'NEA_AR') as  accommodation_id
-  from fact_block_asmt_outcome f where acc_alternate_response_options_nonembed != 0;
+  from fact_block_asmt_outcome f where acc_alternate_response_options_nonembed in (6, 7, 8, 15, 16, 17, 24, 25, 26);
 
 INSERT INTO warehouse.exam_available_accommodation (exam_id, accommodation_id)
   SELECT warehouse_exam_id, (SELECT id from warehouse.accommodation where code = 'NEA_Calc') as  accommodation_id
-  from fact_block_asmt_outcome f where acc_calculator_nonembed != 0;
+  from fact_block_asmt_outcome f where acc_calculator_nonembed in (6, 7, 8, 15, 16, 17, 24, 25, 26);
 
 INSERT INTO warehouse.exam_available_accommodation (exam_id, accommodation_id)
   SELECT warehouse_exam_id, (SELECT id from warehouse.accommodation where code = 'NEA_MT') as  accommodation_id
-  from fact_block_asmt_outcome f where acc_multiplication_table_nonembed != 0;
+  from fact_block_asmt_outcome f where acc_multiplication_table_nonembed in (6, 7, 8, 15, 16, 17, 24, 25, 26);
 
 INSERT INTO warehouse.exam_available_accommodation (exam_id, accommodation_id)
   SELECT warehouse_exam_id, (SELECT id from warehouse.accommodation where code = 'TDS_PoD_Stim') as  accommodation_id
-  from fact_block_asmt_outcome f where acc_print_on_demand_nonembed != 0;
+  from fact_block_asmt_outcome f where acc_print_on_demand_nonembed in (6, 7, 8, 15, 16, 17, 24, 25, 26);
 
 INSERT INTO warehouse.exam_available_accommodation (exam_id, accommodation_id)
   SELECT warehouse_exam_id, (SELECT id from warehouse.accommodation where code = 'TDS_PoD_Item') as  accommodation_id
-  from fact_block_asmt_outcome f where acc_print_on_demand_items_nonembed != 0;
+  from fact_block_asmt_outcome f where acc_print_on_demand_items_nonembed  in (6, 7, 8, 15, 16, 17, 24, 25, 26);
 
 INSERT INTO warehouse.exam_available_accommodation (exam_id, accommodation_id)
   SELECT warehouse_exam_id, (SELECT id from warehouse.accommodation where code = 'NEA_RA_Stimuli') as  accommodation_id
-  from fact_block_asmt_outcome f where acc_read_aloud_nonembed != 0;
+  from fact_block_asmt_outcome f where acc_read_aloud_nonembed in (6, 7, 8, 15, 16, 17, 24, 25, 26);
 
 INSERT INTO warehouse.exam_available_accommodation (exam_id, accommodation_id)
   SELECT warehouse_exam_id, (SELECT id from warehouse.accommodation where code = 'NEA_SC_WritItems') as  accommodation_id
-  from fact_block_asmt_outcome f where acc_scribe_nonembed != 0;
+  from fact_block_asmt_outcome f where acc_scribe_nonembed in (6, 7, 8, 15, 16, 17, 24, 25, 26);
 
 INSERT INTO warehouse.exam_available_accommodation (exam_id, accommodation_id)
   SELECT warehouse_exam_id, (SELECT id from warehouse.accommodation where code = 'NEA_STT') as  accommodation_id
-  from fact_block_asmt_outcome f where acc_speech_to_text_nonembed != 0;
+  from fact_block_asmt_outcome f where acc_speech_to_text_nonembed in (6, 7, 8, 15, 16, 17, 24, 25, 26);
 
 INSERT INTO warehouse.exam_available_accommodation (exam_id, accommodation_id)
   SELECT warehouse_exam_id, (SELECT id from warehouse.accommodation where code = 'TDS_SLM1') as  accommodation_id
-  from fact_block_asmt_outcome f where acc_streamline_mode != 0;
+  from fact_block_asmt_outcome f where acc_streamline_mode in (6, 7, 8, 15, 16, 17, 24, 25, 26);
 
 INSERT INTO warehouse.exam_available_accommodation (exam_id, accommodation_id)
   SELECT warehouse_exam_id, (SELECT id from warehouse.accommodation where code = 'NEDS_NoiseBuf') as  accommodation_id
-  from fact_block_asmt_outcome f where acc_noise_buffer_nonembed != 0;
+  from fact_block_asmt_outcome f where acc_noise_buffer_nonembed in (6, 7, 8, 15, 16, 17, 24, 25, 26);
 
 INSERT INTO load_progress (warehouse_load_id, message) VALUE (33, 'loaded exam_available_accommodation for iab');
 
