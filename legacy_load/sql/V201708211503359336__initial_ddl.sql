@@ -139,9 +139,12 @@ CREATE TABLE IF NOT EXISTS dim_asmt (
 # used for loading into warehouse
 -- TODO: not sure if we should have it here or in the fact tables. This table is way smaller but then we will have to join?
   warehouse_asmt_id int,
+  warehouse_subject_claim1_score_id tinyint,
+  warehouse_subject_claim2_score_id tinyint,
+  warehouse_subject_claim3_score_id tinyint,
+  warehouse_subject_claim4_score_id tinyint,
   UNIQUE INDEX idx__dim_asmt__asmt_guid(asmt_guid)
 );
-
 
 /**
 ** this table will be loaded into warehouse student and student_ethnicity
