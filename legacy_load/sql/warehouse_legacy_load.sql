@@ -568,7 +568,7 @@ CALL loop_by_partition(
         f.warehouse_import_id,
         f.warehouse_import_id
       FROM fact_block_asmt_outcome f
-        JOIN dim_asmt da on da.asmt_rec_id = f.asmt_rec_id
+        JOIN dim_asmt da on da.asmt_guid = f.asmt_guid
       WHERE f.warehouse_load_id = @load_id', @iab_partition_start, @iab_partition_end);
 INSERT INTO load_progress (warehouse_load_id, message) VALUE (@load_id, 'insert new exam into warehouse');
 
