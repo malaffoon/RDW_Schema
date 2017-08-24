@@ -545,10 +545,6 @@ CALL loop_by_partition(
       WHERE f.warehouse_load_id = @load_id', @iab_partition_start, @iab_partition_end);
 INSERT INTO load_progress (warehouse_load_id, message) VALUE (@load_id, 'update fact_block_asmt_outcome with warehouse_exam_student_id');
 
-select count(*), warehouse_partition_id
-  from ( SELECT cast(t3_program_type AS SIGNED) as id from warehouse.exam_student)  e
-    left join fact_block_asmt_outcome ab on ab.asmt_outcome_rec_id = e.id group by warehouse_partition_id ;
-
 # wipe out t3_program_type
 # TODO: this is not safe if we have data loaded, may need to revisit for the second run
 UPDATE warehouse.exam_student SET t3_program_type = null;
