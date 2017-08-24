@@ -1,5 +1,5 @@
 # IMPORTANT !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-# 1.  MIGRATE SHOULD NOT BE RUNNING UNTIL THIS IS DONE
+# 1. MIGRATE SHOULD NOT BE RUNNING UNTIL THIS IS DONE
 # 2. DB natural records ids seems unreliable for joining, that is why we have to use the natural ids
 
 USE legacy_load;
