@@ -219,6 +219,7 @@ CALL loop_by_partition(
     SET ds.warehouse_student_id = ws.id WHERE 1 = 1', @student_partition_start,  @student_partition_end);
 INSERT INTO load_progress (warehouse_load_id, message) VALUE (@load_id, 'update dim_student with warehouse_student_id');
 
+
 INSERT INTO warehouse.student_ethnicity(student_id, ethnicity_id)
   SELECT warehouse_student_id, (SELECT id from warehouse.ethnicity where code = 'HispanicOrLatinoEthnicity') as  ethnicity_id
   from dim_student where dmg_eth_hsp = 1 and warehouse_load_id = @load_id;
@@ -535,13 +536,6 @@ CALL loop_by_partition(
       WHERE f.warehouse_load_id = @load_id', @iab_partition_start, @iab_partition_end);
 INSERT INTO load_progress (warehouse_load_id, message) VALUE (@load_id, 'insert new exam_student into warehouse');
 
-select count(*)
- FROM fact_block_asmt_outcome f
-   JOIN (SELECT warehouse_student_id, student_id from dim_student) as ds on ds.student_id = f.student_id
-   JOIN dim_inst_hier dh on dh.school_id = f.school_id and dh.district_id = f.district_id
-    JOIN warehouse.grade wg on wg.code = f.enrl_grade
-  WHERE f.warehouse_load_id = @load_id and f.warehouse_partition_id >= 0;
-
 # assign warehouse_exam_student_id
 CALL loop_by_partition(
     'UPDATE fact_block_asmt_outcome f
@@ -682,7 +676,6 @@ WHERE status = 0
       and contentType = 'legacy load'
       and batch = @load_id;
 INSERT INTO load_progress (warehouse_load_id, message) VALUE (@load_id, 'update import status to 1 for the batch');
-
 
 ############################ to make Mark happy - remove the stored procedure so that nobody could see it ################################
 DROP PROCEDURE IF EXISTS loop_by_partition;
