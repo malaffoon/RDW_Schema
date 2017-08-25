@@ -114,7 +114,7 @@ INSERT INTO load_progress (warehouse_load_id, message) VALUE (@load_id, 'updated
 # TODO: legacy has two values null and t. Is null false or true? When processing TRT null is 'Complete'?
 UPDATE fact_asmt_outcome_vw f
   SET warehouse_completeness_id =
-    CASE WHEN f.complete = 't' THEN (SELECT id FROM warehouse.completeness WHERE code = 'Complete')
+    CASE WHEN f.complete = 1 THEN (SELECT id FROM warehouse.completeness WHERE code = 'Complete')
     ELSE (SELECT id FROM warehouse.completeness WHERE code = 'Partial') END
   WHERE warehouse_load_id = @load_id and warehouse_partition_id >= 0;
 INSERT INTO load_progress (warehouse_load_id, message) VALUE (@load_id, 'updated fact_asmt_outcome_vw warehouse_completeness_id');
@@ -130,7 +130,7 @@ INSERT INTO load_progress (warehouse_load_id, message) VALUE (@load_id, 'updated
 CALL loop_by_partition(
     'UPDATE fact_block_asmt_outcome f
       SET warehouse_completeness_id =
-        CASE WHEN f.complete = ''t'' THEN (SELECT id FROM warehouse.completeness  WHERE code = ''Complete'')
+        CASE WHEN f.complete = 1 THEN (SELECT id FROM warehouse.completeness  WHERE code = ''Complete'')
         ELSE (SELECT id FROM warehouse.completeness WHERE code = ''Partial'') END
       WHERE warehouse_load_id = @load_id', @iab_partition_start, @iab_partition_end);
 INSERT INTO load_progress (warehouse_load_id, message) VALUE (@load_id, 'updated fact_block_asmt_outcome warehouse_completeness_id');
