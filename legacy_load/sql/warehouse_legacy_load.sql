@@ -349,7 +349,7 @@ INSERT INTO warehouse.exam_available_accommodation (exam_id, accommodation_id)
   WHERE acc_closed_captioning_embed IN (6, 7, 8, 15, 16, 17, 24, 25, 26) AND f.warehouse_load_id = @load_id AND warehouse_partition_id >= 0;
 
 INSERT INTO warehouse.exam_available_accommodation (exam_id, accommodation_id)
-  SELECT warehouse_exam_id, (SELECT id from warehouse.accommodation where code = 'TDS_TTS_Stim&amp;TDS_TTS_Item') as  accommodation_id
+  SELECT warehouse_exam_id, (SELECT id from warehouse.accommodation where code = 'TDS_TTS_Stim&TDS_TTS_Item') as  accommodation_id
     FROM fact_asmt_outcome_vw f
   WHERE acc_text_to_speech_embed IN (6, 7, 8, 15, 16, 17, 24, 25, 26) AND f.warehouse_load_id = @load_id AND warehouse_partition_id >= 0;
 
@@ -603,7 +603,7 @@ INSERT INTO warehouse.exam_available_accommodation (exam_id, accommodation_id)
   WHERE acc_closed_captioning_embed IN (6, 7, 8, 15, 16, 17, 24, 25, 26) AND f.warehouse_load_id = @load_id AND warehouse_partition_id >= 0;
 
 INSERT INTO warehouse.exam_available_accommodation (exam_id, accommodation_id)
-  SELECT warehouse_exam_id, (SELECT id from warehouse.accommodation where code = 'TDS_TTS_Stim&amp;TDS_TTS_Item') as  accommodation_id
+  SELECT warehouse_exam_id, (SELECT id from warehouse.accommodation where code = 'TDS_TTS_Stim&TDS_TTS_Item') as  accommodation_id
     FROM fact_block_asmt_outcome f
   WHERE acc_text_to_speech_embed IN (6, 7, 8, 15, 16, 17, 24, 25, 26) AND f.warehouse_load_id = @load_id AND warehouse_partition_id >= 0;
 
