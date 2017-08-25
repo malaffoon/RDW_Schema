@@ -3,7 +3,7 @@ use legacy_load;
 INSERT INTO dim_asmt_guid_to_natural_id_mapping(guid, subject, grade, natural_id, name, school_year) VALUES
   ('829c3710-b7ce-11e4-b24f-406c8f57365f', 'ELA', '11', 'SBAC-IAB-FIXED-G11E-BriefWrites-ELA-11', '(SBAC)SBAC-IAB-FIXED-G11E-BriefWrites-ELA-11-Winter-2014-2015', '2014-2015'),
   ('68cf2180-b7ce-11e4-850a-406c8f57365f', 'ELA', '11', 'SBAC-IAB-FIXED-G11E-EditRevise-ELA-11', '(SBAC)SBAC-IAB-FIXED-G11E-EditRevise-ELA-11-Winter-2014-2015', '2014-2015'),
-  ('9d476ec2-b7ce-11e4-907e-406c8f57365f', 'ELA', '11', 'SBAC-IAB-FIXED-G11E-ListenInterpet-ELA-11', 'HS_Interim ELA Listen Interpret (IAB)', '2014-2015'),
+  ('9d476ec2-b7ce-11e4-907e-406c8f57365f', 'ELA', '11', 'SBAC-IAB-FIXED-G11E-ListenInterpet-ELA-11', '(SBAC)SBAC-IAB-FIXED-G11E-ListenInterpet-ELA-11-Winter-2014-2015', '2014-2015'),
   ('d3ddbc0c-b7ce-11e4-a5c3-406c8f57365f', 'ELA', '11', 'SBAC-IAB-FIXED-G11E-Perf-Explanatory-Marshmallow', '(SBAC)SBAC-IAB-FIXED-G11E-Perf-Explanatory-Marshmallow-Winter-2014-2015', '2014-2015'),
   ('50b83f1e-b7ce-11e4-94ce-406c8f57365f', 'ELA', '11', 'SBAC-IAB-FIXED-G11E-ReadInfo-ELA-11', '(SBAC)SBAC-IAB-FIXED-G11E-ReadInfo-ELA-11-Winter-2014-2015', '2014-2015'),
   ('314855ce-b7ce-11e4-8a84-406c8f57365f', 'ELA', '11', 'SBAC-IAB-FIXED-G11E-ReadLit-ELA-11', '(SBAC)SBAC-IAB-FIXED-G11E-ReadLit-ELA-11-Winter-2014-2015', '2014-2015'),
