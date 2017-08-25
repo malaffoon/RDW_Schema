@@ -664,14 +664,38 @@ INSERT INTO warehouse.exam_available_accommodation (exam_id, accommodation_id)
 
 INSERT INTO load_progress (warehouse_load_id, message) VALUE (@load_id, 'loaded exam_available_accommodation for iab');
 
-########################################### update imports as completed  #################################################################
+##########update imports as completed and reset timestamps for migrate to limit set of records in a batch ########################################
+SELECT max(id) into @maxImportId from warehouse.import;
+
 UPDATE warehouse.import
-  SET status = 1
+SET status = 1,
+  created = DATE_ADD(created, INTERVAL (@maxImportId -id)  MICROSECOND),
+  updated = DATE_ADD(updated, INTERVAL (@maxImportId -id)  MICROSECOND)
 WHERE status = 0
       and content = 1
       and contentType = 'legacy load'
       and batch = @load_id;
 INSERT INTO load_progress (warehouse_load_id, message) VALUE (@load_id, 'update import status to 1 for the batch');
+
+UPDATE warehouse.student s
+  JOIN warehouse.import i ON i.id = s.import_id
+SET
+  s.created = i.updated,
+  s.updated = i.updated
+WHERE i.status = 1
+      and content = 1
+      and contentType = 'legacy load'
+      and batch = @load_id;
+
+UPDATE warehouse.exam e
+  JOIN warehouse.import i ON i.id = e.import_id
+SET
+  e.created = i.updated,
+  e.updated = i.updated
+WHERE i.status = 1
+      and content = 1
+      and contentType = 'legacy load'
+      and batch = @load_id;
 
 ############################ to make Mark happy - remove the stored procedure so that nobody could see it ################################
 DROP PROCEDURE IF EXISTS loop_by_partition;
