@@ -109,7 +109,7 @@ UPDATE fact_asmt_outcome_vw f
   SET warehouse_completeness_id =
     CASE WHEN f.complete = 1 THEN (SELECT id FROM warehouse.completeness WHERE code = 'Complete')
     ELSE (SELECT id FROM warehouse.completeness WHERE code = 'Partial') END
-  WHERE warehouse_load_id = @load_id and warehouse_partition_id >= 0;
+  WHERE warehouse_load_id = @load_id;
 INSERT INTO load_progress (warehouse_load_id, message) VALUE (@load_id, 'updated fact_asmt_outcome_vw warehouse_completeness_id');
 
 # TODO: is this correct (here and below)
@@ -117,7 +117,7 @@ UPDATE fact_asmt_outcome_vw f
   SET warehouse_administration_condition_id =
     CASE WHEN coalesce(f.administration_condition, '') = '' THEN (SELECT id FROM warehouse.administration_condition WHERE code = 'Valid')
     ELSE (SELECT id FROM warehouse.administration_condition WHERE code = f.administration_condition) END
-  WHERE warehouse_load_id = @load_id and warehouse_partition_id >= 0;
+  WHERE warehouse_load_id = @load_id;
 INSERT INTO load_progress (warehouse_load_id, message) VALUE (@load_id, 'updated fact_asmt_outcome_vw warehouse_administration_condition_id');
 
 CALL loop_by_partition(
