@@ -2,7 +2,7 @@
 
 use warehouse;
 
-INSERT INTO warehouse.import (status, content, contentType, digest) VALUES (0, 3, 'missing legacy accommodations', 'missing legacy accommodations');
+INSERT INTO import (status, content, contentType, digest) VALUES (0, 3, 'missing legacy accommodations', 'missing legacy accommodations');
 SELECT LAST_INSERT_ID() INTO @importid;
 
 INSERT INTO accommodation (code) VALUES
