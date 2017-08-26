@@ -56,13 +56,6 @@ SET warehouse_asmt_id = wa.id
 WHERE warehouse_load_id = @load_id;
 INSERT INTO load_progress (warehouse_load_id, message) VALUE (@load_id, 'updated dim_asmt warehouse_asmt_id');
 
-# now try to process all other asmts by deriving the asmt natural id
-UPDATE dim_asmt da
-  JOIN (select concat('(SBAC)', natural_id, '-Winter-', school_year) as natural_id, guid, school_year from  dim_asmt_guid_to_natural_id_mapping ) as m ON m.guid = da.asmt_guid
-  JOIN warehouse.asmt wa ON wa.natural_id = m.natural_id
-SET warehouse_asmt_id = wa.id
-WHERE warehouse_load_id = @load_id and warehouse_asmt_id is null;
-
 ########################################### partition #####################################################################################
 # large tables need partitioning
 UPDATE dim_student ds SET warehouse_partition_id = MOD(ds.student_rec_id, @student_partition_end+1);
