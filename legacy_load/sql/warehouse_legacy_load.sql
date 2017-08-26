@@ -303,7 +303,7 @@ INSERT INTO warehouse.exam (type_id, exam_student_id, school_year, asmt_id, comp
     f.asmt_score,
     CASE WHEN f.asmt_score IS NOT null THEN (f.asmt_score_range_max - f.asmt_score) ELSE null END,
     f.asmt_perf_lvl,
-    f.date_taken,
+    convert_tz(timestamp(f.date_taken), 'America/Los_Angeles', @@session.time_zone),
     f.asmt_outcome_vw_rec_id,
     f.warehouse_import_id,
     f.warehouse_import_id
@@ -556,7 +556,7 @@ CALL loop_by_partition(
         f.asmt_claim_1_score,
         CASE WHEN f.asmt_claim_1_score IS NOT null THEN (f.asmt_claim_1_score_range_max - f.asmt_claim_1_score) ELSE null END,
         f.asmt_claim_1_perf_lvl,
-        f.date_taken,
+        convert_tz(timestamp(f.date_taken), ''America/Los_Angeles'', @@session.time_zone),
         f.asmt_outcome_rec_id,
         f.warehouse_import_id,
         f.warehouse_import_id
