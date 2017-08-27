@@ -152,8 +152,7 @@ INSERT INTO pre_validation(testNum, result1, result2, result3, result4)
          GROUP BY school_id, district_id
        ) s
     JOIN dim_inst_hier h ON h.school_id = s.school_id and h.district_id = s.district_id where h.rec_status = 'C'
-  ORDER BY   s.count,
-    school_id;
+  ORDER BY s.count, school_id;
 
 -- SELECT  s.count,
 --   sch.natural_id,
@@ -189,8 +188,7 @@ INSERT INTO pre_validation(testNum, result1, result2, result3, result4)
          GROUP BY school_id, district_id
        ) s
     JOIN dim_inst_hier h ON h.school_id = s.school_id and h.district_id = s.district_id where h.rec_status = 'C'
-  ORDER BY   s.count,
-    school_id;
+  ORDER BY  s.count, school_id;
 
 -- SELECT  s.count,
 --   sch.natural_id,
