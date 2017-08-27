@@ -258,8 +258,8 @@ UNION ALL
 SELECT  count(*) AS count, 'NEA_STT' as code from fact_asmt_outcome_vw where acc_speech_to_text_nonembed IN (6, 7, 8, 15, 16, 17, 24, 25, 26) AND  rec_status = 'C'
 UNION ALL
 SELECT  count(*) AS count, 'TDS_SLM1' as code from fact_asmt_outcome_vw where acc_streamline_mode IN (6, 7, 8, 15, 16, 17, 24, 25, 26) AND  rec_status = 'C'
-UNION ALL
-SELECT  count(*) AS count, 'NEDS_NoiseBuf' as code from fact_asmt_outcome_vw where acc_noise_buffer_nonembed IN (6, 7, 8, 15, 16, 17, 24, 25, 26) AND  rec_status = 'C'
+--UNION ALL
+--SELECT  count(*) AS count, 'NEDS_NoiseBuf' as code from fact_asmt_outcome_vw where acc_noise_buffer_nonembed IN (6, 7, 8, 15, 16, 17, 24, 25, 26) AND  rec_status = 'C'
 ) as accommodatioms order by count;
 -- select count(*), code from exam e join exam_available_accommodation ea on e.id = ea.exam_id join accommodation a on a.id = ea.accommodation_id where e.type_id = 1 group by ea.accommodation_id order by count(*);
 
@@ -292,7 +292,7 @@ UNION ALL
 SELECT  count(*) AS count, 'NEA_STT' as code from fact_block_asmt_outcome where acc_speech_to_text_nonembed IN (6, 7, 8, 15, 16, 17, 24, 25, 26) AND  rec_status = 'C' and asmt_guid not in (select * from exclude_asmt)
 UNION ALL
 SELECT  count(*) AS count, 'TDS_SLM1' as code from fact_block_asmt_outcome where acc_streamline_mode IN (6, 7, 8, 15, 16, 17, 24, 25, 26) AND  rec_status = 'C' and asmt_guid not in (select * from exclude_asmt)
-UNION ALL
-SELECT  count(*) AS count, 'NEDS_NoiseBuf' as code from fact_block_asmt_outcome where acc_noise_buffer_nonembed IN (6, 7, 8, 15, 16, 17, 24, 25, 26) AND  rec_status = 'C' and asmt_guid not in (select * from exclude_asmt)
+--UNION ALL
+--SELECT  count(*) AS count, 'NEDS_NoiseBuf' as code from fact_block_asmt_outcome where acc_noise_buffer_nonembed IN (6, 7, 8, 15, 16, 17, 24, 25, 26) AND  rec_status = 'C' and asmt_guid not in (select * from exclude_asmt)
 ) as accommodatioms order by count;
 --select count(*), code from exam e join exam_available_accommodation ea on e.id = ea.exam_id join accommodation a on a.id = ea.accommodation_id where e.type_id = 2 group by ea.accommodation_id order by count(*);
