@@ -134,7 +134,7 @@ INSERT INTO pre_validation
 -- order by   count(*);
 
 --   Exam breakdown by district and school
-insert into pre_validation select (select max(testNum) from pre_validation) + 1, 'ica exams', 'district', 'school';
+insert into pre_validation select (select max(testNum) from pre_validation) + 1, 'ica exams', 'school id', 'district', 'school';
 INSERT INTO pre_validation
   SELECT (SELECT max(testNum) FROM pre_validation),
     s.count,
@@ -170,8 +170,7 @@ INSERT INTO pre_validation
 -- ORDER BY s.count,
 --   natural_id;
 
-
-insert into pre_validation select (select max(testNum) from pre_validation) + 1, 'iab exams', 'district', 'school';
+insert into pre_validation select (select max(testNum) from pre_validation) + 1, 'iab exams', 'school id', 'district', 'school';
 INSERT INTO pre_validation
   SELECT (SELECT max(testNum) FROM pre_validation),
     s.count,
@@ -206,3 +205,23 @@ INSERT INTO pre_validation
 --      ) s join school sch on sch.natural_id = s.natural_id join district d on d.id = sch.district_id
 -- ORDER BY s.count,
 --   natural_id;
+
+insert into pre_validation select (select max(testNum) from pre_validation) + 1, 'ethnicity count', 'ethnicity';
+INSERT INTO pre_validation
+  SELECT (SELECT max(testNum) FROM pre_validation),
+   * from (
+  SELECT  count(*) AS count, 'HispanicOrLatinoEthnicity' AS code  FROM dim_student where dmg_eth_hsp = 't'  and rec_status = 'C'
+  UNION ALL
+  SELECT count(*) AS count,'AmericanIndianOrAlaskaNative' AS code FROM dim_student where dmg_eth_ami = 't' and rec_status = 'C'
+  UNION ALL
+  SELECT count(*) AS count, 'Asian' AS code FROM dim_student where dmg_eth_asn = 't'  and rec_status = 'C'
+  UNION ALL
+  SELECT count(*) AS count, 'BlackOrAfricanAmerican' AS code FROM dim_student where dmg_eth_blk = 't'  and rec_status = 'C'
+  UNION ALL
+  SELECT count(*) AS count, 'White' AS code FROM dim_student where dmg_eth_wht = 't'  and rec_status = 'C'
+  UNION ALL
+  SELECT count(*) AS count, 'DemographicRaceTwoOrMoreRaces' AS code FROM dim_student where dmg_eth_2om = 't'  and rec_status = 'C'
+  UNION ALL
+  SELECT count(*) AS count, 'NativeHawaiianOrOtherPacificIslander' AS code FROM dim_student where dmg_eth_pcf = 't'  and rec_status = 'C'
+) as ethnicity order by count;
+-- select count(*), ethnicity_code  from student_ethnicity group by ethnicity_code order by count(*);
