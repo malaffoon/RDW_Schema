@@ -161,7 +161,7 @@ INSERT INTO dim_asmt_guid_to_natural_id_mapping(guid, subject, grade, natural_id
   ('SBAC-IAB-FIXED-G8E-BriefWrites-ELA-8', 'ELA', '08', 'SBAC-IAB-FIXED-G8E-BriefWrites-ELA-8', '(SBAC)SBAC-IAB-FIXED-G8E-BriefWrites-ELA-8-Winter-2014-2015', '2015-2016'),
   ('SBAC-IAB-FIXED-G8E-EditRevise-ELA-8', 'ELA', '08', 'SBAC-IAB-FIXED-G8E-EditRevise-ELA-8', '(SBAC)SBAC-IAB-FIXED-G8E-EditRevise-ELA-8-Winter-2014-2015', '2015-2016'),
   ('SBAC-IAB-FIXED-G8E-ListenInterpet-ELA-8', 'ELA', '08', 'SBAC-IAB-FIXED-G8E-ListenInterpet-ELA-8', '(SBAC)SBAC-IAB-FIXED-G8E-ListenInterpet-ELA-8-Winter-2014-2015', '2015-2016'),
-  ('SBAC-IAB-FIXED-G8E-Perf-Explanatory-CompareAncient', 'ELA', '08', 'SBAC-IAB-FIXED-G8E-Perf-Explanatory-CompareAncient', '(SBAC)SBAC-IAB-FIXED-G8E-Perf-Explanatory-CompareAncient-Winter-2014-2015', '2015-2016'),
+  ('SBAC-IAB-FIXED-G8E-Perf-Explanatory-CompareAncient', 'ELA', '08', 'SBAC-IAB-FIXED-G8E-Perf-Explanatory-CompareAncient', '(SBAC)SBAC-IAB-FIXED-G8E-Perf-Explanatory-CompareAncient-Winter-2015-2016', '2015-2016'),
   ('SBAC-IAB-FIXED-G8E-ReadInfo-ELA-8', 'ELA', '08', 'SBAC-IAB-FIXED-G8E-ReadInfo-ELA-8', '(SBAC)SBAC-IAB-FIXED-G8E-ReadInfo-ELA-8-Winter-2014-2015', '2015-2016'),
   ('SBAC-IAB-FIXED-G8E-ReadLit-ELA-8', 'ELA', '08', 'SBAC-IAB-FIXED-G8E-ReadLit-ELA-8', '(SBAC)SBAC-IAB-FIXED-G8E-ReadLit-ELA-8-Winter-2014-2015', '2015-2016'),
   ('SBAC-IAB-FIXED-G8E-Research-ELA-8', 'ELA', '08', 'SBAC-IAB-FIXED-G8E-Research-ELA-8', '(SBAC)SBAC-IAB-FIXED-G8E-Research-ELA-8-Winter-2014-2015', '2015-2016'),
