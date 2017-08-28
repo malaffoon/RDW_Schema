@@ -42,6 +42,8 @@
 **  NOTE: Filipino does not exist in the legacy system
 ** 12. blank or null administration_condition is treated as Valid
 ** 13. not 't' complete is treated as 'Partial'
+** 14. The demographic flags. In the old system there are three options: yes, no and undefined. In the new system we support ‘undefined’ for the migrant status only.
+** All ‘undefined’ are converted to No during the load
 **
 **/
 

@@ -56,13 +56,6 @@ SET warehouse_asmt_id = wa.id
 WHERE warehouse_load_id = @load_id;
 INSERT INTO load_progress (warehouse_load_id, message) VALUE (@load_id, 'updated dim_asmt warehouse_asmt_id');
 
-# now try to process all other asmts by deriving the asmt natural id
-UPDATE dim_asmt da
-  JOIN (select concat('(SBAC)', natural_id, '-Winter-', school_year) as natural_id, guid, school_year from  dim_asmt_guid_to_natural_id_mapping ) as m ON m.guid = da.asmt_guid
-  JOIN warehouse.asmt wa ON wa.natural_id = m.natural_id
-SET warehouse_asmt_id = wa.id
-WHERE warehouse_load_id = @load_id and warehouse_asmt_id is null;
-
 ########################################### partition #####################################################################################
 # large tables need partitioning
 UPDATE dim_student ds SET warehouse_partition_id = MOD(ds.student_rec_id, @student_partition_end+1);
@@ -116,7 +109,7 @@ UPDATE fact_asmt_outcome_vw f
   SET warehouse_completeness_id =
     CASE WHEN f.complete = 1 THEN (SELECT id FROM warehouse.completeness WHERE code = 'Complete')
     ELSE (SELECT id FROM warehouse.completeness WHERE code = 'Partial') END
-  WHERE warehouse_load_id = @load_id and warehouse_partition_id >= 0;
+  WHERE warehouse_load_id = @load_id;
 INSERT INTO load_progress (warehouse_load_id, message) VALUE (@load_id, 'updated fact_asmt_outcome_vw warehouse_completeness_id');
 
 # TODO: is this correct (here and below)
@@ -124,7 +117,7 @@ UPDATE fact_asmt_outcome_vw f
   SET warehouse_administration_condition_id =
     CASE WHEN coalesce(f.administration_condition, '') = '' THEN (SELECT id FROM warehouse.administration_condition WHERE code = 'Valid')
     ELSE (SELECT id FROM warehouse.administration_condition WHERE code = f.administration_condition) END
-  WHERE warehouse_load_id = @load_id and warehouse_partition_id >= 0;
+  WHERE warehouse_load_id = @load_id;
 INSERT INTO load_progress (warehouse_load_id, message) VALUE (@load_id, 'updated fact_asmt_outcome_vw warehouse_administration_condition_id');
 
 CALL loop_by_partition(
@@ -310,7 +303,7 @@ INSERT INTO warehouse.exam (type_id, exam_student_id, school_year, asmt_id, comp
     f.asmt_score,
     CASE WHEN f.asmt_score IS NOT null THEN (f.asmt_score_range_max - f.asmt_score) ELSE null END,
     f.asmt_perf_lvl,
-    f.date_taken,
+    convert_tz(timestamp(f.date_taken), 'America/Los_Angeles', @@session.time_zone),
     f.asmt_outcome_vw_rec_id,
     f.warehouse_import_id,
     f.warehouse_import_id
@@ -563,7 +556,7 @@ CALL loop_by_partition(
         f.asmt_claim_1_score,
         CASE WHEN f.asmt_claim_1_score IS NOT null THEN (f.asmt_claim_1_score_range_max - f.asmt_claim_1_score) ELSE null END,
         f.asmt_claim_1_perf_lvl,
-        f.date_taken,
+        convert_tz(timestamp(f.date_taken), ''America/Los_Angeles'', @@session.time_zone),
         f.asmt_outcome_rec_id,
         f.warehouse_import_id,
         f.warehouse_import_id

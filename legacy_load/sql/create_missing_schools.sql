@@ -40,3 +40,7 @@ UPDATE dim_inst_hier dih
   JOIN warehouse.school ws ON dih.school_id = ws.natural_id
 SET warehouse_school_id = ws.id
 WHERE warehouse_load_id = 1 AND warehouse_school_id IS NULL;
+
+UPDATE warehouse.import
+ SET status = 1
+WHERE id = @importid;
