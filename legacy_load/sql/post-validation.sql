@@ -49,7 +49,7 @@ INSERT INTO post_validation(testNum, result1, result2, result3, result4, result5
    a.natural_id,
    e.school_year,
    administration_condition_code,
-   completeness_code
+    CASE WHEN completeness_code = 'Complete' THEN 'TRUE' ELSE 'FALSE' END
  FROM exam e JOIN asmt a ON e.asmt_id = a.id
    WHERE a.type_id = 1
 GROUP BY  a.natural_id,
