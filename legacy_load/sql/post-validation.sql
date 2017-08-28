@@ -47,7 +47,7 @@ INSERT INTO post_validation(testNum, result1, result2, result3, result4, result5
   SELECT (SELECT max(testNum) FROM post_validation),
    count(*),
    a.natural_id,
-   a.school_year,
+   e.school_year,
    administration_condition_code,
    completeness_code
  FROM exam e JOIN asmt a ON e.asmt_id = a.id
@@ -56,23 +56,20 @@ GROUP BY  a.natural_id,
    a.school_year,
    administration_condition_code,
    completeness_code
-ORDER BY   count(*);
+ORDER BY count(*), a.natural_id;
 
 INSERT INTO post_validation(testNum, result1, result2, result3, result4, result5) SELECT (SELECT max(testNum) FROM post_validation) + 1, 'iab exams', 'asmt', 'asmt year', 'admin condition', 'complete';
 INSERT INTO post_validation(testNum, result1, result2, result3, result4, result5)
   SELECT (SELECT max(testNum) FROM post_validation),
    count(*),
    a.natural_id,
-   a.school_year,
+   e.school_year,
    administration_condition_code,
-   completeness_code
+   CASE WHEN completeness_code = 'Complete' THEN 'TRUE' ELSE 'FALSE' END
  FROM exam e JOIN asmt a ON e.asmt_id = a.id
    WHERE a.type_id = 2
-GROUP BY  a.natural_id,
-   a.school_year,
-   administration_condition_code,
-   completeness_code
-ORDER BY   count(*);
+GROUP BY  a.school_year, a.natural_id, administration_condition_code, completeness_code
+ORDER BY count(*), a.natural_id;
 
 --   Exam breakdown by district and school
 INSERT INTO post_validation(testNum, result1, result2, result3, result4) SELECT (SELECT max(testNum) FROM post_validation) + 1, 'ica exams', 'school id', 'district', 'school';
@@ -80,8 +77,8 @@ INSERT INTO post_validation(testNum, result1, result2, result3, result4)
   SELECT (SELECT max(testNum) FROM post_validation),
    s.count,
    sch.natural_id,
-   d.name,
-   sch.name
+   UPPER(d.name),
+   UPPER(sch.name)
  FROM (
         SELECT
           count(*) as count,
@@ -92,16 +89,15 @@ INSERT INTO post_validation(testNum, result1, result2, result3, result4)
         WHERE a.type_id = 1
         GROUP BY natural_id
       ) s JOIN school sch ON sch.natural_id = s.natural_id JOIN district d ON d.id = sch.district_id
- ORDER BY s.count,
-   natural_id;
+ ORDER BY  natural_id, s.count;
 
 INSERT INTO post_validation(testNum, result1, result2, result3, result4) SELECT (SELECT max(testNum) FROM post_validation) + 1, 'iab exams', 'school id', 'district', 'school';
 INSERT INTO post_validation(testNum, result1, result2, result3, result4)
   SELECT (SELECT max(testNum) FROM post_validation),
    s.count,
    sch.natural_id,
-   d.name,
-   sch.name
+   UPPER(d.name),
+   UPPER(sch.name)
  FROM (
         SELECT
           count(*) as count,
@@ -112,8 +108,7 @@ INSERT INTO post_validation(testNum, result1, result2, result3, result4)
         WHERE a.type_id = 2
         GROUP BY natural_id
       ) s JOIN school sch ON sch.natural_id = s.natural_id JOIN district d ON d.id = sch.district_id
- ORDER BY s.count,
-   natural_id;
+ ORDER BY natural_id, s.count;
 
 -- Student
 INSERT INTO post_validation(testNum, result1, result2) SELECT (SELECT max(testNum) FROM post_validation) + 1, 'ethnicity count', 'ethnicity';
