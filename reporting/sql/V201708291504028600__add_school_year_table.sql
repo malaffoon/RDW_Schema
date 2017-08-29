@@ -17,3 +17,7 @@ INSERT INTO school_year (year) VALUES
 ALTER TABLE exam ADD CONSTRAINT fk__exam__school_year FOREIGN KEY (school_year) REFERENCES school_year(year);
 ALTER TABLE asmt ADD CONSTRAINT fk__asmt__school_year FOREIGN KEY (school_year) REFERENCES school_year(year);
 ALTER TABLE student_group ADD CONSTRAINT fk__student_group__school_year FOREIGN KEY (school_year) REFERENCES school_year(year);
+
+CREATE TABLE IF NOT EXISTS staging_school_year (
+  year smallint NOT NULL PRIMARY KEY
+);
