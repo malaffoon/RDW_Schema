@@ -15,15 +15,6 @@ CREATE TABLE IF NOT EXISTS pre_validation
   created timestamp default current_timestamp
 );
 
--- TODO: this is an asmt that was not loaded into prod yet
-CREATE TABLE IF NOT EXISTS exclude_asmt
-(
-  guid varchar(1000)
-);
-
-INSERT INTO exclude_asmt VALUES
-  ('SBAC-IAB-FIXED-G8E-Perf-Explanatory-CompareAncient');
-
 
 CREATE TABLE IF NOT EXISTS dim_asmt_guid_to_natural_id_mapping (
   guid varchar(255) NOT NULL,
@@ -42,14 +33,14 @@ INSERT INTO pre_validation(testNum, result1)
   SELECT (SELECT max(testNum) FROM pre_validation),
     count(*)
   FROM fact_asmt_outcome_vw f
-  WHERE rec_status = 'C' and asmt_guid not in (SELECT * FROM exclude_asmt);
+  WHERE rec_status = 'C';
 
 INSERT INTO pre_validation(testNum, result1) SELECT (SELECT max(testNum) FROM pre_validation) + 1, 'total_iab';
 INSERT INTO pre_validation(testNum, result1)
   SELECT (SELECT max(testNum) FROM pre_validation),
     count(*)
   FROM fact_block_asmt_outcome
-  WHERE rec_status = 'C' and asmt_guid not in (SELECT * FROM exclude_asmt);
+  WHERE rec_status = 'C';
 
 INSERT INTO pre_validation(testNum, result1, result2, result3)  SELECT (SELECT max(testNum) FROM pre_validation) + 1, 'total ica score', 'total std err', 'total perf level';
 INSERT INTO pre_validation(testNum, result1, result2, result3)
@@ -58,7 +49,7 @@ INSERT INTO pre_validation(testNum, result1, result2, result3)
     sum(asmt_score_range_max - asmt_score) AS total_std_err,
     sum(asmt_perf_lvl)                     AS total_perf_level
   FROM fact_asmt_outcome_vw
-  WHERE rec_status = 'C' AND asmt_guid NOT IN (SELECT * FROM exclude_asmt);
+  WHERE rec_status = 'C';
 
 INSERT INTO pre_validation(testNum, result1, result2, result3) SELECT (SELECT max(testNum) FROM pre_validation) + 1, 'total iab score', 'total std err', 'total perf level';
 INSERT INTO pre_validation(testNum, result1, result2, result3)
@@ -67,7 +58,7 @@ INSERT INTO pre_validation(testNum, result1, result2, result3)
   sum(asmt_claim_1_score_range_max - asmt_claim_1_score) AS total_std_err,
   sum(asmt_claim_1_perf_lvl)                     AS total_perf_level
   FROM fact_block_asmt_outcome
-WHERE rec_status = 'C' AND asmt_guid NOT IN (SELECT * FROM exclude_asmt);
+WHERE rec_status = 'C';
 
 INSERT INTO pre_validation(testNum, result1)  SELECT (SELECT max(testNum) FROM pre_validation) + 1, 'total students';
 INSERT INTO pre_validation(testNum, result1)
@@ -99,7 +90,7 @@ INSERT INTO pre_validation(testNum, result1, result2, result3, result4, result5)
     case when coalesce(f.administration_condition, '') = '' then 'Valid' else administration_condition end as ac,
     case when complete is null then 'f' else complete end as complete
   FROM fact_block_asmt_outcome f join dim_asmt_guid_to_natural_id_mapping am ON am.guid = f.asmt_guid join dim_asmt da ON am.guid = da.asmt_guid
-  WHERE f.rec_status = 'C' and da.rec_status = 'C' and f.asmt_guid not in (SELECT * FROM exclude_asmt)
+  WHERE f.rec_status = 'C' and da.rec_status = 'C'
   GROUP BY f.asmt_year, am.name, ac, complete
   ORDER BY  count(*), am.name;
 
@@ -136,7 +127,7 @@ INSERT INTO pre_validation(testNum, result1, result2, result3, result4)
            school_id,
            district_id
          FROM fact_block_asmt_outcome f
-         WHERE rec_status = 'C' and f.asmt_guid not in (SELECT * FROM exclude_asmt)
+         WHERE rec_status = 'C'
          GROUP BY school_id, district_id
        ) s
     JOIN dim_inst_hier h ON h.school_id = s.school_id and h.district_id = s.district_id where h.rec_status = 'C'
@@ -194,41 +185,37 @@ UNION ALL
 SELECT  count(*) AS count, 'NEA_STT' as code FROM fact_asmt_outcome_vw where acc_speech_to_text_nonembed IN (6, 7, 8, 15, 16, 17, 24, 25, 26) AND  rec_status = 'C'
 UNION ALL
 SELECT  count(*) AS count, 'TDS_SLM1' as code FROM fact_asmt_outcome_vw where acc_streamline_mode IN (6, 7, 8, 15, 16, 17, 24, 25, 26) AND  rec_status = 'C'
---UNION ALL
---SELECT  count(*) AS count, 'NEDS_NoiseBuf' as code FROM fact_asmt_outcome_vw where acc_noise_buffer_nonembed IN (6, 7, 8, 15, 16, 17, 24, 25, 26) AND  rec_status = 'C'
 ) as accommodatioms order by count;
 
 INSERT INTO pre_validation(testNum, result1, result2) SELECT (SELECT max(testNum) FROM pre_validation) + 1, 'iab accommodations count', 'ethnicity';
 INSERT INTO pre_validation(testNum, result1, result2)
 SELECT (SELECT max(testNum) FROM pre_validation),
    * FROM (
-SELECT  count(*) AS count, 'TDS_ASL1' as code FROM fact_block_asmt_outcome where acc_asl_video_embed IN (6, 7, 8, 15, 16, 17, 24, 25, 26) AND  rec_status = 'C' and asmt_guid not in (SELECT * FROM exclude_asmt)
+SELECT  count(*) AS count, 'TDS_ASL1' as code FROM fact_block_asmt_outcome where acc_asl_video_embed IN (6, 7, 8, 15, 16, 17, 24, 25, 26) AND  rec_status = 'C'
 UNION ALL
-SELECT  count(*) AS count, 'ENU-Braille' as code FROM fact_block_asmt_outcome where acc_braile_embed IN (6, 7, 8, 15, 16, 17, 24, 25, 26) AND  rec_status = 'C' and asmt_guid not in (SELECT * FROM exclude_asmt)
+SELECT  count(*) AS count, 'ENU-Braille' as code FROM fact_block_asmt_outcome where acc_braile_embed IN (6, 7, 8, 15, 16, 17, 24, 25, 26) AND  rec_status = 'C'
 UNION ALL
-SELECT  count(*) AS count, 'TDS_ClosedCap1' as code FROM fact_block_asmt_outcome where acc_closed_captioning_embed IN (6, 7, 8, 15, 16, 17, 24, 25, 26) AND  rec_status = 'C' and asmt_guid not in (SELECT * FROM exclude_asmt)
+SELECT  count(*) AS count, 'TDS_ClosedCap1' as code FROM fact_block_asmt_outcome where acc_closed_captioning_embed IN (6, 7, 8, 15, 16, 17, 24, 25, 26) AND  rec_status = 'C'
 UNION ALL
-SELECT  count(*) AS count, 'TDS_TTS_Stim&TDS_TTS_Item' as code FROM fact_block_asmt_outcome where acc_text_to_speech_embed IN (6, 7, 8, 15, 16, 17, 24, 25, 26) AND  rec_status = 'C' and asmt_guid not in (SELECT * FROM exclude_asmt)
+SELECT  count(*) AS count, 'TDS_TTS_Stim&TDS_TTS_Item' as code FROM fact_block_asmt_outcome where acc_text_to_speech_embed IN (6, 7, 8, 15, 16, 17, 24, 25, 26) AND  rec_status = 'C'
 UNION ALL
-SELECT  count(*) AS count, 'NEA_Abacus' as code FROM fact_block_asmt_outcome where acc_abacus_nonembed IN (6, 7, 8, 15, 16, 17, 24, 25, 26) AND  rec_status = 'C' and asmt_guid not in (SELECT * FROM exclude_asmt)
+SELECT  count(*) AS count, 'NEA_Abacus' as code FROM fact_block_asmt_outcome where acc_abacus_nonembed IN (6, 7, 8, 15, 16, 17, 24, 25, 26) AND  rec_status = 'C'
 UNION ALL
-SELECT  count(*) AS count, 'NEA_AR' as code FROM fact_block_asmt_outcome where acc_alternate_response_options_nonembed IN (6, 7, 8, 15, 16, 17, 24, 25, 26) AND  rec_status = 'C' and asmt_guid not in (SELECT * FROM exclude_asmt)
+SELECT  count(*) AS count, 'NEA_AR' as code FROM fact_block_asmt_outcome where acc_alternate_response_options_nonembed IN (6, 7, 8, 15, 16, 17, 24, 25, 26) AND  rec_status = 'C'
 UNION ALL
-SELECT  count(*) AS count, 'NEA_Calc' as code FROM fact_block_asmt_outcome where acc_calculator_nonembed IN (6, 7, 8, 15, 16, 17, 24, 25, 26) AND  rec_status = 'C' and asmt_guid not in (SELECT * FROM exclude_asmt)
+SELECT  count(*) AS count, 'NEA_Calc' as code FROM fact_block_asmt_outcome where acc_calculator_nonembed IN (6, 7, 8, 15, 16, 17, 24, 25, 26) AND  rec_status = 'C'
 UNION ALL
-SELECT  count(*) AS count, 'NEA_MT' as code FROM fact_block_asmt_outcome where acc_multiplication_table_nonembed IN (6, 7, 8, 15, 16, 17, 24, 25, 26) AND  rec_status = 'C' and asmt_guid not in (SELECT * FROM exclude_asmt)
+SELECT  count(*) AS count, 'NEA_MT' as code FROM fact_block_asmt_outcome where acc_multiplication_table_nonembed IN (6, 7, 8, 15, 16, 17, 24, 25, 26) AND  rec_status = 'C'
 UNION ALL
-SELECT  count(*) AS count, 'TDS_PoD_Stim' as code FROM fact_block_asmt_outcome where acc_print_on_demand_nonembed IN (6, 7, 8, 15, 16, 17, 24, 25, 26) AND  rec_status = 'C' and asmt_guid not in (SELECT * FROM exclude_asmt)
+SELECT  count(*) AS count, 'TDS_PoD_Stim' as code FROM fact_block_asmt_outcome where acc_print_on_demand_nonembed IN (6, 7, 8, 15, 16, 17, 24, 25, 26) AND  rec_status = 'C'
 UNION ALL
-SELECT  count(*) AS count, 'TDS_PoD_Item' as code FROM fact_block_asmt_outcome where acc_print_on_demand_items_nonembed IN (6, 7, 8, 15, 16, 17, 24, 25, 26) AND  rec_status = 'C' and asmt_guid not in (SELECT * FROM exclude_asmt)
+SELECT  count(*) AS count, 'TDS_PoD_Item' as code FROM fact_block_asmt_outcome where acc_print_on_demand_items_nonembed IN (6, 7, 8, 15, 16, 17, 24, 25, 26) AND  rec_status = 'C'
 UNION ALL
-SELECT  count(*) AS count, 'NEA_RA_Stimuli' as code FROM fact_block_asmt_outcome where acc_read_aloud_nonembed IN (6, 7, 8, 15, 16, 17, 24, 25, 26) AND  rec_status = 'C' and asmt_guid not in (SELECT * FROM exclude_asmt)
+SELECT  count(*) AS count, 'NEA_RA_Stimuli' as code FROM fact_block_asmt_outcome where acc_read_aloud_nonembed IN (6, 7, 8, 15, 16, 17, 24, 25, 26) AND  rec_status = 'C'
 UNION ALL
-SELECT  count(*) AS count, 'NEA_SC_WritItems' as code FROM fact_block_asmt_outcome where acc_scribe_nonembed IN (6, 7, 8, 15, 16, 17, 24, 25, 26) AND  rec_status = 'C' and asmt_guid not in (SELECT * FROM exclude_asmt)
+SELECT  count(*) AS count, 'NEA_SC_WritItems' as code FROM fact_block_asmt_outcome where acc_scribe_nonembed IN (6, 7, 8, 15, 16, 17, 24, 25, 26) AND  rec_status = 'C'
 UNION ALL
-SELECT  count(*) AS count, 'NEA_STT' as code FROM fact_block_asmt_outcome where acc_speech_to_text_nonembed IN (6, 7, 8, 15, 16, 17, 24, 25, 26) AND  rec_status = 'C' and asmt_guid not in (SELECT * FROM exclude_asmt)
+SELECT  count(*) AS count, 'NEA_STT' as code FROM fact_block_asmt_outcome where acc_speech_to_text_nonembed IN (6, 7, 8, 15, 16, 17, 24, 25, 26) AND  rec_status = 'C'
 UNION ALL
-SELECT  count(*) AS count, 'TDS_SLM1' as code FROM fact_block_asmt_outcome where acc_streamline_mode IN (6, 7, 8, 15, 16, 17, 24, 25, 26) AND  rec_status = 'C' and asmt_guid not in (SELECT * FROM exclude_asmt)
---UNION ALL
---SELECT  count(*) AS count, 'NEDS_NoiseBuf' as code FROM fact_block_asmt_outcome where acc_noise_buffer_nonembed IN (6, 7, 8, 15, 16, 17, 24, 25, 26) AND  rec_status = 'C' and asmt_guid not in (SELECT * FROM exclude_asmt)
+SELECT  count(*) AS count, 'TDS_SLM1' as code FROM fact_block_asmt_outcome where acc_streamline_mode IN (6, 7, 8, 15, 16, 17, 24, 25, 26) AND  rec_status = 'C'
 ) as accommodatioms order by count;
