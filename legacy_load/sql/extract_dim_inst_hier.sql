@@ -9,4 +9,4 @@ set SEARCH_PATH to ca;
 
 -- Extract current records to CSV
 -- copy does not like multiline statements
-\copy (SELECT i.inst_hier_rec_id, i.state_code, i.district_id, i.district_name, i.school_id, i.school_name, i.from_date, i.to_date, i.rec_status, i.batch_guid FROM dim_inst_hier i WHERE i.rec_status = 'C' AND to_date(from_date, 'YYYYMMDD') > to_date('20170626', 'YYYYMMDD')) TO '/mnt/pgsql/rdw-migrate/updates/100/extract_dim_inst_hier.csv' WITH CSV HEADER;
+\copy (SELECT i.inst_hier_rec_id, i.state_code, i.district_id, i.district_name, i.school_id, i.school_name, i.from_date, i.to_date, i.rec_status, i.batch_guid FROM dim_inst_hier i WHERE i.rec_status = 'C' AND to_date(from_date, 'YYYYMMDD') > to_date('20170821', 'YYYYMMDD')) TO '/mnt/pgsql/rdw-migrate/updates/100/extract_dim_inst_hier.csv' WITH CSV HEADER;
