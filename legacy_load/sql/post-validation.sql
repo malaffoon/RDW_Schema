@@ -114,15 +114,15 @@ INSERT INTO post_validation(testNum, result1, result2, result3, result4)
 INSERT INTO post_validation(testNum, result1, result2) SELECT (SELECT max(testNum) FROM post_validation) + 1, 'ethnicity count', 'ethnicity';
 INSERT INTO post_validation(testNum, result1, result2)
   SELECT (SELECT max(testNum) FROM post_validation),
-    count(*), ethnicity_code  FROM student_ethnicityGROUP BY ethnicity_codeORDER BY count(*);
+    count(*), ethnicity_code  FROM student_ethnicity GROUP BY ethnicity_code ORDER BY count(*);
 
 -- Exam accommodations
 INSERT INTO post_validation(testNum, result1, result2) SELECT (SELECT max(testNum) FROM post_validation) + 1, 'ica accommodations count', 'ethnicity';
 INSERT INTO post_validation(testNum, result1, result2)
 SELECT (SELECT max(testNum) FROM post_validation),
- count(*), code FROM exam e JOIN exam_available_accommodation ea ON e.id = ea.exam_id JOIN accommodation a ON a.id = ea.accommodation_id WHERE e.type_id = 1GROUP BY ea.accommodation_idORDER BY count(*);
+ count(*), code FROM exam e JOIN exam_available_accommodation ea ON e.id = ea.exam_id JOIN accommodation a ON a.id = ea.accommodation_id WHERE e.type_id = 1 GROUP BY ea.accommodation_id ORDER BY count(*);
 
 INSERT INTO post_validation(testNum, result1, result2) SELECT (SELECT max(testNum) FROM post_validation) + 1, 'iab accommodations count', 'ethnicity';
 INSERT INTO post_validation(testNum, result1, result2)
 SELECT (SELECT max(testNum) FROM post_validation),
-    count(*), code FROM exam e JOIN exam_available_accommodation ea ON e.id = ea.exam_id JOIN accommodation a ON a.id = ea.accommodation_id WHERE e.type_id = 2GROUP BY ea.accommodation_idORDER BY count(*);
+    count(*), code FROM exam e JOIN exam_available_accommodation ea ON e.id = ea.exam_id JOIN accommodation a ON a.id = ea.accommodation_id WHERE e.type_id = 2 GROUP BY ea.accommodation_id ORDER BY count(*);
