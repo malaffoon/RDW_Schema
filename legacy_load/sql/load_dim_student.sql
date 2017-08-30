@@ -2,11 +2,11 @@
 
 use legacy_load;
 
-LOAD DATA FROM S3 's3://rdw-migrate/extract_dim_student.csv'
+LOAD DATA FROM S3 's3://rdw-migrate/updates/100/extract_dim_student.csv'
 INTO TABLE dim_student
 FIELDS TERMINATED BY ',' IGNORE 1 LINES
 (student_rec_id, student_id, external_student_id, first_name, middle_name, last_name, birthdate, sex, group_1_id, group_1_text, group_2_id, group_2_text, group_3_id, group_3_text, group_4_id, group_4_text, group_5_id, group_5_text, group_6_id, group_6_text, group_7_id, group_7_text, group_8_id, group_8_text, group_9_id, group_9_text, group_10_id, group_10_text, @eth_derived, @eth_hsp, @eth_ami, @eth_asn, @eth_blk, @eth_pcf, @eth_wht, @eth_2om, @prg_iep, @prg_lep, @prg_504, @sts_ecd, @sts_mig, from_date, to_date, rec_status, batch_guid)
-SET warehouse_load_id = 1,
+SET warehouse_load_id = 100,
   dmg_eth_derived := IF(@eth_derived IS NULL OR @eth_derived = '', NULL, @eth_derived),
   dmg_eth_hsp := @eth_hsp = 't',
   dmg_eth_ami := @eth_ami = 't',
