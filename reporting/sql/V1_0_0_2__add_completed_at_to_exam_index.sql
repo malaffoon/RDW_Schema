@@ -2,9 +2,9 @@
 
 USE ${schemaName};
 
-ALTER TABLE reporting.exam
+ALTER TABLE exam
   ADD INDEX idx__exam__asmt_school_school_year_completed_at (asmt_id, school_id, school_year, completed_at);
 
-ALTER TABLE reporting.exam
+ALTER TABLE exam
   DROP INDEX idx__exam__asmt_school_year;
 
