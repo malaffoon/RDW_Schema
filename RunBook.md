@@ -77,7 +77,7 @@ mysql> SELECT LAST_INSERT_ID() into @IMPORT_ID;
 - To complete the process, change the status of the import to 1:
 ```sql
 # trigger migration
-mysql> UDATE import SET status = 1 WHERE id = @IMPORT_ID;
+mysql> UPDATE import SET status = 1 WHERE id = @IMPORT_ID;
 ```
 
 #### Modify more than one main table and its children
