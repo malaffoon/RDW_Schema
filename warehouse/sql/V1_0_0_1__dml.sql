@@ -1,7 +1,6 @@
-
-/**
-** 	Initial data load
-**/
+/*
+Initial data load for SBAC Reporting Data Warehouse 1.0.0
+*/
 
 USE ${schemaName};
 
@@ -238,8 +237,7 @@ INSERT INTO target (claim_id, natural_id, code, description) VALUES
 ((select id from claim where subject_id = 1 and code = '1'),'G-GPE|X','X','Geometry: Translate between the geometric description and the equation for a conic section.'),
 ((select id from claim where subject_id = 1 and code = '1'),'G-GPE|XX','XX','Geometry: Use coordinates to prove simple geometric theorems algebraically.'),
 ((select id from claim where subject_id = 1 and code = '1'),'G-MG|X','X','Geometry: Apply geometric concepts in modeling situations.'),
-((select id from claim where subject_id = 1 and code = '1'),'G-SRT|O','O','UNKNOWN'),
-((select id from claim where subject_id = 1 and code = '1'),'G-SRT|P','P','Geometry: Define trigonometric ratios and solve problems involving right triangles.'),
+((select id from claim where subject_id = 1 and code = '1'),'G-SRT|O','O','Geometry: Define trigonometric ratios and solve problems involving right triangles.'),
 ((select id from claim where subject_id = 1 and code = '1'),'G-SRT|X','X','Geometry: Understand similarity in terms of similarity transformations.'),
 ((select id from claim where subject_id = 1 and code = '1'),'G-SRT|XX','XX','Geometry: Prove theorems involving similarity.'),
 ((select id from claim where subject_id = 1 and code = '1'),'G-SRT|XXXX','XXXX','Geometry: Apply trigonometry to general triangles.'),
@@ -330,8 +328,7 @@ INSERT INTO target (claim_id, natural_id, code, description) VALUES
 ((select id from claim where subject_id = 1 and code = '1'),'S-CP|XX','XX','Statistics and Probability: Use the rules of probability to compute probabilities of compound events in a uniform probability model.'),
 ((select id from claim where subject_id = 1 and code = '1'),'S-IC|X','X','Statistics and Probability: Understand and evaluate random processes underlying statistical experiments.'),
 ((select id from claim where subject_id = 1 and code = '1'),'S-IC|XX','XX','Statistics and Probability: Make inferences and justify conclusions from sample surveys, experiments, and observational studies.'),
-((select id from claim where subject_id = 1 and code = '1'),'S-ID|P','P','UNKNOWN'),
-((select id from claim where subject_id = 1 and code = '1'),'S-ID|Q','Q','Statistics and Probability: Summarize, represent, and interpret data on a single count or measurement variable.'),
+((select id from claim where subject_id = 1 and code = '1'),'S-ID|P','P','Statistics and Probability: Summarize, represent, and interpret data on a single count or measurement variable.'),
 ((select id from claim where subject_id = 1 and code = '1'),'S-ID|X','X','Statistics and Probability: Summarize, represent, and interpret data on two categorical and quantitative variables.'),
 ((select id from claim where subject_id = 1 and code = '1'),'S-ID|XX','XX','Statistics and Probability: Interpret linear models.'),
 ((select id from claim where subject_id = 1 and code = '1'),'S-MD|X','X','Statistics and Probability: Calculate expected values and use them to solve problems.'),

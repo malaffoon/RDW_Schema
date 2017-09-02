@@ -1,5 +1,5 @@
 /*
-Initial script for the SBAC RDW Reporting Datamart schema
+Initial script for the SBAC RDW Reporting Datamart 1.0.0 schema
 
 NOTES
 This schema assumes the following:
@@ -397,8 +397,8 @@ CREATE TABLE IF NOT EXISTS exam (
   INDEX idx__exam__student (student_id),
   INDEX idx__exam__school (school_id),
   INDEX idx__exam__asmt_type (type_id),
-  INDEX idx__exam__asmt_school_year (asmt_id, school_id, school_year),
   INDEX idx__exam__school_grade(school_id, grade_id),
+  INDEX idx__exam__asmt_school_school_year_completed_at (asmt_id, school_id, school_year, completed_at),
   CONSTRAINT fk__exam__student FOREIGN KEY (student_id) REFERENCES student(id),
   CONSTRAINT fk__exam__school FOREIGN KEY (school_id) REFERENCES school(id),
   CONSTRAINT fk__exam__type FOREIGN KEY (type_id) REFERENCES asmt_type(id),

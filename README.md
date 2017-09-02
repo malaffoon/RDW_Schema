@@ -51,20 +51,16 @@ or
 RDW_Schema$ ./gradlew repairWarehouse
 ```
 
-
 ### Developing
-Flyway requires prefixing each script with the version. To avoid a prefix collision use a timestamp for a prefix. 
-This project uses the following pattern:yyyyMMddHHmmss. To get timestamp on MacOS:
-```bash
-date +'%Y%m%d%s'
-```
+Flyway requires prefixing each script with the version. To avoid a prefix collision with version specificity, use a 
+prefix that has the version followed by an incrementing number, e.g. `V1_0_1_23__add_stuff.sql` would be the 23rd
+script for the 1.0.1 release. 
 
 ### Release Script
 
-The V1_0_0 release scripts are condensed from the initial and incremental scripts created during development. Those 
-scripts ranged from V201702061486427077__initial_ddl.sql to V201708291504028600__add_school_year_table.sql. To reset 
-a db instance that had those incremental scripts applied so that the flyway table represents as if this script had 
-been used instead:
+The V1_0_0 release scripts are condensed from the initial and incremental scripts created during development. To reset 
+a db instance that had the incremental scripts applied so that the flyway table represents as if this script had been 
+used instead:
 ```sql
 USE warehouse;
 -- query schema_version and make sure the applied scripts match the list of pre-condensed scripts
@@ -72,9 +68,9 @@ SELECT * FROM schema_version;
 -- if things look good, reset entries to match condensed scripts:
 TRUNCATE TABLE schema_version;
 INSERT INTO schema_version VALUES
-  (1,NULL,'<< Flyway Schema Creation >>','SCHEMA','`warehouse`',NULL,'root','2017-08-31 00:40:17',0,1),
-  (2,'1.0.0.0','ddl','SQL','V1_0_0_0__ddl.sql',146944660,'root','2017-08-31 00:40:18',693,1),
-  (3,'1.0.0.1','dml','SQL','V1_0_0_1__dml.sql',150661189,'root','2017-08-31 00:40:18',124,1);  
+  (1, null, '<< Flyway Schema Creation >>', 'SCHEMA', '`warehouse`', null, 'root', '2017-09-02 18:26:14', 0, 1),
+  (2, '1.0.0.0', 'ddl', 'SQL', 'V1_0_0_0__ddl.sql', 751759817, 'root', '2017-09-02 18:26:15', 655, 1),
+  (3, '1.0.0.1', 'dml', 'SQL', 'V1_0_0_1__dml.sql', 1955603172, 'root', '2017-09-02 18:26:15', 116, 1);  
   
 USE reporting;
 -- query schema_version and make sure the applied scripts match the list of pre-condensed scripts
@@ -82,7 +78,7 @@ SELECT * FROM schema_version;
 -- if things look good, reset entries to match condensed scripts:
 TRUNCATE TABLE schema_version;
 INSERT INTO schema_version VALUES
-  (1,NULL,'<< Flyway Schema Creation >>','SCHEMA','`reporting`',NULL,'root','2017-08-31 00:40:16',0,1),
-  (2,'1.0.0.0','ddl','SQL','V1_0_0_0__ddl.sql',1611308431,'root','2017-08-31 00:40:17',1290,1),
-  (3,'1.0.0.1','dml','SQL','V1_0_0_1__dml.sql',-1800229231,'root','2017-08-31 00:40:17',6,1);
+  (1, null, '<< Flyway Schema Creation >>', 'SCHEMA', '`reporting`', null, 'root', '2017-09-02 18:26:13', 0, 1),
+  (2, '1.0.0.0', 'ddl', 'SQL', 'V1_0_0_0__ddl.sql', 986463590, 'root', '2017-09-02 18:26:14', 1209, 1),
+  (3, '1.0.0.1', 'dml', 'SQL', 'V1_0_0_1__dml.sql', -1123132459, 'root', '2017-09-02 18:26:14', 6, 1);
 ```

@@ -1,5 +1,5 @@
 /*
-SQL script for the SBAC Reporting Data Warehouse schema for use with Flyway
+SQL script for the SBAC Reporting Data Warehouse 1.0.0 schema for use with Flyway
 
 NOTES
 This schema assumes the following:
@@ -46,7 +46,8 @@ CREATE TABLE IF NOT EXISTS import (
   message text,
   INDEX idx__import__digest (digest),
   INDEX idx__import__created (created),
-  INDEX idx__import__updated_status (updated, status)
+  INDEX idx__import__updated_status (updated, status),
+  INDEX idx__import__content_status_created (content, status, created)
 );
 
 /** Reference tables **/
