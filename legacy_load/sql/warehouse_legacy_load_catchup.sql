@@ -1,64 +1,14 @@
 USE legacy_load;
 
-CREATE TABLE IF NOT EXISTS dim_student_catchup (
-  student_rec_id bigint NOT NULL PRIMARY KEY,
-  student_id varchar(40) NOT NULL,
-  external_student_id varchar(40),
-  first_name varchar(35),
-  middle_name varchar(35),
-  last_name varchar(35),
-  birthdate varchar(8),
-  sex varchar(10) NOT NULL,
-  group_1_id varchar(40),
-  group_1_text varchar(60),
-  group_2_id varchar(40),
-  group_2_text varchar(60),
-  group_3_id varchar(40),
-  group_3_text varchar(60),
-  group_4_id varchar(40),
-  group_4_text varchar(60),
-  group_5_id varchar(40),
-  group_5_text varchar(60),
-  group_6_id varchar(40),
-  group_6_text varchar(60),
-  group_7_id varchar(40),
-  group_7_text varchar(60),
-  group_8_id varchar(40),
-  group_8_text varchar(60),
-  group_9_id varchar(40),
-  group_9_text varchar(60),
-  group_10_id varchar(40),
-  group_10_text varchar(60),
-  dmg_eth_derived smallint,
-  dmg_eth_hsp tinyint,
-  dmg_eth_ami tinyint,
-  dmg_eth_asn tinyint,
-  dmg_eth_blk tinyint,
-  dmg_eth_pcf tinyint,
-  dmg_eth_wht tinyint,
-  dmg_eth_2om tinyint,
-  dmg_prg_iep tinyint,
-  dmg_prg_lep tinyint,
-  dmg_prg_504 tinyint,
-  dmg_sts_ecd tinyint,
-  dmg_sts_mig tinyint,
-  from_date varchar(8) NOT NULL,
-  to_date varchar(8),
-  rec_status varchar(1) NOT NULL,
-  batch_guid varchar(36) NOT NULL,
-  load_status tinyint, -- 1 - new student, 2 - changed student (without ethnicity), 3 - changed ethnicity
-  UNIQUE INDEX idx__dim_student__student_id(student_id)
-);
-
 ########################################### pre-validation #####################################################################################
 UPDATE dim_student_catchup sc
- JOIN dim_student s on s.student_id = sc.student_id
-SET load_status = 1 -- new records
-WHERE s.student_id = null;
+    LEFT JOIN dim_student s on s.student_id = sc.student_id
+SET sc.load_status = 1
+where s.student_id is null;
 
 UPDATE dim_student_catchup sc
  JOIN dim_student s on s.student_id = sc.student_id
-SET load_status = 2 -- changes student (without ethnicity)
+SET sc.load_status = 2 -- changes student (without ethnicity)
 where
     NOT s.birthdate <=> sc.birthdate
     OR NOT s.sex  <=> sc.sex
@@ -68,7 +18,7 @@ where
 
 UPDATE dim_student_catchup sc
  JOIN dim_student s on s.student_id = sc.student_id
-SET load_status = 3 -- changed ethnicity
+SET sc.load_status = 3 -- changed ethnicity
 where
     NOT s.dmg_eth_hsp <=> sc.dmg_eth_hsp
     OR NOT s.dmg_eth_ami <=> sc.dmg_eth_ami
@@ -78,8 +28,28 @@ where
     OR NOT s.dmg_eth_wht <=> sc.dmg_eth_wht
     OR NOT s.dmg_eth_2om <=> sc.dmg_eth_2om;
 
+----select count(*)
+-- from dim_student_catchup sc JOIN dim_student s
+-- on s.student_id = sc.student_id WHERE  NOT s.dmg_eth_hsp <=> sc.dmg_eth_hsp
+--    OR NOT s.dmg_eth_ami <=> sc.dmg_eth_ami
+--    OR NOT s.dmg_eth_asn <=> sc.dmg_eth_asn
+--    OR NOT s.dmg_eth_blk <=> sc.dmg_eth_blk
+--    OR NOT s.dmg_eth_pcf <=> sc.dmg_eth_pcf
+--    OR NOT s.dmg_eth_wht <=> sc.dmg_eth_wht
+--    OR NOT s.dmg_eth_2om <=> sc.dmg_eth_2om;
+
+--select count(*)
+--from dim_student_catchup sc
+-- JOIN dim_student s on s.student_id = sc.student_id
+-- where
+--    NOT s.birthdate <=> sc.birthdate
+--    OR NOT s.sex  <=> sc.sex
+--    OR NOT s.first_name <=> sc.first_name
+--    OR NOT s.last_name <=> sc.last_name
+--    OR NOT s.middle_name <=> sc.middle_name;
+
 # check if anything has been unchanged - just currious how many will be ignored
-SELECT count(*) from  dim_student_catchup where  load_status is null;
+SELECT count(*) from  dim_student_catchup where load_status is null;
 
 # move over new students
 INSERT INTO dim_student (student_rec_id, student_id, external_student_id, first_name, middle_name, last_name, birthdate, sex, group_1_id, group_1_text, group_2_id, group_2_text, group_3_id, group_3_text, group_4_id, group_4_text, group_5_id, group_5_text, group_6_id, group_6_text, group_7_id, group_7_text, group_8_id, group_8_text, group_9_id, group_9_text, group_10_id, group_10_text, dmg_eth_derived, dmg_eth_hsp, dmg_eth_ami, dmg_eth_asn, dmg_eth_blk, dmg_eth_pcf, dmg_eth_wht, dmg_eth_2om, dmg_prg_iep, dmg_prg_lep, dmg_prg_504, dmg_sts_ecd, dmg_sts_mig, from_date, to_date, rec_status, batch_guid, warehouse_load_id)
@@ -133,9 +103,12 @@ INSERT INTO dim_student (student_rec_id, student_id, external_student_id, first_
  FROM dim_student_catchup sc
 WHERE sc.load_status = 1;
 
+INSERT INTO fact_block_asmt_outcome SELECT * FROM fact_block_asmt_outcome_100;
+INSERT INTO fact_asmt_outcome_vw SELECT * FROM fact_asmt_outcome_vw_100;
+
 ########################################### pre-validation #####################################################################################
 # compare counts to the expected from the legacy db
-SELECT count(*) from student where warehouse_load_id = 100;
+SELECT count(*) from dim_student where warehouse_load_id = 100;
 SELECT count(*) from fact_block_asmt_outcome where warehouse_load_id = 100;
 SELECT count(*) from fact_asmt_outcome_vw where warehouse_load_id = 100;
 
@@ -143,12 +116,12 @@ SELECT count(*) from fact_asmt_outcome_vw where warehouse_load_id = 100;
 SELECT count(*) FROM fact_block_asmt_outcome f
   jOIN dim_asmt a on a.asmt_guid = f.asmt_guid
   JOIN dim_inst_hier h on h.school_id =  f.school_id and h.district_id = f.district_id
-WHERE warehouse_load_id = 100 and a.warehouse_asmt_id is not null and  h.warehouse_school_id is not null;
+WHERE f.warehouse_load_id = 100 and a.warehouse_asmt_id is not null and  h.warehouse_school_id is not null;
 
-UPDATE fact_asmt_outcome_vw f
+select count(*) from fact_asmt_outcome_vw f
   jOIN dim_asmt a on a.asmt_guid = f.asmt_guid
   JOIN dim_inst_hier h on h.school_id =  f.school_id and h.district_id = f.district_id
-WHERE warehouse_load_id = 100 and a.warehouse_asmt_id is not null and h.warehouse_school_id is not null;
+WHERE f.warehouse_load_id = 100 and a.warehouse_asmt_id is not null and h.warehouse_school_id is not null;
 
 ###########################################  convert legacy codes to the warehouse codes #######################################################
 UPDATE dim_student ds
@@ -201,11 +174,68 @@ SELECT exists(SELECT 1
 
 SELECT exists(SELECT 1
               FROM fact_block_asmt_outcome
-              WHERE warehouse_administration_condition_id IS NULL AND warehouse_load_id = 100 ;
+              WHERE warehouse_administration_condition_id IS NULL AND warehouse_load_id = 100) ;
 
 #################################### load students ########################################################################################
-#################################### initialize import ids,  one per student ##############################################################
+####################################  handle student updates  #############################################################################
 
+INSERT INTO warehouse.import (status, content, contentType, digest, batch)
+VALUES(0, 1, 'catchup: legacy load students update', '5 students', 100);
+
+SELECT LAST_INSERT_ID() INTO @importid;
+
+update dim_student_catchup
+ set warehouse_import_id = @importid
+where load_status in (2, 3);
+
+update dim_student_catchup sc
+    join dim_student s on s.student_id = sc.student_id
+set sc.warehouse_student_id = s.warehouse_student_id
+where load_status in (2, 3);
+
+update warehouse.student ws
+ join dim_student_catchup sc on sc.student_id = ws.ssid
+SET ws.update_import_id = sc.warehouse_import_id
+where sc.load_status  in (2, 3);
+
+update warehouse.student ws
+ join dim_student_catchup sc on sc.student_id = ws.ssid
+SET ws.middle_name = sc.middle_name
+where sc.load_status = 2;
+
+delete from warehouse.student_ethnicity
+ where student_id in (select warehouse_student_id from dim_student_catchup where load_status = 3);
+
+INSERT INTO warehouse.student_ethnicity(student_id, ethnicity_id)
+  SELECT warehouse_student_id, (SELECT id from warehouse.ethnicity where code = 'HispanicOrLatinoEthnicity') as  ethnicity_id
+  from dim_student_catchup where dmg_eth_hsp = 1 and warehouse_load_id = 100 and load_status = 3;
+
+INSERT INTO warehouse.student_ethnicity(student_id, ethnicity_id)
+  SELECT warehouse_student_id, (SELECT id from warehouse.ethnicity where code = 'AmericanIndianOrAlaskaNative') as  ethnicity_id
+  from dim_student_catchup where dmg_eth_ami = 1 and warehouse_load_id = 100 and load_status = 3;
+
+INSERT INTO warehouse.student_ethnicity(student_id, ethnicity_id)
+  SELECT warehouse_student_id, (SELECT id from warehouse.ethnicity where code = 'Asian') as  ethnicity_id
+  from dim_student_catchup where dmg_eth_asn = 1 and warehouse_load_id = 100 and load_status = 3;
+
+INSERT INTO warehouse.student_ethnicity(student_id, ethnicity_id)
+  SELECT warehouse_student_id, (SELECT id from warehouse.ethnicity where code = 'BlackOrAfricanAmerican') as  ethnicity_id
+  from dim_student_catchup where dmg_eth_blk = 1 and warehouse_load_id = 100 and load_status = 3;
+
+INSERT INTO warehouse.student_ethnicity(student_id, ethnicity_id)
+  SELECT warehouse_student_id, (SELECT id from warehouse.ethnicity where code = 'NativeHawaiianOrOtherPacificIslander') as  ethnicity_id
+  from dim_student_catchup where dmg_eth_pcf = 1 and warehouse_load_id = 100 and load_status = 3;
+
+INSERT INTO warehouse.student_ethnicity(student_id, ethnicity_id)
+  SELECT warehouse_student_id, (SELECT id from warehouse.ethnicity where code = 'White') as  ethnicity_id
+  from dim_student_catchup where dmg_eth_wht = 1 and warehouse_load_id = 100 and load_status = 3;
+
+INSERT INTO warehouse.student_ethnicity(student_id, ethnicity_id)
+  SELECT warehouse_student_id, (SELECT id from warehouse.ethnicity where code = 'DemographicRaceTwoOrMoreRaces') as  ethnicity_id
+  from dim_student_catchup where dmg_eth_2om = 1 and warehouse_load_id = 100 and load_status = 3;
+
+#################################### initialize import ids,  one per student ##############################################################
+---------------------
 # create import ids - one per student
 INSERT INTO warehouse.import (status, content, contentType, digest, batch)
   SELECT
@@ -223,7 +253,7 @@ UPDATE dim_student ds
    JOIN (SELECT id, digest AS student_id FROM warehouse.import WHERE batch = 100 AND status = 0 AND contentType = 'catchup: legacy load students') AS si
       ON si.student_id = ds.student_id
    SET ds.warehouse_import_id = si.id
-  WHERE ds.warehouse_load_id = 100
+  WHERE ds.warehouse_load_id = 100;
   
 # load new students           
 INSERT INTO warehouse.student (ssid, first_name, last_or_surname, middle_name, gender_id, birthday, import_id, update_import_id)
@@ -241,7 +271,8 @@ INSERT INTO warehouse.student (ssid, first_name, last_or_surname, middle_name, g
       
 UPDATE dim_student ds
       JOIN warehouse.student ws on ws.ssid = ds.student_id
-  SET ds.warehouse_student_id = ws.id;
+  SET ds.warehouse_student_id = ws.id
+  WHERE ds.warehouse_load_id = 100;
 
 INSERT INTO warehouse.student_ethnicity(student_id, ethnicity_id)
   SELECT warehouse_student_id, (SELECT id from warehouse.ethnicity where code = 'HispanicOrLatinoEthnicity') as  ethnicity_id
@@ -272,11 +303,6 @@ INSERT INTO warehouse.student_ethnicity(student_id, ethnicity_id)
   from dim_student where dmg_eth_2om = 1 and warehouse_load_id = 100;
 
 
-
-# TODO: handle student updates
-
--- complete once we know what updates we need to handle
-
 # TODO: run pre/post count for total students and by ethnicity to make sure that all looks good
 
 ########################################### load ICAs  ####################################################################################
@@ -286,7 +312,7 @@ INSERT INTO warehouse.import (status, content, contentType, digest, batch)
     -- we want one import id per exam id
     0                     AS status,
     1                     AS content,
-    'lcatchup: legacy load ica'   AS contentType,
+    'catchup: legacy load ica'   AS contentType,
     asmt_outcome_vw_rec_id            AS digest,
     100              AS batch
   FROM fact_asmt_outcome_vw ds
@@ -635,7 +661,6 @@ INSERT INTO warehouse.exam_available_accommodation (exam_id, accommodation_id)
     FROM fact_block_asmt_outcome f
   WHERE acc_streamline_mode IN (6, 7, 8, 15, 16, 17, 24, 25, 26) AND f.warehouse_load_id = 100;
 
-# TODO: run pre/post counts for ICA to validate that all looks good 
 
 ##########update imports as completed and reset timestamps for migrate to limit set of records in a batch ########################################
 SELECT max(id) into @maxImportId from warehouse.import;
@@ -656,7 +681,16 @@ SET
   s.updated = i.updated
 WHERE i.status = 1
       and content = 1
---      and contentType = 'catchup: legacy load students'
+      and contentType = 'catchup: legacy load students'
+      and batch = 100;
+
+UPDATE warehouse.student s
+  JOIN warehouse.import i ON i.id = s.update_import_id
+SET
+  s.updated = i.updated
+WHERE i.status = 1
+      and content = 1
+      and contentType = 'catchup: legacy load students update'
       and batch = 100;
 
 UPDATE warehouse.exam e
@@ -666,5 +700,5 @@ SET
   e.updated = i.updated
 WHERE i.status = 1
       and content = 1
---      and contentType like 'catchup: legacy load%'
+      and contentType like 'catchup: legacy load%'
       and batch = 100;
