@@ -21,10 +21,12 @@ SELECT
   i.status,
   s.name AS status_name,
   cast(i.updated AS DATE)
- FROM import i
+FROM import i
    JOIN import_status s ON i.status = s.id
- WHERE status < 0 AND cast(i.updated AS DATE) = CURDATE() -- or a specific date '2017-07-04'
- GROUP BY i.status, s.name, cast(i.updated AS DATE);
+WHERE 
+  i.updated >= (CURRENT_DATE - INTERVAL 1 DAY) and i.updated < CURRENT_DATE -- or a specific date '2017-07-04'
+  AND status < 0
+GROUP by i.status, status_name, cast(i.updated AS DATE);
 ``` 
 If there are failures refer to the Troubleshooting guide to resolve. It is important to review and analyze the failures to make sure that the data is not lost. 
 
@@ -34,10 +36,8 @@ Each ingest is different and hence the processing time will vary, but in general
 
 To monitor for slow imports:
 ```sql
-SELECT count(*)
- FROM import
- WHERE status = 0 AND TIMESTAMPDIFF(SECOND, CURRENT_TIMESTAMP(6), updated) > 60;
-  ```
+SELECT count(*) FROM import WHERE status = 0 AND updated > (CURRENT_TIMESTAMP + INTERVAL 60 SECOND);
+```
 If there are slow imports please refer to the Troubleshooting guide to resolve. 
 **This condition requires immediate attention since new test results may not be loaded into the system until it is addressed**.
 
@@ -71,24 +71,25 @@ Each batch is different and hence the processing time will vary, but in general 
 To establish an average speed of the migrate for a particular installation, check the processing speed of the successful migrates on any given day:
 ```sql
 SELECT timestampdiff(SECOND, created, updated) runtime_in_sec
- FROM migrate
-   WHERE status = 20 AND cast(created AS DATE) = CURDATE() -- or a specific date '2017-07-04'
- ORDER BY id;
+FROM migrate
+WHERE status = 20 AND
+      created >= (CURRENT_DATE - INTERVAL 1 DAY) AND created < CURRENT_DATE; -- or a specific date '2017-07-04'
 ```
 Or check the average processing time over time:
 ```sql
 SELECT avg(timestampdiff(SECOND, created, updated)) avg_runtime_in_sec
 FROM migrate
-WHERE status = 20 AND cast(created AS DATE) >='2017-07-04' AND cast(created AS DATE) <= '2017-08-04'; -- substitute dates with your values
+WHERE status = 20 AND created >= '2017-07-04' AND created < '2017-12-04'; -- substitute dates with your values
 ```
 
-To monitoring the top 5 slowest successful migrates on any given day run the following:
+To monitoring the top 5 slowest successful migrates on a day before any given day run the following:
 ```sql
- SELECT timestampdiff(SECOND, created, updated) runtime_in_sec
-  FROM migrate
-    WHERE status = 20 AND cast(created AS DATE) = CURDATE() -- or a specific date '2017-07-04'
-  ORDER BY runtime_in_sec DESC
-  LIMIT 5;
+SELECT timestampdiff(SECOND, created, updated) runtime_in_sec
+ FROM migrate
+ WHERE status = 20 AND
+       created >= (CURRENT_DATE - INTERVAL 1 DAY) AND created < CURRENT_DATE
+ ORDER BY runtime_in_sec DESC
+ LIMIT 5;
 ```  
 If migrates are taking more than expected number of seconds, or if the monitoring shows a consistent increase in run time over time the system is degrading. 
 Refer to the troubleshooting guide for instructions on diagnosing the situation. 
