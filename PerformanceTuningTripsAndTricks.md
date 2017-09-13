@@ -54,7 +54,73 @@ performance_schema=ON
 ```
 On Aurora, it will require a server reboot.
 
-There are many tables in the schema. For some examples of SQL against the Performance Schema tables, you can read some of the articles on Oracle engineer Mark Leith’s blog, such as http://www.markleith.co.uk/?p=471.
+Tables in the Performance Schema are in-memory tables that use no persistent on-disk storage. 
+The contents are repopulated beginning at server startup and discarded at server shutdown.
 
+There are many tables in the schema. 
 
+For some examples of SQL against the Performance Schema tables, you can read some of the articles below:
+- on Oracle engineer Mark Leith’s blog, such as http://www.markleith.co.uk/?p=471.
+- http://www.markleith.co.uk/2012/07/04/mysql-performance-schema-statement-digests/
 
+### Performance Schema Sample Queries
+- A high level overview of the statements, sorted by those queries with the highest latency:
+```sql 
+SELECT DIGEST_TEXT,
+       IF(SUM_NO_GOOD_INDEX_USED > 0 OR SUM_NO_INDEX_USED > 0, '*', '') AS full_scan,
+       COUNT_STAR AS exec_count,
+       SUM_ERRORS AS err_count,
+       SUM_WARNINGS AS warn_count,
+       SEC_TO_TIME(SUM_TIMER_WAIT/1000000000000) AS exec_time_total,
+       SEC_TO_TIME(MAX_TIMER_WAIT/1000000000000) AS exec_time_max,
+       (AVG_TIMER_WAIT/1000000000) AS exec_time_avg_ms,
+       SUM_ROWS_SENT AS rows_sent,
+       ROUND(SUM_ROWS_SENT / COUNT_STAR) AS rows_sent_avg,
+       SUM_ROWS_EXAMINED AS rows_scanned
+FROM performance_schema.events_statements_summary_by_digest
+ORDER BY SUM_TIMER_WAIT DESC LIMIT 5;
+```
+
+- List all normalized statements that use temporary tables ordered by number of on disk temporary tables 
+descending first, then by the number of memory tables.
+```sql
+SELECT DIGEST_TEXT,
+       COUNT_STAR AS exec_count,
+       SUM_CREATED_TMP_TABLES AS memory_tmp_tables,
+       SUM_CREATED_TMP_DISK_TABLES AS disk_tmp_tables,
+       ROUND(SUM_CREATED_TMP_TABLES / COUNT_STAR) AS avg_tmp_tables_per_query,
+       ROUND((SUM_CREATED_TMP_DISK_TABLES / SUM_CREATED_TMP_TABLES) * 100) AS tmp_tables_to_disk_pct
+FROM performance_schema.events_statements_summary_by_digest
+WHERE SUM_CREATED_TMP_TABLES > 0
+ORDER BY SUM_CREATED_TMP_DISK_TABLES DESC, SUM_CREATED_TMP_TABLES DESC LIMIT 5;
+```
+
+- List all normalized statements that have done sorts, ordered by sort_merge_passes, sort_scans and sort_rows, 
+all descending.
+```sql
+SELECT DIGEST_TEXT,
+       COUNT_STAR AS exec_count,
+       SUM_SORT_MERGE_PASSES AS sort_merge_passes,
+       ROUND(SUM_SORT_MERGE_PASSES / COUNT_STAR) AS avg_sort_merges,
+       SUM_SORT_SCAN AS sorts_using_scans,
+       SUM_SORT_RANGE AS sort_using_range,
+       SUM_SORT_ROWS AS rows_sorted,
+       ROUND(SUM_SORT_ROWS / COUNT_STAR) AS avg_rows_sorted
+FROM performance_schema.events_statements_summary_by_digest
+WHERE SUM_SORT_ROWS > 0
+ORDER BY SUM_SORT_MERGE_PASSES DESC, SUM_SORT_SCAN DESC, SUM_SORT_ROWS DESC LIMIT 5;
+```
+
+- List all normalized statements that use have done a full table scan ordered by the percentage of times a full 
+scan was done, then by the number of times the statement executed.
+```sql
+SELECT DIGEST_TEXT,
+       COUNT_STAR AS exec_count,
+       SUM_NO_INDEX_USED AS no_index_used_count,
+       SUM_NO_GOOD_INDEX_USED AS no_good_index_used_count,
+       ROUND((SUM_NO_INDEX_USED / COUNT_STAR) * 100) no_index_used_pct
+FROM performance_schema.events_statements_summary_by_digest
+WHERE SUM_NO_INDEX_USED > 0
+      OR SUM_NO_GOOD_INDEX_USED > 0
+ORDER BY no_index_used_pct DESC, exec_count DESC LIMIT 5;
+```
