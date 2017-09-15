@@ -1,4 +1,6 @@
-use reporting;
+-- Update the system-news label to remove the WER warning
+
+USE ${schemaName};
 
 REPLACE INTO translation (label_code, namespace, language_code, label) VALUES
   ('html.system-news', 'frontend', 'eng',
