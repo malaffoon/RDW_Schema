@@ -8,8 +8,8 @@ SELECT
   sum(CASE WHEN performance_level = 2 THEN 1 ELSE 0 END)  AS level2,
   sum(CASE WHEN performance_level = 3 THEN 1 ELSE 0 END)  AS level3,
   sum(CASE WHEN performance_level = 4 THEN 1 ELSE 0 END)  AS level4,
-  fe.asmt_grade_id,
-  fe.gender_id,
+  a.grade_id,
+  s.gender_id,
   fe.school_year,
   a.subject_id,
   sch.name         AS name,
@@ -21,14 +21,15 @@ FROM fact_student_ica_exam fe
   JOIN ica_asmt a ON a.id = fe.asmt_id
 WHERE
   fe.school_year IN (2017, 2018) AND
-  fe.asmt_grade_id IN ('4', '5')
-GROUP BY fe.asmt_grade_id,
-  fe.gender_id,
+  a.grade_id IN ('4', '5')
+GROUP BY a.grade_id,
+  s.gender_id,
   fe.school_year,
   a.subject_id,
   sch.name
-ORDER BY  a.subject_id, sch.name, fe.school_year,fe.asmt_grade_id,fe.gender_id;
-
+ORDER BY  a.subject_id, sch.name, fe.school_year,a.grade_id,s.gender_id;
+-- Before first attempt to optimize: 1s 93ms
+-- After : 846ms
 
 ------------------------------------------------------------------------------------------------------------
 -- group of students in cohort throughout all selected years
@@ -44,7 +45,7 @@ FROM (
        SELECT
          fe.student_id,
          max(fe.scale_score) AS score,
-         fe.asmt_grade_id,
+         a.grade_id as asmt_grade_id,
          fe.school_year,
          a.subject_id,
          fe.school_id,
@@ -55,11 +56,11 @@ FROM (
          a.subject_id = 1
          AND
          (
-           (fe.school_year = 2017 AND fe.asmt_grade_id = '3') OR
-           (fe.school_year = 2018 AND fe.asmt_grade_id = '4')
+           (fe.school_year = 2017 AND a.grade_id = '3') OR
+           (fe.school_year = 2018 AND a.grade_id = '4')
          )
        GROUP BY fe.student_id,
-         fe.asmt_grade_id,
+         a.grade_id,
          fe.school_year,
          a.subject_id,
          fe.school_id
@@ -73,3 +74,5 @@ GROUP BY
 ORDER BY school_id
   , school_year
   , asmt_grade_id;
+-- Before first attempt to optimize: 707m
+-- After: 627ms

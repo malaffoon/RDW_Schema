@@ -8,54 +8,54 @@ COPY dev.reporting.staging_subject (id, code)
 FROM 's3://rdw-dev-archive/REDSHIFT_EXTRACT/subject.part_00000'
 CREDENTIALS '<your aws_iam_role here>'
 FORMAT AS CSV
-DELIMITER ',';
+DELIMITER ',' COMPUPDATE ON;
 --  completed in 1s 714ms
 
 COPY dev.reporting.staging_grade (id, code, NAME)
 FROM 's3://rdw-dev-archive/REDSHIFT_EXTRACT/grade.part_00000'
 CREDENTIALS '<your aws_iam_role here>'
 FORMAT AS CSV
-DELIMITER ',';
+DELIMITER ',' COMPUPDATE ON;
 -- completed in 1s 867ms
 
 COPY dev.reporting.staging_asmt_type(id,code,name)
 FROM 's3://rdw-dev-archive/REDSHIFT_EXTRACT/asmt_type.part_00000'
 CREDENTIALS '<your aws_iam_role here>'
 FORMAT AS CSV
-DELIMITER ',';
+DELIMITER ',' COMPUPDATE ON;
 -- completed in 9s 64ms
 
 COPY dev.reporting.staging_completeness(id, code)
 FROM 's3://rdw-dev-archive/REDSHIFT_EXTRACT/completeness.part_00000'
 CREDENTIALS '<your aws_iam_role here>'
 FORMAT AS CSV
-DELIMITER ',';
+DELIMITER ',' COMPUPDATE ON;
 -- completed in 4s 625ms
 
 COPY dev.reporting.staging_administration_condition(id, code)
 FROM 's3://rdw-dev-archive/REDSHIFT_EXTRACT/administration_condition.part_00000'
 CREDENTIALS '<your aws_iam_role here>'
 FORMAT AS CSV
-DELIMITER ',';
+DELIMITER ',' COMPUPDATE ON;
 -- completed in 5s 811ms
 
 COPY dev.reporting.staging_ethnicity(id, code)
 FROM 's3://rdw-dev-archive/REDSHIFT_EXTRACT/ethnicity.part_00000'
 CREDENTIALS '<your aws_iam_role here>'
 FORMAT AS CSV
-DELIMITER ',';
+DELIMITER ',' COMPUPDATE ON;
 
 COPY dev.reporting.staging_gender(id, code)
 FROM 's3://rdw-dev-archive/REDSHIFT_EXTRACT/gender.part_00000'
 CREDENTIALS '<your aws_iam_role here>'
 FORMAT AS CSV
-DELIMITER ',';
+DELIMITER ',' COMPUPDATE ON;
 
 COPY dev.reporting.staging_school_year(year)
 FROM 's3://rdw-dev-archive/REDSHIFT_EXTRACT/school_year.part_00000'
 CREDENTIALS '<your aws_iam_role here>'
 FORMAT AS CSV
-DELIMITER ',';
+DELIMITER ',' COMPUPDATE ON;
 
 COPY dev.reporting.staging_asmt(
   id,
@@ -68,7 +68,7 @@ COPY dev.reporting.staging_asmt(
 FROM 's3://rdw-dev-archive/REDSHIFT_EXTRACT/asmt.part_00000'
 CREDENTIALS '<your aws_iam_role here>'
 FORMAT AS CSV
-DELIMITER ',';
+DELIMITER ',' COMPUPDATE ON;
 -- completed in 20s 636ms
 
 COPY dev.reporting.staging_subject_claim_score(
@@ -80,7 +80,7 @@ COPY dev.reporting.staging_subject_claim_score(
 FROM 's3://rdw-dev-archive/REDSHIFT_EXTRACT/subject_claim_score.part_00000'
 CREDENTIALS '<your aws_iam_role here>'
 FORMAT AS CSV
-DELIMITER ',';
+DELIMITER ',' COMPUPDATE ON;
 
 COPY dev.reporting.staging_district(
   id,
@@ -89,7 +89,7 @@ COPY dev.reporting.staging_district(
 FROM 's3://rdw-dev-archive/REDSHIFT_EXTRACT/district.part_00000'
 CREDENTIALS '<your aws_iam_role here>'
 FORMAT AS CSV
-DELIMITER ',';
+DELIMITER ',' COMPUPDATE ON;
 
 COPY dev.reporting.staging_school(
   id,
@@ -99,7 +99,7 @@ COPY dev.reporting.staging_school(
 FROM 's3://rdw-dev-archive/REDSHIFT_EXTRACT/school.part_00000'
 CREDENTIALS '<your aws_iam_role here>'
 FORMAT AS CSV
-DELIMITER ',';
+DELIMITER ',' COMPUPDATE ON;
 
 COPY dev.reporting.staging_student(
   id,
@@ -111,8 +111,9 @@ COPY dev.reporting.staging_student(
 FROM 's3://rdw-dev-archive/REDSHIFT_EXTRACT/student.part_00000'
 CREDENTIALS '<your aws_iam_role here>'
 FORMAT AS CSV
-DELIMITER ',';
--- completed in 24s 884ms
+DELIMITER ',' COMPUPDATE ON;
+-- first test (no COMPUPDATE): completed in 24s 884ms
+-- last test: completed in 10s 826ms
 
 COPY dev.reporting.staging_student_ethnicity(
   ethnicity_id,
@@ -120,7 +121,7 @@ COPY dev.reporting.staging_student_ethnicity(
 FROM 's3://rdw-dev-archive/REDSHIFT_EXTRACT/student_ethnicity.part_00000'
 CREDENTIALS '<your aws_iam_role here>'
 FORMAT AS CSV
-DELIMITER ',';
+DELIMITER ',' COMPUPDATE ON;
 
 COPY dev.reporting.staging_exam_student(
   id,
@@ -135,8 +136,9 @@ COPY dev.reporting.staging_exam_student(
 FROM 's3://rdw-dev-archive/REDSHIFT_EXTRACT/exam_student.part_00000'
 CREDENTIALS '<your aws_iam_role here>'
 FORMAT AS CSV
-DELIMITER ',';
--- completed in 1m 12s 471ms
+DELIMITER ',' COMPUPDATE ON;
+-- first test (no COMPUPDATE): 1m 12s 471ms
+-- last test: 1m 1s 698ms
 
 COPY dev.reporting.staging_exam(
   id,
@@ -153,8 +155,9 @@ COPY dev.reporting.staging_exam(
 FROM 's3://rdw-dev-archive/REDSHIFT_EXTRACT/exam.part_00000'
 CREDENTIALS '<your aws_iam_role here>'
 FORMAT AS CSV
-DELIMITER ',';
--- completed in 1m 55s 397ms
+DELIMITER ',' COMPUPDATE ON;
+-- first test (no COMPUPDATE): 1m 55s 397ms
+-- last test: 1m 48s 49ms
 
 COPY dev.reporting.staging_exam_claim_score(
   id,
@@ -165,5 +168,6 @@ COPY dev.reporting.staging_exam_claim_score(
 FROM 's3://rdw-dev-archive/REDSHIFT_EXTRACT/exam_claim_score.part_00000'
 CREDENTIALS '<your aws_iam_role here>'
 FORMAT AS CSV
-DELIMITER ',';
--- completed in 26s 196ms
+DELIMITER ',' COMPUPDATE ON;
+-- first test (no COMPUPDATE): 26s 196ms
+-- last test: 16s 794ms

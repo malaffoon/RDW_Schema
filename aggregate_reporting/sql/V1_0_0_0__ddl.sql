@@ -101,7 +101,7 @@ CREATE TABLE staging_exam_student (
   lep smallint NOT NULL,
   section504 smallint,
   economic_disadvantage smallint NOT NULL,
-  migrant_status smallint,
+  migrant_status smallint
  );
 
 CREATE TABLE staging_exam (
@@ -153,134 +153,136 @@ INSERT INTO exam_claim_score_mapping (subject_claim_score_id, num) VALUES
 
 -- dimensions
 
+
 CREATE TABLE subject (
-  id smallint NOT NULL PRIMARY KEY,
+  id smallint NOT NULL PRIMARY KEY SORTKEY,
   code character varying(10) NOT NULL UNIQUE
-);
+) DISTSTYLE ALL;
+
 
 CREATE TABLE grade (
-  id smallint NOT NULL PRIMARY KEY,
+  id smallint NOT NULL PRIMARY KEY SORTKEY,
   code character varying(2)  NOT NULL UNIQUE,
   name character varying(100) NOT NULL UNIQUE
-);
+) DISTSTYLE ALL;
 
 CREATE TABLE asmt_type (
-  id smallint NOT NULL PRIMARY KEY,
+  id smallint NOT NULL PRIMARY KEY SORTKEY,
   code character varying(10) NOT NULL UNIQUE,
   name character varying(24) NOT NULL UNIQUE
-);
+) DISTSTYLE ALL;
 
 CREATE TABLE completeness (
-  id smallint NOT NULL PRIMARY KEY,
+  id smallint NOT NULL PRIMARY KEY SORTKEY,
   code character varying(10) NOT NULL UNIQUE
-);
+) DISTSTYLE ALL;
 
 CREATE TABLE administration_condition (
-  id smallint NOT NULL PRIMARY KEY,
+  id smallint NOT NULL PRIMARY KEY SORTKEY,
   code character varying(20) NOT NULL UNIQUE
-);
+) DISTSTYLE ALL;
 
 CREATE TABLE  district (
-  id integer PRIMARY KEY,
+  id integer PRIMARY KEY SORTKEY,
   natural_id varchar(40) NOT NULL,
   name varchar(100) NOT NULL
-);
+) DISTSTYLE ALL;
 
 CREATE TABLE school (
-  id integer PRIMARY KEY,
+  id integer encode runlength PRIMARY KEY SORTKEY,
   natural_id varchar(40) NOT NULL,
   name varchar(100) NOT NULL,
   district_id integer NOT NULL
- );
+) DISTSTYLE ALL;
 
 CREATE TABLE ica_asmt (
-  id bigint PRIMARY KEY,
+  id bigint encode lzo PRIMARY KEY SORTKEY,
   grade_id smallint NOT NULL,
   school_year int NOT NULL,
   subject_id smallint NOT NULL
-);
+) DISTSTYLE ALL;
 
 CREATE TABLE iab_asmt (
-  id bigint PRIMARY KEY,
+  id bigint encode lzo PRIMARY KEY SORTKEY,
   grade_id smallint NOT NULL,
   school_year int NOT NULL,
   subject_id smallint NOT NULL
-);
+) DISTSTYLE ALL;
 
 CREATE TABLE gender (
-  id smallint NOT NULL PRIMARY KEY,
+  id smallint NOT NULL PRIMARY KEY SORTKEY,
   code character varying(80) NOT NULL UNIQUE
-);
+) DISTSTYLE ALL;
 
 CREATE TABLE ethnicity (
-  id smallint NOT NULL PRIMARY KEY,
+  id smallint NOT NULL PRIMARY KEY SORTKEY ,
   code character varying(120) NOT NULL UNIQUE
-);
+) DISTSTYLE ALL;
 
 CREATE TABLE student(
-  id bigint PRIMARY KEY,
-  gender_id int NOT NULL
- );
+  id bigint encode delta PRIMARY KEY SORTKEY DISTKEY,
+  gender_id int encode lzo NOT NULL
+);
 
 CREATE TABLE student_ethnicity (
-  ethnicity_id smallint  NOT NULL,
-  student_id int NOT NULL
+  ethnicity_id smallint encode lzo NOT NULL,
+  student_id int encode delta NOT NULL SORTKEY DISTKEY
 );
 
 -- facts
-
 CREATE TABLE fact_student_ica_exam (
-  id bigint PRIMARY KEY,
-  district_id integer NOT NULL,
-  school_id integer NOT NULL,
-  student_id bigint NOT NULL,
-  gender_id int NOT NULL,
-  asmt_id bigint NOT NULL,
-  asmt_grade_id smallint NOT NULL,
-  grade_id smallint NOT NULL,
-  school_year smallint NOT NULL,
-  iep smallint NOT NULL,
-  lep smallint NOT NULL,
-  section504 smallint,
-  economic_disadvantage smallint NOT NULL,
-  migrant_status smallint,
-  completeness_id smallint NOT NULL,
-  administration_condition_id smallint NOT NULL,
-  scale_score float,
-  scale_score_std_err float,
-  performance_level smallint,
-  claim1_scale_score float,
-  claim1_scale_score_std_err float,
-  claim1_category smallint,
-  claim2_scale_score float,
-  claim2_scale_score_std_err float,
-  claim2_category smallint,
-  claim3_scale_score float,
-  claim3_scale_score_std_err float,
-  claim3_category smallint,
-  claim4_scale_score float,
-  claim4_scale_score_std_err float,
-  claim4_category smallint
-);
+  id bigint encode delta PRIMARY KEY,
+  school_id integer encode runlength NOT NULL,
+  student_id bigint encode delta32k NOT NULL DISTKEY,
+  asmt_id bigint encode lzo NOT NULL,
+  grade_id smallint encode lzo NOT NULL,
+  school_year smallint encode lzo NOT NULL,
+  iep smallint encode lzo NOT NULL,
+  lep smallint encode lzo NOT NULL,
+  section504 smallint encode lzo,
+  economic_disadvantage smallint encode lzo NOT NULL,
+  migrant_status smallint encode lzo,
+  completeness_id smallint encode lzo NOT NULL,
+  administration_condition_id smallint encode lzo NOT NULL,
+  scale_score float encode bytedict ,
+  scale_score_std_err float encode bytedict ,
+  performance_level smallint encode lzo,
+  claim1_scale_score float encode bytedict ,
+  claim1_scale_score_std_err float encode bytedict ,
+  claim1_category smallint encode lzo,
+  claim2_scale_score float encode bytedict ,
+  claim2_scale_score_std_err float encode bytedict ,
+  claim2_category smallint encode lzo,
+  claim3_scale_score float encode bytedict,
+  claim3_scale_score_std_err float encode bytedict,
+  claim3_category smallint encode lzo,
+  claim4_scale_score float encode bytedict,
+  claim4_scale_score_std_err float encode bytedict,
+  claim4_category smallint encode lzo,
+  CONSTRAINT fk__fact_student_ica_exam__ica_asmt FOREIGN KEY(asmt_id) REFERENCES ica_asmt(id),
+  CONSTRAINT fk__fact_student_ica_exam__school FOREIGN KEY(school_id) REFERENCES school(id),
+  CONSTRAINT fk__fact_student_ica_exam__student FOREIGN KEY(student_id) REFERENCES student(id)
+)  COMPOUND SORTKEY (school_year, asmt_id, school_id, student_id);
 
+-- facts
 CREATE TABLE fact_student_iab_exam (
-  id bigint PRIMARY KEY,
-  district_id integer NOT NULL,
-  school_id integer NOT NULL,
-  student_id bigint NOT NULL,
-  gender_id int NOT NULL,
-  asmt_id bigint NOT NULL,
-  asmt_grade_id smallint NOT NULL,
-  grade_id smallint NOT NULL,
-  school_year smallint NOT NULL,
-  iep smallint NOT NULL,
-  lep smallint NOT NULL,
-  section504 smallint,
-  economic_disadvantage smallint NOT NULL,
-  migrant_status smallint,
-  completeness_id smallint NOT NULL,
-  administration_condition_id smallint NOT NULL,
-  scale_score float,
-  scale_score_std_err float,
-  performance_level smallint
-);
+  id bigint encode delta PRIMARY KEY,
+  school_id integer encode runlength NOT NULL,
+  student_id bigint encode delta32k NOT NULL DISTKEY,
+  asmt_id bigint encode lzo NOT NULL,
+  grade_id smallint encode lzo NOT NULL,
+  school_year smallint encode lzo NOT NULL,
+  iep smallint encode lzo NOT NULL,
+  lep smallint encode lzo NOT NULL,
+  section504 smallint encode lzo,
+  economic_disadvantage smallint encode lzo NOT NULL,
+  migrant_status smallint encode lzo,
+  completeness_id smallint encode lzo NOT NULL,
+  administration_condition_id smallint encode lzo NOT NULL,
+  scale_score float encode bytedict ,
+  scale_score_std_err float encode bytedict ,
+  performance_level smallint encode lzo,
+   CONSTRAINT fk__fact_student_ica_exam__iab_asmt FOREIGN KEY(asmt_id) REFERENCES iab_asmt(id),
+  CONSTRAINT fk__fact_student_ica_exam__school FOREIGN KEY(school_id) REFERENCES school(id),
+  CONSTRAINT fk__fact_student_ica_exam__student FOREIGN KEY(student_id) REFERENCES student(id)
+)  COMPOUND SORTKEY (school_year, asmt_id, school_id, student_id);
