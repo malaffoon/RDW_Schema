@@ -189,21 +189,21 @@ CREATE TABLE  district (
 ) DISTSTYLE ALL;
 
 CREATE TABLE school (
-  id integer encode runlength PRIMARY KEY SORTKEY,
+  id integer encode raw PRIMARY KEY SORTKEY,
   natural_id varchar(40) NOT NULL,
   name varchar(100) NOT NULL,
   district_id integer NOT NULL
 ) DISTSTYLE ALL;
 
 CREATE TABLE ica_asmt (
-  id bigint encode lzo PRIMARY KEY SORTKEY,
+  id bigint encode raw  PRIMARY KEY SORTKEY,
   grade_id smallint NOT NULL,
   school_year int NOT NULL,
   subject_id smallint NOT NULL
 ) DISTSTYLE ALL;
 
 CREATE TABLE iab_asmt (
-  id bigint encode lzo PRIMARY KEY SORTKEY,
+  id bigint encode raw  PRIMARY KEY SORTKEY,
   grade_id smallint NOT NULL,
   school_year int NOT NULL,
   subject_id smallint NOT NULL
@@ -220,23 +220,24 @@ CREATE TABLE ethnicity (
 ) DISTSTYLE ALL;
 
 CREATE TABLE student(
-  id bigint encode delta PRIMARY KEY SORTKEY DISTKEY,
+  id bigint encode raw PRIMARY KEY SORTKEY DISTKEY,
   gender_id int encode lzo NOT NULL
-);
+) DISTSTYLE KEY;
 
 CREATE TABLE student_ethnicity (
   ethnicity_id smallint encode lzo NOT NULL,
-  student_id int encode delta NOT NULL SORTKEY DISTKEY
-);
+  student_id int encode raw  NOT NULL SORTKEY DISTKEY
+) DISTSTYLE KEY;
 
 -- facts
 CREATE TABLE fact_student_ica_exam (
   id bigint encode delta PRIMARY KEY,
-  school_id integer encode runlength NOT NULL,
-  student_id bigint encode delta32k NOT NULL DISTKEY,
-  asmt_id bigint encode lzo NOT NULL,
+  school_id integer encode raw  NOT NULL,
+  student_id bigint encode raw  NOT NULL DISTKEY,
+  asmt_id bigint encode raw  NOT NULL,
   grade_id smallint encode lzo NOT NULL,
-  school_year smallint encode lzo NOT NULL,
+  asmt_grade_id smallint encode lzo NOT NULL,
+  school_year smallint encode raw NOT NULL,
   iep smallint encode lzo NOT NULL,
   lep smallint encode lzo NOT NULL,
   section504 smallint encode lzo,
@@ -262,16 +263,17 @@ CREATE TABLE fact_student_ica_exam (
   CONSTRAINT fk__fact_student_ica_exam__ica_asmt FOREIGN KEY(asmt_id) REFERENCES ica_asmt(id),
   CONSTRAINT fk__fact_student_ica_exam__school FOREIGN KEY(school_id) REFERENCES school(id),
   CONSTRAINT fk__fact_student_ica_exam__student FOREIGN KEY(student_id) REFERENCES student(id)
-)  COMPOUND SORTKEY (school_year, asmt_id, school_id, student_id);
+)  COMPOUND SORTKEY (school_year, school_id, student_id, asmt_id);
 
 -- facts
 CREATE TABLE fact_student_iab_exam (
   id bigint encode delta PRIMARY KEY,
-  school_id integer encode runlength NOT NULL,
-  student_id bigint encode delta32k NOT NULL DISTKEY,
-  asmt_id bigint encode lzo NOT NULL,
+  school_id integer encode raw  NOT NULL,
+  student_id bigint encode raw  NOT NULL DISTKEY,
+  asmt_id bigint encode raw  NOT NULL,
   grade_id smallint encode lzo NOT NULL,
-  school_year smallint encode lzo NOT NULL,
+  asmt_grade_id smallint encode lzo NOT NULL,
+  school_year smallint encode raw NOT NULL,
   iep smallint encode lzo NOT NULL,
   lep smallint encode lzo NOT NULL,
   section504 smallint encode lzo,
@@ -282,7 +284,7 @@ CREATE TABLE fact_student_iab_exam (
   scale_score float encode bytedict ,
   scale_score_std_err float encode bytedict ,
   performance_level smallint encode lzo,
-   CONSTRAINT fk__fact_student_ica_exam__iab_asmt FOREIGN KEY(asmt_id) REFERENCES iab_asmt(id),
-  CONSTRAINT fk__fact_student_ica_exam__school FOREIGN KEY(school_id) REFERENCES school(id),
-  CONSTRAINT fk__fact_student_ica_exam__student FOREIGN KEY(student_id) REFERENCES student(id)
-)  COMPOUND SORTKEY (school_year, asmt_id, school_id, student_id);
+  CONSTRAINT fk__fact_student_iab_exam__ica_asmt FOREIGN KEY(asmt_id) REFERENCES iab_asmt(id),
+  CONSTRAINT fk__fact_student_iab_exam__school FOREIGN KEY(school_id) REFERENCES school(id),
+  CONSTRAINT fk__fact_student_iab_exam__student FOREIGN KEY(student_id) REFERENCES student(id)
+)  COMPOUND SORTKEY (school_id, school_year, student_id, asmt_id);
