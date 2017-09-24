@@ -263,9 +263,8 @@ CREATE TABLE fact_student_ica_exam (
   CONSTRAINT fk__fact_student_ica_exam__ica_asmt FOREIGN KEY(asmt_id) REFERENCES ica_asmt(id),
   CONSTRAINT fk__fact_student_ica_exam__school FOREIGN KEY(school_id) REFERENCES school(id),
   CONSTRAINT fk__fact_student_ica_exam__student FOREIGN KEY(student_id) REFERENCES student(id)
-)  COMPOUND SORTKEY (school_year, school_id, student_id, asmt_id);
+)  COMPOUND SORTKEY (asmt_id, school_id, school_year, student_id);
 
--- facts
 CREATE TABLE fact_student_iab_exam (
   id bigint encode delta PRIMARY KEY,
   school_id integer encode raw  NOT NULL,
@@ -284,7 +283,7 @@ CREATE TABLE fact_student_iab_exam (
   scale_score float encode bytedict ,
   scale_score_std_err float encode bytedict ,
   performance_level smallint encode lzo,
-  CONSTRAINT fk__fact_student_iab_exam__ica_asmt FOREIGN KEY(asmt_id) REFERENCES iab_asmt(id),
-  CONSTRAINT fk__fact_student_iab_exam__school FOREIGN KEY(school_id) REFERENCES school(id),
-  CONSTRAINT fk__fact_student_iab_exam__student FOREIGN KEY(student_id) REFERENCES student(id)
-)  COMPOUND SORTKEY (school_id, school_year, student_id, asmt_id);
+   CONSTRAINT fk__fact_student_ica_exam__iab_asmt FOREIGN KEY(asmt_id) REFERENCES iab_asmt(id),
+  CONSTRAINT fk__fact_student_ica_exam__school FOREIGN KEY(school_id) REFERENCES school(id),
+  CONSTRAINT fk__fact_student_ica_exam__student FOREIGN KEY(student_id) REFERENCES student(id)
+)  COMPOUND SORTKEY (asmt_id, school_id, school_year, student_id);

@@ -96,7 +96,7 @@ GROUP BY
   sch.name
 ORDER BY a.subject_id, sch.name, fe.school_year, fe.asmt_grade_id, s.gender_id;
 
--- all districts within a state by gender
+-- one district by gender
 SELECT
   count(*)         AS count,
   avg(scale_score) AS score,
@@ -129,7 +129,7 @@ GROUP BY
   sch.name
 ORDER BY a.subject_id, sch.district_id, fe.school_year, fe.asmt_grade_id, s.gender_id;
 
--- all districts within a state by ethnicity
+-- one district by ethnicity
 SELECT
   count(*)         AS count,
   avg(scale_score) AS score,
