@@ -238,6 +238,7 @@ CREATE TABLE fact_student_ica_exam (
   grade_id smallint encode lzo NOT NULL,
   asmt_grade_id smallint encode lzo NOT NULL,
   school_year smallint encode raw NOT NULL,
+  -- TODO: consider moving below 5 flags to the student dimension, may perform better.
   iep smallint encode lzo NOT NULL,
   lep smallint encode lzo NOT NULL,
   section504 smallint encode lzo,
@@ -265,7 +266,7 @@ CREATE TABLE fact_student_ica_exam (
   CONSTRAINT fk__fact_student_ica_exam__student FOREIGN KEY(student_id) REFERENCES student(id)
 )  COMPOUND SORTKEY (asmt_id, school_id, school_year, student_id);
 
-CREATE TABLE fact_student_iab_exam (
+CREATE TABLE fact_student_ica_exam_for_longitudinal (
   id bigint encode delta PRIMARY KEY,
   school_id integer encode raw  NOT NULL,
   student_id bigint encode raw  NOT NULL DISTKEY,
@@ -283,7 +284,19 @@ CREATE TABLE fact_student_iab_exam (
   scale_score float encode bytedict ,
   scale_score_std_err float encode bytedict ,
   performance_level smallint encode lzo,
-   CONSTRAINT fk__fact_student_ica_exam__iab_asmt FOREIGN KEY(asmt_id) REFERENCES iab_asmt(id),
+  claim1_scale_score float encode bytedict ,
+  claim1_scale_score_std_err float encode bytedict ,
+  claim1_category smallint encode lzo,
+  claim2_scale_score float encode bytedict ,
+  claim2_scale_score_std_err float encode bytedict ,
+  claim2_category smallint encode lzo,
+  claim3_scale_score float encode bytedict,
+  claim3_scale_score_std_err float encode bytedict,
+  claim3_category smallint encode lzo,
+  claim4_scale_score float encode bytedict,
+  claim4_scale_score_std_err float encode bytedict,
+  claim4_category smallint encode lzo,
+  CONSTRAINT fk__fact_student_ica_exam__ica_asmt FOREIGN KEY(asmt_id) REFERENCES ica_asmt(id),
   CONSTRAINT fk__fact_student_ica_exam__school FOREIGN KEY(school_id) REFERENCES school(id),
   CONSTRAINT fk__fact_student_ica_exam__student FOREIGN KEY(student_id) REFERENCES student(id)
-)  COMPOUND SORTKEY (asmt_id, school_id, school_year, student_id);
+ )   COMPOUND SORTKEY (school_id, asmt_id);
