@@ -2,6 +2,10 @@
 
 USE ${schemaName};
 
+-- disable updates to the 'updated'
+ALTER TABLE exam
+  MODIFY COLUMN updated TIMESTAMP(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6);
+
 -- Copy data from exam_student to exam
 ALTER TABLE exam
   ADD COLUMN grade_id tinyint,
@@ -80,7 +84,7 @@ ALTER TABLE exam
   ADD INDEX idx__exam__student (student_id),
   ADD INDEX idx__exam__school (school_id),
   ADD CONSTRAINT fk__exam__student FOREIGN KEY (student_id) REFERENCES student(id),
-  ADD CONSTRAINT fk__exam__school FOREIGN KEY fk__exam_student__school (school_id) REFERENCES school(id);
+  ADD CONSTRAINT fk__exam__school FOREIGN KEY (school_id) REFERENCES school(id);
 
 -- clean up
 DROP PROCEDURE loop_by_partition;
@@ -88,5 +92,9 @@ DROP PROCEDURE loop_by_partition;
 ALTER TABLE exam DROP FOREIGN KEY fk__exam__exam_student;
 ALTER TABLE exam DROP INDEX idx__exam__exam_student;
 ALTER TABLE exam DROP COLUMN exam_student_id;
+
+-- enable auto updates to the 'updated'
+ALTER TABLE exam
+    MODIFY COLUMN updated TIMESTAMP(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6);
 
 DROP TABLE exam_student;
