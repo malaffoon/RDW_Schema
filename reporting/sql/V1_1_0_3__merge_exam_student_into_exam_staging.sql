@@ -17,4 +17,4 @@ ALTER TABLE staging_exam
   ADD COLUMN prim_disability_type varchar(3),
   DROP COLUMN exam_student_id;
 
-DROP TABLE IF EXISTS staging_exam_student;
+DROP TABLE staging_exam_student;
