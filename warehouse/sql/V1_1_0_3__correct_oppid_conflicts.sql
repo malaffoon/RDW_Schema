@@ -34,7 +34,7 @@ DELIMITER ;
 -- disable updates to the 'updated' and add a partition and index for processing
 ALTER TABLE exam
   MODIFY COLUMN updated TIMESTAMP(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
-  ADD INDEX idx__exam__asmt_id_student_id_oppId (asmt_id, student_id, oppId),
+  ADD INDEX idx__exam__asmt_student_oppId (asmt_id, student_id, oppId),
   ADD COLUMN partition_id int;
 
 SET @exam_student_partition_start = 0;
@@ -66,8 +66,8 @@ DROP PROCEDURE loop_by_partition;
 ALTER TABLE exam
   MODIFY COLUMN updated TIMESTAMP(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6),
   DROP COLUMN partition_id,
-  DROP INDEX idx__exam__asmt_id_student_id_oppId;
+  DROP INDEX idx__exam__asmt_student_oppId;
 
 -- add unique index on exam key properties
 ALTER TABLE exam
-  ADD UNIQUE INDEX idx__exam__asmt_id_student_id_oppId (asmt_id, student_id, oppId);
+  ADD UNIQUE INDEX idx__exam__asmt_student_oppId (asmt_id, student_id, oppId);
