@@ -68,5 +68,6 @@ ALTER TABLE exam
   DROP COLUMN partition_id,
   DROP INDEX idx__exam__asmt_id_student_id_oppId;
 
+-- add unique index on exam key properties
 ALTER TABLE exam
   ADD UNIQUE INDEX idx__exam__asmt_id_student_id_oppId (asmt_id, student_id, oppId);
