@@ -46,3 +46,49 @@ select student_group_id, 'dwtest@example.com' from (
     group by (student_group_id)
     order by cnt desc limit 5) s;
 ```
+
+### Reporting Queries
+
+#### Anything By Date
+
+Let's make a sequence of useful dates ...
+```sql
+CREATE VIEW digits AS SELECT 0 AS digit UNION ALL SELECT 1 UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4 UNION ALL SELECT 5 UNION ALL SELECT 6 UNION ALL SELECT 7 UNION ALL SELECT 8 UNION ALL SELECT 9;
+CREATE VIEW numbers AS SELECT ones.digit + tens.digit * 10 + hundreds.digit * 100 AS number FROM digits as ones, digits as tens, digits as hundreds;
+CREATE VIEW dates AS SELECT SUBDATE(CURRENT_DATE(), number) AS date FROM numbers;
+-- prod is now a collection of all dates from start of production to today 
+CREATE VIEW prod as SELECT date FROM dates WHERE date BETWEEN '2017-09-07' AND CURRENT_DATE() ORDER BY date;
+```
+
+That sequence can be used to flesh out a by-date report. For example, a simple count of exams updated by date. The 
+first query works fine but has gaps for any day exams are not received. So join with the date sequence to fill in the
+gaps.
+```sql
+SELECT DATE(updated) date, COUNT(*) count FROM exam WHERE updated > '2017-09-07' GROUP BY DATE(updated) ORDER BY DATE(updated);
+
+SELECT p.date, IFNULL(s.count, 0) count FROM prod p 
+  LEFT JOIN (SELECT DATE(updated) date, COUNT(*) count FROM exam WHERE updated > '2017-09-07' GROUP BY DATE(updated)) s ON s.date=p.date
+  ORDER BY p.date; 
+
+-- in theory, a simple right join should do the same thing but performance tanks; have to revisit:
+SELECT DATE(e.updated), count(e.id) FROM exam e RIGHT JOIN prod p ON DATE(e.updated) = p.date WHERE e.updated > '2017-09-07' GROUP BY DATE(e.updated);
+```
+
+Similarly, find the number of unique schools/students represented by exams received since production started:
+```sql
+-- cumulative unique schools
+SELECT p.date, count(DISTINCT sub.sid) FROM prod p 
+  LEFT JOIN (SELECT DATE(e.updated) date, es.school_id sid FROM exam e JOIN exam_student es ON es.id = e.exam_student_id WHERE e.updated > '2017-09-07') sub
+    ON sub.date <= p.date
+  GROUP BY p.date
+  ORDER BY p.date;
+  
+-- cumulative unique students
+SELECT p.date, count(DISTINCT sub.sid) FROM prod p 
+  LEFT JOIN (SELECT DATE(e.updated) date, es.student_id sid FROM exam e JOIN exam_student es ON es.id = e.exam_student_id WHERE e.updated > '2017-09-07') sub
+    ON sub.date <= p.date
+  GROUP BY p.date
+  ORDER BY p.date;
+```
+
+
