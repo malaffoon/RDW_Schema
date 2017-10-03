@@ -36,12 +36,12 @@ def flywayActions = [migrate : org.flywaydb.gradle.task.FlywayMigrateTask,
 
 def reportingSchemas = ["reporting"]
 def warehouseSchemas = ["warehouse"]
-def olapMigrateSchema = ["olap_migrate"]
+def migrateOlapSchema = ["migrate_olap"]
 
 //Gradle can't call a single task more than once, because of its design, so
 //we dynamically create individual tasks for each of the available flyway commands
 //on all of our databases (dev and test). Task names end up like migrateStaging and cleanWarehouse_test.
-(reportingSchemas + warehouseSchemas + olapMigrateSchema).each { schema ->
+(reportingSchemas + warehouseSchemas + migrateOlapSchema).each { schema ->
     flywayActions.keySet().each { action ->
         ["", "_test"].each { type ->
             task(action + schema.capitalize() + type, type: flywayActions[action]) {
@@ -73,7 +73,7 @@ distributions {
     main {
         contents {
             from('.') {
-                include 'olap_migrate/**'
+                include 'migrate_olap/**'
                 include 'reporting/**'
                 include 'warehouse/**'
                 include 'legacy_load/**'
