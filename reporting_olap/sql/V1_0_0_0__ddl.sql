@@ -2,7 +2,7 @@
 Redshift script for the SBAC Aggregate Reporting Data Warehouse 1.0.0 schema
 */
 
-CREATE SCHEMA reporting;
+
 SET client_encoding = 'UTF8';
 
 -- staging tables
@@ -43,10 +43,6 @@ CREATE TABLE staging_gender (
   code character varying(80) NOT NULL UNIQUE
 );
 
-CREATE TABLE staging_school_year (
-  year smallint NOT NULL PRIMARY KEY
-);
-
 CREATE TABLE staging_asmt (
   id int PRIMARY KEY NOT NULL,
   natural_id character varying(250) NOT NULL,
@@ -54,7 +50,9 @@ CREATE TABLE staging_asmt (
   type_id smallint NOT NULL,
   subject_id smallint NOT NULL,
   school_year smallint NOT NULL,
-  name character varying(250) NOT NULL
+  name character varying(250) NOT NULL,
+  deleted boolean NOT NULL,
+  migrate_id bigint NOT NULL
  );
 
 CREATE TABLE staging_subject_claim_score (
@@ -75,7 +73,9 @@ CREATE TABLE staging_school (
   id int PRIMARY KEY NOT NULL,
   district_id int NOT NULL,
   natural_id character varying(40) NOT NULL,
-  name character varying(100) NOT NULL
+  name character varying(100) NOT NULL,
+  deleted boolean NOT NULL,
+  migrate_id bigint NOT NULL
 );
 
 CREATE TABLE staging_student (
@@ -84,7 +84,9 @@ CREATE TABLE staging_student (
   last_or_surname character varying(60),
   first_name character varying(60),
   middle_name character varying(60),
-  gender_id smallint
+  gender_id smallint,
+  deleted boolean NOT NULL,
+  migrate_id bigint NOT NULL
  );
 
 CREATE TABLE staging_student_ethnicity (
@@ -115,7 +117,9 @@ CREATE TABLE staging_exam (
   scale_score float,
   scale_score_std_err float,
   performance_level smallint,
-  completed_at  timestamp without time zone NOT NULL
+  completed_at  timestamp without time zone NOT NULL,
+  deleted boolean NOT NULL,
+  migrate_id bigint NOT NULL
 );
 
 CREATE TABLE staging_exam_claim_score (
@@ -134,31 +138,11 @@ CREATE TABLE exam_claim_score_mapping (
   num smallint NOT NULL
   );
 
--- TODO move to DML
-INSERT INTO exam_claim_score_mapping (subject_claim_score_id, num) VALUES
-  (1, 1),
-  (2, 2),
-  (3, 3),
-  (4, 1),
-  (5, 2),
-  (6, 3),
-  (7, 4),
-  (8, 1),
-  (9, 2),
-  (10, 3),
-  (11, 1),
-  (12, 2),
-  (13, 3),
-  (14, 4);
-
 -- dimensions
-
-
 CREATE TABLE subject (
   id smallint NOT NULL PRIMARY KEY SORTKEY,
   code character varying(10) NOT NULL UNIQUE
 ) DISTSTYLE ALL;
-
 
 CREATE TABLE grade (
   id smallint NOT NULL PRIMARY KEY SORTKEY,
@@ -192,21 +176,16 @@ CREATE TABLE school (
   id integer encode raw PRIMARY KEY SORTKEY,
   natural_id varchar(40) NOT NULL,
   name varchar(100) NOT NULL,
-  district_id integer NOT NULL
+  district_id integer NOT NULL,
+  migrate_id bigint encode delta NOT NULL
 ) DISTSTYLE ALL;
 
 CREATE TABLE ica_asmt (
   id bigint encode raw  PRIMARY KEY SORTKEY,
   grade_id smallint NOT NULL,
   school_year int NOT NULL,
-  subject_id smallint NOT NULL
-) DISTSTYLE ALL;
-
-CREATE TABLE iab_asmt (
-  id bigint encode raw  PRIMARY KEY SORTKEY,
-  grade_id smallint NOT NULL,
-  school_year int NOT NULL,
-  subject_id smallint NOT NULL
+  subject_id smallint NOT NULL,
+  migrate_id bigint encode delta NOT NULL
 ) DISTSTYLE ALL;
 
 CREATE TABLE gender (
@@ -221,7 +200,8 @@ CREATE TABLE ethnicity (
 
 CREATE TABLE student(
   id bigint encode raw PRIMARY KEY SORTKEY DISTKEY,
-  gender_id int encode lzo NOT NULL
+  gender_id int encode lzo NOT NULL,
+  migrate_id bigint encode delta NOT NULL
 ) DISTSTYLE KEY;
 
 CREATE TABLE student_ethnicity (
@@ -236,9 +216,8 @@ CREATE TABLE fact_student_ica_exam (
   student_id bigint encode raw  NOT NULL DISTKEY,
   asmt_id bigint encode raw  NOT NULL,
   grade_id smallint encode lzo NOT NULL,
-  asmt_grade_id smallint encode lzo NOT NULL,
+  asmt_grade_id smallint encode lzo NOT NULL, -- TODO: research if this is needed
   school_year smallint encode raw NOT NULL,
-  -- TODO: consider moving below 5 flags to the student dimension, may perform better.
   iep smallint encode lzo NOT NULL,
   lep smallint encode lzo NOT NULL,
   section504 smallint encode lzo,
@@ -261,6 +240,7 @@ CREATE TABLE fact_student_ica_exam (
   claim4_scale_score float encode bytedict,
   claim4_scale_score_std_err float encode bytedict,
   claim4_category smallint encode lzo,
+  migrate_id bigint encode delta NOT NULL,
   CONSTRAINT fk__fact_student_ica_exam__ica_asmt FOREIGN KEY(asmt_id) REFERENCES ica_asmt(id),
   CONSTRAINT fk__fact_student_ica_exam__school FOREIGN KEY(school_id) REFERENCES school(id),
   CONSTRAINT fk__fact_student_ica_exam__student FOREIGN KEY(student_id) REFERENCES student(id)
@@ -296,6 +276,7 @@ CREATE TABLE fact_student_ica_exam_for_longitudinal (
   claim4_scale_score float encode bytedict,
   claim4_scale_score_std_err float encode bytedict,
   claim4_category smallint encode lzo,
+  migrate_id bigint encode delta NOT NULL,
   CONSTRAINT fk__fact_student_ica_exam__ica_asmt FOREIGN KEY(asmt_id) REFERENCES ica_asmt(id),
   CONSTRAINT fk__fact_student_ica_exam__school FOREIGN KEY(school_id) REFERENCES school(id),
   CONSTRAINT fk__fact_student_ica_exam__student FOREIGN KEY(student_id) REFERENCES student(id)
