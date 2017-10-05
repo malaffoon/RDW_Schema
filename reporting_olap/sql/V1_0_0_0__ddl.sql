@@ -17,12 +17,6 @@ CREATE TABLE staging_grade (
   name character varying(100) NOT NULL UNIQUE
 );
 
-CREATE TABLE staging_asmt_type (
-  id smallint NOT NULL PRIMARY KEY,
-  code character varying(10) NOT NULL UNIQUE,
-  name character varying(24) NOT NULL UNIQUE
-);
-
 CREATE TABLE staging_completeness (
   id smallint NOT NULL PRIMARY KEY,
   code character varying(10) NOT NULL UNIQUE

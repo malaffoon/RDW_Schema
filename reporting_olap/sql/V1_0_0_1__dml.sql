@@ -18,3 +18,8 @@ INSERT INTO exam_claim_score_mapping (subject_claim_score_id, num) VALUES
   (12, 2),
   (13, 3),
   (14, 4);
+
+INSERT INTO asmt_type (id, code, name) VALUES
+  (1, 'ica', 'Interim Comprehensive'),
+  (2, 'iab', 'Interim Assessment Block'),
+  (3, 'sum', 'Summative');
