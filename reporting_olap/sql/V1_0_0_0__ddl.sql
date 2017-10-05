@@ -54,13 +54,15 @@ CREATE TABLE staging_subject_claim_score (
   subject_id   smallint NOT NULL,
   asmt_type_id smallint NOT NULL,
   code character varying(10) NOT NULL,
-  name character varying(250) NOT NULL
+  name character varying(250) NOT NULL,
+  migrate_id bigint NOT NULL
 );
 
 CREATE TABLE staging_district (
   id int PRIMARY KEY NOT NULL,
   natural_id character varying(40) NOT NULL,
-  name character varying(100) NOT NULL
+  name character varying(100) NOT NULL,
+  migrate_id bigint NOT NULL
 );
 
 CREATE TABLE staging_school (
@@ -85,7 +87,8 @@ CREATE TABLE staging_student (
 
 CREATE TABLE staging_student_ethnicity (
   ethnicity_id smallint NOT NULL,
-  student_id int NOT NULL
+  student_id int NOT NULL,
+  migrate_id bigint NOT NULL
 );
 
 CREATE TABLE staging_exam_student (
@@ -97,7 +100,8 @@ CREATE TABLE staging_exam_student (
   lep smallint NOT NULL,
   section504 smallint,
   economic_disadvantage smallint NOT NULL,
-  migrant_status smallint
+  migrant_status smallint,
+  migrate_id bigint NOT NULL
  );
 
 CREATE TABLE staging_exam (
@@ -122,7 +126,8 @@ CREATE TABLE staging_exam_claim_score (
   subject_claim_score_id smallint NOT NULL,
   scale_score float,
   scale_score_std_err float,
-  category smallint
+  category smallint,
+  migrate_id bigint NOT NULL
 );
 
 -- configuration
