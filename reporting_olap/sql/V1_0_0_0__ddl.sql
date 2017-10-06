@@ -6,11 +6,6 @@ Redshift script for the SBAC Aggregate Reporting Data Warehouse 1.0.0 schema
 SET client_encoding = 'UTF8';
 
 -- staging tables
-CREATE TABLE staging_subject (
-  id smallint NOT NULL PRIMARY KEY,
-  code character varying(10) NOT NULL UNIQUE
-);
-
 CREATE TABLE staging_grade (
   id smallint NOT NULL PRIMARY KEY,
   code character varying(2)  NOT NULL UNIQUE,
@@ -48,15 +43,6 @@ CREATE TABLE staging_asmt (
   deleted boolean NOT NULL,
   migrate_id bigint NOT NULL
  );
-
-CREATE TABLE staging_subject_claim_score (
-  id  smallint PRIMARY KEY   NOT NULL,
-  subject_id   smallint NOT NULL,
-  asmt_type_id smallint NOT NULL,
-  code character varying(10) NOT NULL,
-  name character varying(250) NOT NULL,
-  migrate_id bigint NOT NULL
-);
 
 CREATE TABLE staging_district (
   id int PRIMARY KEY NOT NULL,

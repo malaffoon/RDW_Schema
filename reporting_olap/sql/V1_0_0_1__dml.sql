@@ -3,6 +3,16 @@ Initial data load for SBAC OLAP Reporting Data Warehouse 1.0.0
 */
 
 SET SEARCH_PATH to ${schemaName};
+
+INSERT INTO asmt_type (id, code, name) VALUES
+  (1, 'ica', 'Interim Comprehensive'),
+  (2, 'iab', 'Interim Assessment Block'),
+  (3, 'sum', 'Summative');
+
+INSERT INTO subject (id, code) VALUES
+  (1, 'Math'),
+  (2, 'ELA');
+
 INSERT INTO exam_claim_score_mapping (subject_claim_score_id, num) VALUES
   (1, 1),
   (2, 2),
@@ -18,8 +28,3 @@ INSERT INTO exam_claim_score_mapping (subject_claim_score_id, num) VALUES
   (12, 2),
   (13, 3),
   (14, 4);
-
-INSERT INTO asmt_type (id, code, name) VALUES
-  (1, 'ica', 'Interim Comprehensive'),
-  (2, 'iab', 'Interim Assessment Block'),
-  (3, 'sum', 'Summative');
