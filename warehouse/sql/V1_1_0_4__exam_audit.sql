@@ -2,7 +2,23 @@
 -- 1: create audit tables
 -- 2: create triggers
 
-#USE ${schemaName};
+USE ${schemaName};
+
+/*
+  Add created timestamp to child tables of parent being audited.
+  Audit records are created for update and delete.
+  Timestamp is required for exam updates that include creating a new child record.
+  Child records do now have the import id.
+*/
+
+ALTER TABLE exam_claim_score
+  ADD COLUMN created timestamp(6) default CURRENT_TIMESTAMP(6) not null;
+
+ALTER TABLE exam_available_accommodation
+  ADD COLUMN created timestamp(6) default CURRENT_TIMESTAMP(6) not null;
+
+ALTER TABLE exam_item
+  ADD COLUMN created timestamp(6) default CURRENT_TIMESTAMP(6) not null;
 
 /*
   exam audit table and triggers
@@ -47,12 +63,10 @@ CREATE TABLE IF NOT EXISTS audit_exam (
   prim_disability_type VARCHAR(3) NULL
 );
 
-DROP TRIGGER IF EXISTS trg__exam__update;
-
 CREATE TRIGGER trg__exam__update
 BEFORE UPDATE ON exam
 FOR EACH ROW
-  INSERT INTO audit_exam (action, audited, database_user, exam_id, type_id, school_year, asmt_id, asmt_version,
+  INSERT INTO audit_exam (action, database_user, exam_id, type_id, school_year, asmt_id, asmt_version,
                           opportunity, oppId, completeness_id, administration_condition_id, session_id, scale_score,
                           scale_score_std_err, performance_level, completed_at, import_id, update_import_id, deleted,
                           created, updated, grade_id, student_id, school_id, iep, lep, section504,
@@ -61,7 +75,6 @@ FOR EACH ROW
   VALUES
     (
       'update',
-      NOW(),
       USER(),
       OLD.id,
       OLD.type_id,
@@ -114,18 +127,15 @@ CREATE TABLE IF NOT EXISTS audit_exam_claim_score (
   category TINYINT NULL
 );
 
-DROP TRIGGER IF EXISTS trg__exam_claim_score__update;
-
 CREATE TRIGGER trg__exam_claim_score__update
 BEFORE UPDATE ON exam_claim_score
 FOR EACH ROW
   INSERT INTO audit_exam_claim_score (
-    action, audited, database_user, exam_claim_score_id, exam_id, subject_claim_score_id, scale_score, scale_score_std_err, category
+    action, database_user, exam_claim_score_id, exam_id, subject_claim_score_id, scale_score, scale_score_std_err, category
   )
   VALUES
     (
       'update',
-      NOW(),
       USER(),
       OLD.id,
       OLD.exam_id,
@@ -148,18 +158,15 @@ CREATE TABLE IF NOT EXISTS audit_exam_available_accommodation (
   accommodation_id SMALLINT(6) NOT NULL
 );
 
-DROP TRIGGER IF EXISTS trg__exam_available_accommodation__delete;
-
 CREATE TRIGGER trg__exam_available_accommodation__delete
 BEFORE DELETE ON exam_available_accommodation
 FOR EACH ROW
   INSERT INTO audit_exam_available_accommodation (
-    action, audited, database_user, exam_id, accommodation_id
+    action, database_user, exam_id, accommodation_id
   )
   VALUES
     (
       'delete',
-      NOW(),
       USER(),
       OLD.exam_id,
       OLD.accommodation_id
@@ -190,13 +197,11 @@ CREATE TABLE IF NOT EXISTS audit_exam_item (
   trait_conventions_score_status VARCHAR(50) NULL
 );
 
-DROP TRIGGER IF EXISTS trg__exam_item__update;
-
 CREATE TRIGGER trg__exam_item__update
 BEFORE UPDATE ON exam_item
 FOR EACH ROW
   INSERT INTO audit_exam_item (
-    action, audited, database_user, exam_item_id, exam_id, item_id, score,
+    action, database_user, exam_item_id, exam_id, item_id, score,
     score_status, position, response, trait_evidence_elaboration_score,
     trait_evidence_elaboration_score_status, trait_organization_purpose_score,
     trait_organization_purpose_score_status, trait_conventions_score, trait_conventions_score_status
@@ -204,7 +209,6 @@ FOR EACH ROW
   VALUES
     (
       'update',
-      NOW(),
       USER(),
       OLD.id,
       OLD.exam_id,
@@ -221,13 +225,11 @@ FOR EACH ROW
       OLD.trait_conventions_score_status
     );
 
-DROP TRIGGER IF EXISTS trg__exam_item__delete;
-
 CREATE TRIGGER trg__exam_item__delete
 BEFORE DELETE ON exam_item
 FOR EACH ROW
   INSERT INTO audit_exam_item (
-    action, audited, database_user, exam_item_id, exam_id, item_id, score,
+    action, database_user, exam_item_id, exam_id, item_id, score,
     score_status, position, response, trait_evidence_elaboration_score,
     trait_evidence_elaboration_score_status, trait_organization_purpose_score,
     trait_organization_purpose_score_status, trait_conventions_score, trait_conventions_score_status
@@ -235,7 +237,6 @@ FOR EACH ROW
   VALUES
     (
       'delete',
-      NOW(),
       USER(),
       OLD.id,
       OLD.exam_id,
