@@ -9,6 +9,9 @@ USE ${schemaName};
   Audit records are created for update and delete.
   Timestamp is required for exam updates that include creating a new child record.
   Child records do now have the import id.
+
+  Through the application, after insert, some exam records can be updated, some deleted or both as noted below.
+  Triggers are added consistently for update and delete on all exam tables.
 */
 
 ALTER TABLE exam_claim_score
@@ -63,6 +66,7 @@ CREATE TABLE IF NOT EXISTS audit_exam (
   prim_disability_type VARCHAR(3) NULL
 );
 
+-- UPDATE
 CREATE TRIGGER trg__exam__update
 BEFORE UPDATE ON exam
 FOR EACH ROW
@@ -108,6 +112,51 @@ FOR EACH ROW
       OLD.language_code,
       OLD.prim_disability_type);
 
+-- DELETE
+CREATE TRIGGER trg__exam__delete
+BEFORE DELETE ON exam
+FOR EACH ROW
+  INSERT INTO audit_exam (action, database_user, exam_id, type_id, school_year, asmt_id, asmt_version,
+                          opportunity, oppId, completeness_id, administration_condition_id, session_id, scale_score,
+                          scale_score_std_err, performance_level, completed_at, import_id, update_import_id, deleted,
+                          created, updated, grade_id, student_id, school_id, iep, lep, section504,
+                          economic_disadvantage, migrant_status, eng_prof_lvl, t3_program_type, language_code,
+                          prim_disability_type)
+  VALUES
+    (
+      'delete',
+      USER(),
+      OLD.id,
+      OLD.type_id,
+      OLD.school_year,
+      OLD.asmt_id,
+      OLD.asmt_version,
+      OLD.opportunity,
+      OLD.oppId,
+      OLD.completeness_id,
+      OLD.administration_condition_id,
+      OLD.session_id,
+      OLD.scale_score,
+      OLD.scale_score_std_err,
+      OLD.performance_level,
+      OLD.completed_at,
+      OLD.import_id,
+      OLD.update_import_id,
+      OLD.deleted,
+      OLD.created,
+      OLD.updated,
+      OLD.grade_id,
+      OLD.student_id,
+      OLD.school_id,
+      OLD.iep,
+      OLD.lep,
+      OLD.section504,
+      OLD.economic_disadvantage,
+      OLD.migrant_status,
+      OLD.eng_prof_lvl,
+      OLD.t3_program_type,
+      OLD.language_code,
+      OLD.prim_disability_type);
 
 /*
   exam_claim_score audit table and triggers
@@ -127,6 +176,7 @@ CREATE TABLE IF NOT EXISTS audit_exam_claim_score (
   category TINYINT NULL
 );
 
+-- UPDATE
 CREATE TRIGGER trg__exam_claim_score__update
 BEFORE UPDATE ON exam_claim_score
 FOR EACH ROW
@@ -136,6 +186,24 @@ FOR EACH ROW
   VALUES
     (
       'update',
+      USER(),
+      OLD.id,
+      OLD.exam_id,
+      OLD.subject_claim_score_id,
+      OLD.scale_score,
+      OLD.scale_score_std_err,
+      OLD.category);
+
+-- DELETE
+CREATE TRIGGER trg__exam_claim_score__delete
+BEFORE DELETE ON exam_claim_score
+FOR EACH ROW
+  INSERT INTO audit_exam_claim_score (
+    action, database_user, exam_claim_score_id, exam_id, subject_claim_score_id, scale_score, scale_score_std_err, category
+  )
+  VALUES
+    (
+      'delete',
       USER(),
       OLD.id,
       OLD.exam_id,
@@ -158,6 +226,22 @@ CREATE TABLE IF NOT EXISTS audit_exam_available_accommodation (
   accommodation_id SMALLINT(6) NOT NULL
 );
 
+-- UPDATE
+CREATE TRIGGER trg__exam_available_accommodation__update
+BEFORE UPDATE ON exam_available_accommodation
+FOR EACH ROW
+  INSERT INTO audit_exam_available_accommodation (
+    action, database_user, exam_id, accommodation_id
+  )
+  VALUES
+    (
+      'update',
+      USER(),
+      OLD.exam_id,
+      OLD.accommodation_id
+    );
+
+-- DELETE
 CREATE TRIGGER trg__exam_available_accommodation__delete
 BEFORE DELETE ON exam_available_accommodation
 FOR EACH ROW
@@ -197,6 +281,7 @@ CREATE TABLE IF NOT EXISTS audit_exam_item (
   trait_conventions_score_status VARCHAR(50) NULL
 );
 
+-- UPDATE
 CREATE TRIGGER trg__exam_item__update
 BEFORE UPDATE ON exam_item
 FOR EACH ROW
@@ -225,6 +310,7 @@ FOR EACH ROW
       OLD.trait_conventions_score_status
     );
 
+-- DELETE
 CREATE TRIGGER trg__exam_item__delete
 BEFORE DELETE ON exam_item
 FOR EACH ROW
