@@ -64,10 +64,10 @@ That sequence can be used to flesh out a by-date report. For example, a simple c
 first query works fine but has gaps for any day exams are not received. So join with the date sequence to fill in the
 gaps.
 ```sql
-SELECT DATE(updated) date, COUNT(*) count FROM exam WHERE updated > '2017-09-07' GROUP BY DATE(updated) ORDER BY DATE(updated);
+SELECT DATE(updated) date, COUNT(*) count FROM exam WHERE updated > '2017-09-07' and deleted = 0 GROUP BY DATE(updated) ORDER BY DATE(updated);
 
 SELECT p.date, IFNULL(s.count, 0) count FROM prod p 
-  LEFT JOIN (SELECT DATE(updated) date, COUNT(*) count FROM exam WHERE updated > '2017-09-07' GROUP BY DATE(updated)) s ON s.date=p.date
+  LEFT JOIN (SELECT DATE(updated) date, COUNT(*) count FROM exam WHERE updated > '2017-09-07' and deleted = 0 GROUP BY DATE(updated)) s ON s.date=p.date
   ORDER BY p.date; 
 
 -- in theory, a simple right join should do the same thing but performance tanks; have to revisit:
@@ -78,14 +78,14 @@ Similarly, find the number of unique schools/students represented by exams recei
 ```sql
 -- cumulative unique schools
 SELECT p.date, count(DISTINCT sub.sid) FROM prod p 
-  LEFT JOIN (SELECT DATE(e.updated) date, es.school_id sid FROM exam e JOIN exam_student es ON es.id = e.exam_student_id WHERE e.updated > '2017-09-07') sub
+  LEFT JOIN (SELECT DATE(e.updated) date, es.school_id sid FROM exam e JOIN exam_student es ON es.id = e.exam_student_id WHERE e.updated > '2017-09-07' and deleted = 0) sub
     ON sub.date <= p.date
   GROUP BY p.date
   ORDER BY p.date;
   
 -- cumulative unique students
 SELECT p.date, count(DISTINCT sub.sid) FROM prod p 
-  LEFT JOIN (SELECT DATE(e.updated) date, es.student_id sid FROM exam e JOIN exam_student es ON es.id = e.exam_student_id WHERE e.updated > '2017-09-07') sub
+  LEFT JOIN (SELECT DATE(e.updated) date, es.student_id sid FROM exam e JOIN exam_student es ON es.id = e.exam_student_id WHERE e.updated > '2017-09-07' and deleted = 0) sub
     ON sub.date <= p.date
   GROUP BY p.date
   ORDER BY p.date;
