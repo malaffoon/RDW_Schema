@@ -227,6 +227,7 @@ CREATE TABLE fact_student_ica_exam (
   CONSTRAINT fk__fact_student_ica_exam__student FOREIGN KEY(student_id) REFERENCES student(id)
 )  COMPOUND SORTKEY (asmt_id, school_id, school_year, student_id);
 
+-- TODO: decide if this is needed
 CREATE TABLE fact_student_ica_exam_for_longitudinal (
   id bigint encode delta PRIMARY KEY,
   school_id integer encode raw  NOT NULL,
