@@ -34,7 +34,6 @@ CREATE TABLE staging_gender (
 
 CREATE TABLE staging_asmt (
   id int PRIMARY KEY NOT NULL,
-  natural_id character varying(250) NOT NULL,
   grade_id smallint NOT NULL,
   type_id smallint NOT NULL,
   subject_id smallint NOT NULL,
@@ -46,7 +45,6 @@ CREATE TABLE staging_asmt (
 
 CREATE TABLE staging_district (
   id int PRIMARY KEY NOT NULL,
-  natural_id character varying(40) NOT NULL,
   name character varying(100) NOT NULL,
   migrate_id bigint NOT NULL
 );
@@ -54,7 +52,6 @@ CREATE TABLE staging_district (
 CREATE TABLE staging_school (
   id int PRIMARY KEY NOT NULL,
   district_id int NOT NULL,
-  natural_id character varying(40) NOT NULL,
   name character varying(100) NOT NULL,
   deleted boolean NOT NULL,
   migrate_id bigint NOT NULL
@@ -153,13 +150,11 @@ CREATE TABLE administration_condition (
 
 CREATE TABLE  district (
   id integer PRIMARY KEY SORTKEY,
-  natural_id varchar(40) NOT NULL,
   name varchar(100) NOT NULL
 ) DISTSTYLE ALL;
 
 CREATE TABLE school (
   id integer encode raw PRIMARY KEY SORTKEY,
-  natural_id varchar(40) NOT NULL,
   name varchar(100) NOT NULL,
   district_id integer NOT NULL,
   migrate_id bigint encode delta NOT NULL
@@ -170,6 +165,7 @@ CREATE TABLE ica_asmt (
   grade_id smallint NOT NULL,
   school_year int NOT NULL,
   subject_id smallint NOT NULL,
+  name character varying(250) NOT NULL,
   migrate_id bigint encode delta NOT NULL
 ) DISTSTYLE ALL;
 
