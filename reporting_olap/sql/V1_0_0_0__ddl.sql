@@ -74,23 +74,17 @@ CREATE TABLE staging_student_ethnicity (
   migrate_id bigint NOT NULL
 );
 
-CREATE TABLE staging_exam_student (
+CREATE TABLE staging_exam (
   id bigint PRIMARY KEY NOT NULL,
-  grade_id smallint NOT NULL,
   student_id int NOT NULL,
+  grade_id smallint NOT NULL,
   school_id int NOT NULL,
   iep smallint NOT NULL,
   lep smallint NOT NULL,
   section504 smallint,
   economic_disadvantage smallint NOT NULL,
   migrant_status smallint,
-  migrate_id bigint NOT NULL
- );
-
-CREATE TABLE staging_exam (
-  id bigint PRIMARY KEY NOT NULL,
   type_id smallint NOT NULL,
-  exam_student_id bigint NOT NULL,
   school_year smallint NOT NULL,
   asmt_id int NOT NULL,
   completeness_id smallint NOT NULL,
