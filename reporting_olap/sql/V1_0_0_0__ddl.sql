@@ -92,7 +92,6 @@ CREATE TABLE staging_exam (
   scale_score float,
   scale_score_std_err float,
   performance_level smallint,
-  completed_at  timestamp without time zone NOT NULL,
   deleted boolean NOT NULL,
   migrate_id bigint NOT NULL
 );
