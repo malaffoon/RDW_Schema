@@ -1,12 +1,12 @@
-# Auditing
+## Auditing
 This document describes auditing in RDW and provides sample queries for analysing audit data.
 
-## Intended Audience
+### Intended Audience
 The intended audience should be familiar with database technology and querying a database with SQL.
 - **System and Database Administrators**: This document provides administrators information on what is audited in the warehouse and where it is stored.
 - **Developers and Analysts**: Developers and analysts with knowledge of SQL and the appropriate permissions can use this document as a guide to querying exam and student modifications.
 
-## Terminology
+### Terminology
 - **Test Result**: When a student takes a test the results are transmitted to the data warehouse.  This submission is a test result.  It is for one instance of a student taking a given test.
 - **TRT**: Is an acronym for an instance of a test result in the Smarter Balanced [Test Results Transmission Format](http://www.smarterapp.org/specs/TestResultsTransmissionFormat.html) where the content adheres to the [Test Results Data Model](http://www.smarterapp.org/news/2015/08/26/DataModelAndSamples.html)
 - **Exam**: Each test result submitted or migrated from legacy data is stored as an exam in the data warehouse.
@@ -20,7 +20,7 @@ The intended audience should be familiar with database technology and querying a
 - **Import**:  All inflows of data to the warehouse create an import record that stores attributes of the inflow including a timestamp and the authorized user.
   
 
-## What is audited?
+### What is audited?
 The warehouse audits entity state changes for exams and student information.
 
 Warehouse Exam Tables:
@@ -33,7 +33,7 @@ Warehouse Exam Tables:
 | exam_item                    | One record per exam item                    | Child       | Create, Update, Delete      |
 
 
-## Where is audit data stored?
+### Where is audit data stored?
 Each exam table has an 'audit_...' table that records the state change for each row.  The audit tables contain the state of the row before the change.
 In addition to the columns from the table being audited, each audit_ table has the following columns:
 
@@ -53,10 +53,10 @@ MySQL triggers are used to capture audit_ records.  Each table being audited has
 | audit_exam_claim_score             | exam_claim_score             | Update, Delete                 |
 | audit_exam_item                    | exam_item                    | Update, Delete                 |
 
-## How can audit data be queried?
+### How can audit data be queried?
 Sample queries are provided for analysing audit data combining the warehouse import table, the table being audited, the audit_ table and joining other relations in the warehouse for lookup values.
 
-### Exam
+##### Exam
 
 **Finding modifications to a students exams**
 The following query outputs one row for each modified exam for one student.  It includes the count of modifications and the date of the last change.
