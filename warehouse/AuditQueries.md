@@ -1,5 +1,5 @@
 # Auditing
-This document describes auditing in RDW and provides samples queries for analysing audit data
+This document describes auditing in RDW and provides sample queries for analysing audit data.
 
 ## Intended Audience
 The intended audience should be familiar with database technology and querying a database with SQL.
@@ -16,11 +16,13 @@ The intended audience should be familiar with database technology and querying a
   - **Update**: A request to change a previously created entity.  This is audited as an update.
   - **Delete**: An entity is removed from the warehouse.  Does not occur for entities being audited such as exam.  Does occur for entity attributes stored in supporting child tables and is audited as a delete.
   - **Soft Delete**: A request to delete an entity from the warehouse that is being audited is updated with it's deleted flag set to true.  This is audited as an update.
+- **Modification**: update, delete and soft delete state changes
 - **Import**:  All inflows of data to the warehouse create an import record that stores attributes of the inflow including a timestamp and the authorized user.
   
 
 ## What is audited?
 The warehouse audits entity state changes for exams and student information.
+
 Warehouse Exam Tables:
 
 | Table                        | Description                                 | Entity Type | States                      |
@@ -32,17 +34,34 @@ Warehouse Exam Tables:
 
 
 ## Where is audit data stored?
-... todo 
+Each exam table has an 'audit_...' table that records the state change for each row.  The audit tables contain the state of the row before the change.
+In addition to the columns from the table being audited, each audit_ table has the following columns:
+
+- **id**: Unique ID
+- **action**: delete or update
+- **audited**: timestamp when the audit record was created
+- **database_user**: The 'username'@'hostname' of the database user connected to the database.
+
+The Ingest Event column is the normal application flow for loading data into the warehouse where events are recorded.  Create is not recorded, instead, queries combining the the audit_ table and the table being audited can represent a complete audit trail.
+
+MySQL triggers are used to capture audit_ records.  Each table being audited has update and delete triggers providing a record of changes made by normal application flow and manual modifications if they occur.  
+
+| Audit Table                        | Audits                       | Ingest Event                   |
+|------------------------------------|------------------------------|--------------------------------|
+| audit_exam                         | exam                         | Update, Soft Delete(as update) |
+| audit_exam_available_accommodation | exam_available_accommodation | Delete                         |
+| audit_exam_claim_score             | exam_claim_score             | Update, Delete                 |
+| audit_exam_item                    | exam_item                    | Update, Delete                 |
 
 ## How can audit data be queried?
-
-## Audit student test results
-The warehouse schema uses the following tables to store student test results
+Sample queries are provided for analysing audit data combining the warehouse import table, the table being audited, the audit_ table and joining other relations in the warehouse for lookup values.
 
 ### Exam
 
-**Finding **
-The following query outputs one row for each `exam` that has been modified for one student.
+**Finding modifications to a students exams**
+The following query outputs one row for each modified exam for one student.  It includes the count of modifications and the date of the last change.
+
+The where clause can be changed to include multiple students.
 
 ```mysql
 SELECT
@@ -60,27 +79,59 @@ JOIN student s ON e.student_id = s.id
 JOIN asmt ON e.asmt_id = asmt.id
 WHERE ae.exam_id IS NOT NULL
  AND e.student_id IN ( SELECT id FROM student WHERE ssid = 'SSID001')
+GROUP BY e.id
+```
+
+```text
++---------+-----------------+---------+--------------+-------------+-----------------------------------+-------------------+----------------------------+
+| ssid    | student         | exam_id | oppId        | opportunity | assessment_name                   | exam_update_count | last_update                |
++---------+-----------------+---------+--------------+-------------+-----------------------------------+-------------------+----------------------------+
+| SSID001 | Durrant, Gladys |       1 | 100000000010 |           5 | SBAC-IAB-FIXED-G11M-AlgQuad       |                 1 | 2017-10-11 09:42:39.986370 |
+| SSID001 | Durrant, Gladys |       3 | 100000000030 |           1 | SBAC-ICA-FIXED-G11E-COMBINED-2017 |                 3 | 2017-10-11 09:45:10.235463 |
++---------+-----------------+---------+--------------+-------------+-----------------------------------+-------------------+----------------------------+
+2 rows in set (0.00 sec)
+```
+**Finding modifications to exams in a date range**
+The following query outputs one row for each modification to an exam within a date range.
+
+```mysql
+SELECT
+  s.ssid,
+  CONCAT(s.last_or_surname, ', ', first_name) student,
+  e.id exam_id,
+  e.oppId,
+  e.opportunity,
+  asmt.name assessment_name,
+  SUM(CASE WHEN ae.exam_id IS NOT NULL THEN 1 ELSE 0 END) exam_update_count,
+  MAX(ae.audited) last_update
+FROM exam e
+LEFT JOIN audit_exam ae ON e.id = ae.exam_id
+JOIN student s ON e.student_id = s.id
+JOIN asmt ON e.asmt_id = asmt.id
+WHERE ae.exam_id IS NOT NULL
+  AND ae.audited > '2017-10-11 09:45'AND ae.audited < '2017-10-12 09:45'
 GROUP BY e.id;
 ```
 
 ```text
-+---------+---------+-----------------+--------------+-----------------------------------+-------------------+----------------------------+
-| exam_id | ssid    | student         | oppId        | name                              | exam_update_count | last_update                |
-+---------+---------+-----------------+--------------+-----------------------------------+-------------------+----------------------------+
-|       1 | SSID001 | Durrant, Gladys | 100000000010 | SBAC-IAB-FIXED-G11M-AlgQuad       |                 1 | 2017-10-11 09:42:39.986370 |
-|       3 | SSID001 | Durrant, Gladys | 100000000030 | SBAC-ICA-FIXED-G11E-COMBINED-2017 |                 3 | 2017-10-11 09:45:10.235463 |
-+---------+---------+-----------------+--------------+-----------------------------------+-------------------+----------------------------+
++---------+-----------------+---------+--------------+-------------+-----------------------------------+-------------------+----------------------------+
+| ssid    | student         | exam_id | oppId        | opportunity | assessment_name                   | exam_update_count | last_update                |
++---------+-----------------+---------+--------------+-------------+-----------------------------------+-------------------+----------------------------+
+| SSID001 | Durrant, Gladys |       3 | 100000000030 |           1 | SBAC-ICA-FIXED-G11E-COMBINED-2017 |                 1 | 2017-10-11 09:45:10.235463 |
+| SSID003 | Anderson, Mark  |       5 | 100000000050 |           2 | SBAC-ICA-FIXED-G11E-COMBINED-2017 |                 1 | 2017-10-11 22:45:26.773878 |
++---------+-----------------+---------+--------------+-------------+-----------------------------------+-------------------+----------------------------+
 2 rows in set (0.00 sec)
 ```
-Explanation
-
-...
 
 **Exam audit trail**
+The following query lists the details of exam modifications in addition to the current state.
+
+The query can be modified to display different or all columns.  The where clause can be modified, such as, to include multiple exams or all exams for a student.
+
 ```mysql
 SELECT
   s.ssid ssid,
-  concat(s.last_or_surname, ', ', first_name) name,
+  concat(s.last_or_surname, ', ', first_name) student,
   e.exam_id,
   e.oppId,
   e.opportunity,
@@ -93,9 +144,7 @@ SELECT
   ac.code admin,
   sc.name school,
   g.code grade,
-  e.scale_score,
-  e.scale_score_std_err std_error,
-  e.performance_level
+  e.scale_score
 FROM (
        SELECT
          id exam_id,
@@ -137,9 +186,7 @@ FROM (
          oppId,
          opportunity,
          update_import_id AS exam_import_id,
-         CASE WHEN import_id = update_import_id
-           THEN 'original'
-         ELSE action END action,
+         CASE WHEN import_id = update_import_id THEN 'original' ELSE action END action,
          type_id,
          school_year,
          asmt_id,
@@ -175,28 +222,27 @@ LEFT JOIN asmt asmt ON e.asmt_id = asmt.id
 LEFT JOIN school sc ON e.school_id = sc.id
 LEFT JOIN grade g ON e.grade_id = g.id
 JOIN import i ON e.exam_import_id = i.id
-ORDER BY e.exam_id, e.updated DESC
+ORDER BY e.exam_id, e.updated DESC;
 ```
 
 ```text
-+---------+-----------------+---------+--------------+-------------+-----------------------------------+--------+--------------------+----------------------------+----------+--------------+-------+--------------------+-------+-------------+-----------+-------------------+
-| ssid    | name            | exam_id | oppId        | opportunity | assessment_name                   | import | import_creator     | updated                    | action   | completeness | admin | school             | grade | scale_score | std_error | performance_level |
-+---------+-----------------+---------+--------------+-------------+-----------------------------------+--------+--------------------+----------------------------+----------+--------------+-------+--------------------+-------+-------------+-----------+-------------------+
-| SSID001 | Durrant, Gladys |       3 | 100000000030 |           1 | SBAC-ICA-FIXED-G11E-COMBINED-2017 |     18 | dwtest@example.com | 2017-10-11 09:45:10.235463 | current  | Complete     | NS    | Llama Sabrewing HS | 11    |        2621 |        67 |                 3 |
-| SSID001 | Durrant, Gladys |       3 | 100000000030 |           1 | SBAC-ICA-FIXED-G11E-COMBINED-2017 |     17 | dwtest@example.com | 2017-10-11 09:43:55.197663 | update   | Complete     | NS    | Llama Sabrewing HS | 11    |        2621 |        67 |                 3 |
-| SSID001 | Durrant, Gladys |       3 | 100000000030 |           1 | SBAC-ICA-FIXED-G11E-COMBINED-2017 |     16 | dwtest@example.com | 2017-10-11 09:42:40.190306 | update   | Complete     | SD    | Llama Sabrewing HS | 11    |        2601 |        67 |                 3 |
-| SSID001 | Durrant, Gladys |       3 | 100000000030 |           1 | SBAC-ICA-FIXED-G11E-COMBINED-2017 |     12 | dwtest@example.com | 2017-10-11 09:41:24.976929 | original | Complete     | SD    | Llama Sabrewing HS | 11    |        2601 |        67 |                 3 |
-+---------+-----------------+---------+--------------+-------------+-----------------------------------+--------+--------------------+----------------------------+----------+--------------+-------+--------------------+-------+-------------+-----------+-------------------+
++---------+-----------------+---------+--------------+-------------+-----------------------------------+--------+--------------------+----------------------------+----------+--------------+-------+--------------------+-------+-------------+
+| ssid    | student         | exam_id | oppId        | opportunity | assessment_name                   | import | import_creator     | updated                    | action   | completeness | admin | school             | grade | scale_score |
++---------+-----------------+---------+--------------+-------------+-----------------------------------+--------+--------------------+----------------------------+----------+--------------+-------+--------------------+-------+-------------+
+| SSID001 | Durrant, Gladys |       3 | 100000000030 |           1 | SBAC-ICA-FIXED-G11E-COMBINED-2017 |     18 | dwtest@example.com | 2017-10-11 09:45:10.235463 | current  | Complete     | NS    | Llama Sabrewing HS | 11    |        2621 |
+| SSID001 | Durrant, Gladys |       3 | 100000000030 |           1 | SBAC-ICA-FIXED-G11E-COMBINED-2017 |     17 | dwtest@example.com | 2017-10-11 09:43:55.197663 | update   | Complete     | NS    | Llama Sabrewing HS | 11    |        2621 |
+| SSID001 | Durrant, Gladys |       3 | 100000000030 |           1 | SBAC-ICA-FIXED-G11E-COMBINED-2017 |     16 | dwtest@example.com | 2017-10-11 09:42:40.190306 | update   | Complete     | SD    | Llama Sabrewing HS | 11    |        2601 |
+| SSID001 | Durrant, Gladys |       3 | 100000000030 |           1 | SBAC-ICA-FIXED-G11E-COMBINED-2017 |     12 | dwtest@example.com | 2017-10-11 09:41:24.976929 | original | Complete     | SD    | Llama Sabrewing HS | 11    |        2601 |
++---------+-----------------+---------+--------------+-------------+-----------------------------------+--------+--------------------+----------------------------+----------+--------------+-------+--------------------+-------+-------------+
 4 rows in set (0.00 sec)
 ```
 
-Explanation
-
-...
-
-### Exam relations
-
 **Accommodation audit trail for exams**
+Each child table audit trail can be queried in a similar manner.  The following example is for the exam_available_accommodation child table.
+
+The query can be modified to display different or all columns.  The where clause can be modified, such as, to include multiple exams or all exams for a student.
+
+
 ```mysql
 SELECT
   acc_audit.*,
@@ -256,7 +302,7 @@ FROM (
      ) acc_audit
 JOIN exam e ON acc_audit.exam_id = e.id
 JOIN student s ON e.student_id = s.id
-ORDER BY acc_audit.exam_id, acc_audit.action_date DESC
+ORDER BY acc_audit.exam_id, acc_audit.action_date DESC;
 ```
 
 ```text
@@ -273,9 +319,6 @@ ORDER BY acc_audit.exam_id, acc_audit.action_date DESC
 |       3 | 2017-10-11 09:41:24.993423 | create  |           |                    | TDS_ASL0       | 100000000030 | SSID001 | Durrant, Gladys |
 |       3 | 2017-10-11 09:41:24.621145 | update  | 12        | dwtest@example.com |                | 100000000030 | SSID001 | Durrant, Gladys |
 +---------+----------------------------+---------+-----------+--------------------+----------------+--------------+---------+-----------------+
-9 rows in set (0.01 sec)
+9 rows in set (0.00 sec)
 ```
 
-Explanation
-
-...
