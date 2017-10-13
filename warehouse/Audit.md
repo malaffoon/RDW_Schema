@@ -51,7 +51,7 @@ MySQL triggers are used to capture audit_ records.  Each table being audited has
 |------------------------------------|------------------------------|--------------------------------|
 | audit_exam                         | exam                         | Update, Soft Delete(as update) |
 | audit_exam_available_accommodation | exam_available_accommodation | Delete                         |
-| audit_exam_claim_score             | exam_claim_score             | Update, Delete                 |
+| audit_exam_claim_score             | exam_claim_score             | Update                         |
 | audit_exam_item                    | exam_item                    | Update, Delete                 |
 
 ### How can audit data be queried?
