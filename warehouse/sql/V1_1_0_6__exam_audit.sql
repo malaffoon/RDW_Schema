@@ -37,8 +37,7 @@ FOR EACH ROW
                           created, updated, grade_id, student_id, school_id, iep, lep, section504,
                           economic_disadvantage, migrant_status, eng_prof_lvl, t3_program_type, language_code,
                           prim_disability_type, status_date)
-  VALUES
-    (
+  SELECT
       'update',
       USER(),
       OLD.id,
@@ -73,7 +72,8 @@ FOR EACH ROW
       OLD.language_code,
       OLD.prim_disability_type,
       OLD.status_date
-    );
+    FROM audit_trigger_switch ats
+    WHERE ats.id = 1 AND ats.switch = 1;
 
 -- DELETE
 DROP TRIGGER trg__exam__delete;
@@ -87,8 +87,7 @@ FOR EACH ROW
                           created, updated, grade_id, student_id, school_id, iep, lep, section504,
                           economic_disadvantage, migrant_status, eng_prof_lvl, t3_program_type, language_code,
                           prim_disability_type, status_date)
-  VALUES
-    (
+  SELECT
       'delete',
       USER(),
       OLD.id,
@@ -123,7 +122,8 @@ FOR EACH ROW
       OLD.language_code,
       OLD.prim_disability_type,
       OLD.status_date
-    );
+    FROM audit_trigger_switch ats
+    WHERE ats.id = 1 AND ats.switch = 1;
 
 /*
   exam_claim_score audit triggers
@@ -138,8 +138,7 @@ FOR EACH ROW
   INSERT INTO audit_exam_claim_score (
     action, database_user, exam_claim_score_id, exam_id, subject_claim_score_id, scale_score, scale_score_std_err, category
   )
-  VALUES
-    (
+  SELECT
       'update',
       USER(),
       OLD.id,
@@ -148,7 +147,8 @@ FOR EACH ROW
       OLD.scale_score,
       OLD.scale_score_std_err,
       OLD.category
-    );
+    FROM audit_trigger_switch ats
+    WHERE ats.id = 1 AND ats.switch = 1;
 
 -- DELETE
 DROP TRIGGER trg__exam_claim_score__delete;
@@ -159,8 +159,7 @@ FOR EACH ROW
   INSERT INTO audit_exam_claim_score (
     action, database_user, exam_claim_score_id, exam_id, subject_claim_score_id, scale_score, scale_score_std_err, category
   )
-  VALUES
-    (
+  SELECT
       'delete',
       USER(),
       OLD.id,
@@ -169,7 +168,8 @@ FOR EACH ROW
       OLD.scale_score,
       OLD.scale_score_std_err,
       OLD.category
-    );
+    FROM audit_trigger_switch ats
+    WHERE ats.id = 1 AND ats.switch = 1;
 
 /*
   exam_available_accommodation audit triggers
@@ -184,13 +184,13 @@ FOR EACH ROW
   INSERT INTO audit_exam_available_accommodation (
     action, database_user, exam_id, accommodation_id
   )
-  VALUES
-    (
+  SELECT
       'update',
       USER(),
       OLD.exam_id,
       OLD.accommodation_id
-    );
+    FROM audit_trigger_switch ats
+    WHERE ats.id = 1 AND ats.switch = 1;
 
 -- DELETE
 DROP TRIGGER trg__exam_available_accommodation__delete;
@@ -201,13 +201,13 @@ FOR EACH ROW
   INSERT INTO audit_exam_available_accommodation (
     action, database_user, exam_id, accommodation_id
   )
-  VALUES
-    (
+  SELECT
       'delete',
       USER(),
       OLD.exam_id,
       OLD.accommodation_id
-    );
+    FROM audit_trigger_switch ats
+    WHERE ats.id = 1 AND ats.switch = 1;
 
 /*
   exam_item audit triggers
@@ -225,8 +225,7 @@ FOR EACH ROW
     trait_evidence_elaboration_score_status, trait_organization_purpose_score,
     trait_organization_purpose_score_status, trait_conventions_score, trait_conventions_score_status
   )
-  VALUES
-    (
+  SELECT
       'update',
       USER(),
       OLD.id,
@@ -242,7 +241,8 @@ FOR EACH ROW
       OLD.trait_organization_purpose_score_status,
       OLD.trait_conventions_score,
       OLD.trait_conventions_score_status
-    );
+    FROM audit_trigger_switch ats
+    WHERE ats.id = 1 AND ats.switch = 1;
 
 -- DELETE
 DROP TRIGGER trg__exam_item__delete;
@@ -256,8 +256,7 @@ FOR EACH ROW
     trait_evidence_elaboration_score_status, trait_organization_purpose_score,
     trait_organization_purpose_score_status, trait_conventions_score, trait_conventions_score_status
   )
-  VALUES
-    (
+  SELECT
       'delete',
       USER(),
       OLD.id,
@@ -273,7 +272,8 @@ FOR EACH ROW
       OLD.trait_organization_purpose_score_status,
       OLD.trait_conventions_score,
       OLD.trait_conventions_score_status
-    );
+    FROM audit_trigger_switch ats
+    WHERE ats.id = 1 AND ats.switch = 1;
 
 
 
