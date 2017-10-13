@@ -9,9 +9,10 @@ The intended audience should be familiar with database technology and querying a
 ### Terminology
 - **Test Result**: When a student takes a test the results are transmitted to the data warehouse.  This submission is a test result.  It is for one instance of a student taking a given test.
 - **TRT**: Is an acronym for an instance of a test result in the Smarter Balanced [Test Results Transmission Format](http://www.smarterapp.org/specs/TestResultsTransmissionFormat.html) where the content adheres to the [Test Results Data Model](http://www.smarterapp.org/news/2015/08/26/DataModelAndSamples.html)
+- **Ingest**: Ingest is the process of receiving a submission of data and loading it into the data warehouse.
 - **Exam**: Each test result submitted or migrated from legacy data is stored as an exam in the data warehouse.
 - **warehouse schema**: The warehouse schema is the source of truth for reporting in the data warehouse and is used to populate user reporting and analytical reporting schemas. All schemas are defined in the [SmarterApp/RDW_Schema](https://github.com/SmarterApp/RDW_Schema) repository.  The warehouse schema is in the [SmarterApp/RDW_Schema/warehouse](https://github.com/SmarterApp/RDW_Schema/tree/develop/warehouse) folder.
-- **Entity State**: Auditing tracks changes.
+- **State Changes**: Auditing tracks entity changes.
   - **Create**: A new entity such as an exam is added to the warehouse.  This is not audited, however, there is an import record that records attributes of the submission.
   - **Update**: A request to change a previously created entity.  This is audited as an update.
   - **Delete**: An entity is removed from the warehouse.  Does not occur for entities being audited such as exam.  Does occur for entity attributes stored in supporting child tables and is audited as a delete.
@@ -25,7 +26,7 @@ The warehouse audits entity state changes for exams and student information.
 
 Warehouse Exam Tables:
 
-| Table                        | Description                                 | Entity Type | States                      |
+| Table                        | Description                                 | Entity Type | Ingest State Changes        |
 |------------------------------|---------------------------------------------|-------------|-----------------------------|
 | exam                         | One record per test result                  | Parent      | Create, Update, Soft Delete |
 | exam_available_accommodation | One record per exam available accommodation | Child       | Create, Delete              |
@@ -71,14 +72,14 @@ SELECT
   e.oppId,
   e.opportunity,
   asmt.name assessment_name,
-  SUM(CASE WHEN ae.exam_id IS NOT NULL THEN 1 ELSE 0 END) exam_update_count,
+  COUNT(1) exam_update_count,
   MAX(ae.audited) last_update
 FROM exam e
 LEFT JOIN audit_exam ae ON e.id = ae.exam_id
 JOIN student s ON e.student_id = s.id
 JOIN asmt ON e.asmt_id = asmt.id
 WHERE ae.exam_id IS NOT NULL
- AND e.student_id IN ( SELECT id FROM student WHERE ssid = 'SSID001')
+AND e.student_id IN ( SELECT id FROM student WHERE ssid = 'SSID001')
 GROUP BY e.id
 ```
 
@@ -102,15 +103,15 @@ SELECT
   e.oppId,
   e.opportunity,
   asmt.name assessment_name,
-  SUM(CASE WHEN ae.exam_id IS NOT NULL THEN 1 ELSE 0 END) exam_update_count,
+  COUNT(1) exam_update_count,
   MAX(ae.audited) last_update
 FROM exam e
 LEFT JOIN audit_exam ae ON e.id = ae.exam_id
 JOIN student s ON e.student_id = s.id
 JOIN asmt ON e.asmt_id = asmt.id
 WHERE ae.exam_id IS NOT NULL
-  AND ae.audited > '2017-10-11 09:45'AND ae.audited < '2017-10-12 09:45'
-GROUP BY e.id;
+AND ae.audited BETWEEN '2017-10-11 09:45' AND '2017-10-12 09:45'
+GROUP BY e.id
 ```
 
 ```text
@@ -121,6 +122,38 @@ GROUP BY e.id;
 | SSID003 | Anderson, Mark  |       5 | 100000000050 |           2 | SBAC-ICA-FIXED-G11E-COMBINED-2017 |                 1 | 2017-10-11 22:45:26.773878 |
 +---------+-----------------+---------+--------------+-------------+-----------------------------------+-------------------+----------------------------+
 2 rows in set (0.00 sec)
+```
+
+**Listing all exams for one student with update count**
+The following query outputs one row for each exam for one student with a count of modifications and the date of the most recent update.
+
+```mysql
+SELECT
+  s.ssid,
+  CONCAT(s.last_or_surname, ', ', first_name) student,
+  e.id exam_id,
+  e.oppId,
+  e.opportunity,
+  asmt.name assessment_name,
+  SUM(CASE WHEN ae.exam_id IS NOT NULL THEN 1 ELSE 0 END) exam_update_count,
+  MAX(ae.audited) last_update
+FROM exam e
+LEFT JOIN audit_exam ae ON e.id = ae.exam_id
+JOIN student s ON e.student_id = s.id
+JOIN asmt ON e.asmt_id = asmt.id
+WHERE e.student_id IN ( SELECT id FROM student WHERE ssid = 'SSID001')
+GROUP BY e.id
+```
+
+```text
++---------+-----------------+---------+--------------+-------------+-------------------------------------+-------------------+----------------------------+
+| ssid    | student         | exam_id | oppId        | opportunity | assessment_name                     | exam_update_count | last_update                |
++---------+-----------------+---------+--------------+-------------+-------------------------------------+-------------------+----------------------------+
+| SSID001 | Durrant, Gladys |       1 | 100000000010 |           5 | SBAC-IAB-FIXED-G11M-AlgQuad         |                 1 | 2017-10-11 09:42:39.986370 |
+| SSID001 | Durrant, Gladys |       2 | 100000000020 |           5 | SBAC-IAB-FIXED-G11E-ReadInfo-ELA-11 |                 0 | NULL                       |
+| SSID001 | Durrant, Gladys |       3 | 100000000030 |           1 | SBAC-ICA-FIXED-G11E-COMBINED-2017   |                 3 | 2017-10-11 09:45:10.235463 |
++---------+-----------------+---------+--------------+-------------+-------------------------------------+-------------------+----------------------------+
+3 rows in set (0.00 sec)
 ```
 
 **Exam audit trail**
