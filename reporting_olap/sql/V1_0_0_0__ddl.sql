@@ -174,7 +174,7 @@ CREATE TABLE ethnicity (
 
 CREATE TABLE student(
   id bigint encode raw PRIMARY KEY SORTKEY DISTKEY,
-  gender_id int encode lzo NOT NULL,
+  gender_id int encode lzo,
   migrate_id bigint encode delta NOT NULL
 ) DISTSTYLE KEY;
 
