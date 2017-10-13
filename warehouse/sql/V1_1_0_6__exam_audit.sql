@@ -36,7 +36,7 @@ FOR EACH ROW
                           scale_score_std_err, performance_level, completed_at, import_id, update_import_id, deleted,
                           created, updated, grade_id, student_id, school_id, iep, lep, section504,
                           economic_disadvantage, migrant_status, eng_prof_lvl, t3_program_type, language_code,
-                          prim_disability_type)
+                          prim_disability_type, status_date)
   VALUES
     (
       'update',
@@ -71,7 +71,8 @@ FOR EACH ROW
       OLD.eng_prof_lvl,
       OLD.t3_program_type,
       OLD.language_code,
-      OLD.prim_disability_type
+      OLD.prim_disability_type,
+      OLD.status_date
     );
 
 -- DELETE
@@ -85,7 +86,7 @@ FOR EACH ROW
                           scale_score_std_err, performance_level, completed_at, import_id, update_import_id, deleted,
                           created, updated, grade_id, student_id, school_id, iep, lep, section504,
                           economic_disadvantage, migrant_status, eng_prof_lvl, t3_program_type, language_code,
-                          prim_disability_type)
+                          prim_disability_type, status_date)
   VALUES
     (
       'delete',
@@ -120,7 +121,8 @@ FOR EACH ROW
       OLD.eng_prof_lvl,
       OLD.t3_program_type,
       OLD.language_code,
-      OLD.prim_disability_type
+      OLD.prim_disability_type,
+      OLD.status_date
     );
 
 /*
