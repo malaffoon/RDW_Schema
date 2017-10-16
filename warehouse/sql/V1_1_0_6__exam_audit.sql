@@ -6,20 +6,22 @@
 USE ${schemaName};
 
 /*
- Create the table to hold the on/off switch
+ Create the setting table that holds setting name and value pairs.
 */
-CREATE TABLE audit_trigger_switch (
-  id TINYINT NOT NULL PRIMARY KEY,
-  switch TINYINT NOT NULL,
+CREATE TABLE setting (
+  name VARCHAR(20),
+  value VARCHAR(100),
   updated timestamp(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6)
 );
 
 /*
- Insert the single switch record in the 'on' position.
- Disable audit triggers with: UPDATE audit_trigger_switch ats SET ats.switch = 0 WHERE ats.id = 1;
- Enable audit triggers with:  UPDATE audit_trigger_switch ats SET ats.switch = 1 WHERE ats.id = 1;
+ Insert the setting row for AUDIT_TRIGGER_ENABLE with the initial value to enable audit triggers.
+ When enabled, audit triggers will insert to audit tables.
+ When not enabled audit triggers will not insert to audit tables.
+ Disable audit triggers with: UPDATE setting s SET s.value = 'FALSE' WHERE s.name = 'AUDIT_TRIGGER_ENABLE';
+ Enable audit triggers with:  UPDATE setting s SET s.value = 'TRUE' WHERE s.name = 'AUDIT_TRIGGER_ENABLE';
 */
-INSERT INTO audit_trigger_switch (id, switch) VALUES (1, 1);
+INSERT INTO setting (name, value) VALUES ('AUDIT_TRIGGER_ENABLE', 'TRUE');
 
 /*
   exam triggers
@@ -72,8 +74,8 @@ FOR EACH ROW
       OLD.language_code,
       OLD.prim_disability_type,
       OLD.status_date
-    FROM audit_trigger_switch ats
-    WHERE ats.id = 1 AND ats.switch = 1;
+    FROM setting s
+    WHERE s.name = 'AUDIT_TRIGGER_ENABLE' AND s.value = 'TRUE';
 
 -- DELETE
 DROP TRIGGER trg__exam__delete;
@@ -122,8 +124,8 @@ FOR EACH ROW
       OLD.language_code,
       OLD.prim_disability_type,
       OLD.status_date
-    FROM audit_trigger_switch ats
-    WHERE ats.id = 1 AND ats.switch = 1;
+    FROM setting s
+    WHERE s.name = 'AUDIT_TRIGGER_ENABLE' AND s.value = 'TRUE';
 
 /*
   exam_claim_score audit triggers
@@ -147,8 +149,8 @@ FOR EACH ROW
       OLD.scale_score,
       OLD.scale_score_std_err,
       OLD.category
-    FROM audit_trigger_switch ats
-    WHERE ats.id = 1 AND ats.switch = 1;
+    FROM setting s
+    WHERE s.name = 'AUDIT_TRIGGER_ENABLE' AND s.value = 'TRUE';
 
 -- DELETE
 DROP TRIGGER trg__exam_claim_score__delete;
@@ -168,8 +170,8 @@ FOR EACH ROW
       OLD.scale_score,
       OLD.scale_score_std_err,
       OLD.category
-    FROM audit_trigger_switch ats
-    WHERE ats.id = 1 AND ats.switch = 1;
+    FROM setting s
+    WHERE s.name = 'AUDIT_TRIGGER_ENABLE' AND s.value = 'TRUE';
 
 /*
   exam_available_accommodation audit triggers
@@ -189,8 +191,8 @@ FOR EACH ROW
       USER(),
       OLD.exam_id,
       OLD.accommodation_id
-    FROM audit_trigger_switch ats
-    WHERE ats.id = 1 AND ats.switch = 1;
+    FROM setting s
+    WHERE s.name = 'AUDIT_TRIGGER_ENABLE' AND s.value = 'TRUE';
 
 -- DELETE
 DROP TRIGGER trg__exam_available_accommodation__delete;
@@ -206,8 +208,8 @@ FOR EACH ROW
       USER(),
       OLD.exam_id,
       OLD.accommodation_id
-    FROM audit_trigger_switch ats
-    WHERE ats.id = 1 AND ats.switch = 1;
+    FROM setting s
+    WHERE s.name = 'AUDIT_TRIGGER_ENABLE' AND s.value = 'TRUE';
 
 /*
   exam_item audit triggers
@@ -241,8 +243,8 @@ FOR EACH ROW
       OLD.trait_organization_purpose_score_status,
       OLD.trait_conventions_score,
       OLD.trait_conventions_score_status
-    FROM audit_trigger_switch ats
-    WHERE ats.id = 1 AND ats.switch = 1;
+    FROM setting s
+    WHERE s.name = 'AUDIT_TRIGGER_ENABLE' AND s.value = 'TRUE';
 
 -- DELETE
 DROP TRIGGER trg__exam_item__delete;
@@ -272,8 +274,8 @@ FOR EACH ROW
       OLD.trait_organization_purpose_score_status,
       OLD.trait_conventions_score,
       OLD.trait_conventions_score_status
-    FROM audit_trigger_switch ats
-    WHERE ats.id = 1 AND ats.switch = 1;
+    FROM setting s
+    WHERE s.name = 'AUDIT_TRIGGER_ENABLE' AND s.value = 'TRUE';
 
 
 
