@@ -2,6 +2,7 @@
 Redshift script for the SBAC Aggregate Reporting Data Warehouse 1.0.0 schema
 */
 
+SET SEARCH_PATH to ${schemaName};
 
 SET client_encoding = 'UTF8';
 
@@ -40,7 +41,8 @@ CREATE TABLE staging_asmt (
   school_year smallint NOT NULL,
   name character varying(250) NOT NULL,
   deleted boolean NOT NULL,
-  migrate_id bigint NOT NULL
+  migrate_id bigint NOT NULL,
+  update_import_id bigint NOT NULL
  );
 
 CREATE TABLE staging_district (
@@ -54,7 +56,8 @@ CREATE TABLE staging_school (
   district_id int NOT NULL,
   name character varying(100) NOT NULL,
   deleted boolean NOT NULL,
-  migrate_id bigint NOT NULL
+  migrate_id bigint NOT NULL,
+  update_import_id bigint NOT NULL
 );
 
 CREATE TABLE staging_student (
@@ -65,7 +68,8 @@ CREATE TABLE staging_student (
   middle_name character varying(60),
   gender_id smallint,
   deleted boolean NOT NULL,
-  migrate_id bigint NOT NULL
+  migrate_id bigint NOT NULL,
+  update_import_id bigint NOT NULL
  );
 
 CREATE TABLE staging_student_ethnicity (
@@ -93,7 +97,8 @@ CREATE TABLE staging_exam (
   scale_score_std_err float,
   performance_level smallint,
   deleted boolean NOT NULL,
-  migrate_id bigint NOT NULL
+  migrate_id bigint NOT NULL,
+  update_import_id bigint NOT NULL
 );
 
 CREATE TABLE staging_exam_claim_score (
@@ -150,7 +155,8 @@ CREATE TABLE school (
   id integer encode raw PRIMARY KEY SORTKEY,
   name varchar(100) NOT NULL,
   district_id integer NOT NULL,
-  migrate_id bigint encode delta NOT NULL
+  migrate_id bigint encode delta NOT NULL,
+  update_import_id bigint encode delta NOT NULL
 ) DISTSTYLE ALL;
 
 CREATE TABLE ica_asmt (
@@ -159,7 +165,8 @@ CREATE TABLE ica_asmt (
   school_year int NOT NULL,
   subject_id smallint NOT NULL,
   name character varying(250) NOT NULL,
-  migrate_id bigint encode delta NOT NULL
+  migrate_id bigint encode delta NOT NULL,
+  update_import_id bigint encode delta NOT NULL
 ) DISTSTYLE ALL;
 
 CREATE TABLE gender (
@@ -172,10 +179,11 @@ CREATE TABLE ethnicity (
   code character varying(120) NOT NULL UNIQUE
 ) DISTSTYLE ALL;
 
-CREATE TABLE student(
+CREATE TABLE student (
   id bigint encode raw PRIMARY KEY SORTKEY DISTKEY,
   gender_id int encode lzo,
-  migrate_id bigint encode delta NOT NULL
+  migrate_id bigint encode delta NOT NULL,
+  update_import_id bigint encode delta NOT NULL
 ) DISTSTYLE KEY;
 
 CREATE TABLE student_ethnicity (
@@ -215,6 +223,7 @@ CREATE TABLE fact_student_ica_exam (
   claim4_scale_score_std_err float encode bytedict,
   claim4_category smallint encode lzo,
   migrate_id bigint encode delta NOT NULL,
+  update_import_id bigint encode delta NOT NULL,
   CONSTRAINT fk__fact_student_ica_exam__ica_asmt FOREIGN KEY(asmt_id) REFERENCES ica_asmt(id),
   CONSTRAINT fk__fact_student_ica_exam__school FOREIGN KEY(school_id) REFERENCES school(id),
   CONSTRAINT fk__fact_student_ica_exam__student FOREIGN KEY(student_id) REFERENCES student(id)
@@ -252,6 +261,7 @@ CREATE TABLE fact_student_ica_exam_for_longitudinal (
   claim4_scale_score_std_err float encode bytedict,
   claim4_category smallint encode lzo,
   migrate_id bigint encode delta NOT NULL,
+  update_import_id bigint encode delta NOT NULL,
   CONSTRAINT fk__fact_student_ica_exam__ica_asmt FOREIGN KEY(asmt_id) REFERENCES ica_asmt(id),
   CONSTRAINT fk__fact_student_ica_exam__school FOREIGN KEY(school_id) REFERENCES school(id),
   CONSTRAINT fk__fact_student_ica_exam__student FOREIGN KEY(student_id) REFERENCES student(id)
