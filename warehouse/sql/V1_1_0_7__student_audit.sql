@@ -1,7 +1,7 @@
--- Add
--- 1:
--- todo
--- double check default values on source tables
+-- Add audit tables for student and add a primary key for setting table
+-- 1: Primary key change for setting table
+-- 2: timestamp added to student_ethnicity
+-- 3: student and student_ethnicity audit tables and triggers
 
 USE ${schemaName};
 
@@ -11,13 +11,13 @@ USE ${schemaName};
 ALTER TABLE setting ADD PRIMARY KEY (name);
 
 /*
-CREATE TABLE IF NOT EXISTS audit_template (
-  id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-  action VARCHAR(8) NOT NULL,
-  audited TIMESTAMP(6) DEFAULT CURRENT_TIMESTAMP(6) NOT NULL,
-  database_user VARCHAR(255) NOT NULL,
-);
+  Add created timestamp to child tables of parent being audited.
+  Audit records are created for update and delete.
+  Timestamp is required for student updates that include creating a new child record.
+  Child records do not have the import id.
 */
+ALTER TABLE student_ethnicity
+  ADD COLUMN created TIMESTAMP(6) DEFAULT CURRENT_TIMESTAMP(6) NOT NULL;
 
 /*
   student triggers
@@ -102,3 +102,45 @@ FOR EACH ROW
     FROM setting s
     WHERE s.name = 'AUDIT_TRIGGER_ENABLE' AND s.value = 'TRUE';
 
+/*
+  student_ethnicity triggers
+*/
+
+CREATE TABLE audit_student_ethnicity (
+  id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  action VARCHAR(8) NOT NULL,
+  audited TIMESTAMP(6) DEFAULT CURRENT_TIMESTAMP(6) NOT NULL,
+  database_user VARCHAR(255) NOT NULL,
+  ethnicity_id TINYINT NOT NULL,
+  student_id INT NOT NULL,
+  created TIMESTAMP(6) NOT NULL
+);
+
+-- update trigger
+CREATE TRIGGER trg__student_ethnicity__update
+BEFORE UPDATE ON student_ethnicity
+FOR EACH ROW
+  INSERT INTO audit_student_ethnicity (action, database_user, ethnicity_id, student_id, created)
+    SELECT
+      'update',
+      USER(),
+      OLD.ethnicity_id,
+      OLD.student_id,
+      OLD.created
+    FROM setting s
+    WHERE s.name = 'AUDIT_TRIGGER_ENABLE' AND s.value = 'TRUE';
+
+
+-- delete trigger
+CREATE TRIGGER trg__student_ethnicity__delete
+BEFORE DELETE ON student_ethnicity
+FOR EACH ROW
+  INSERT INTO audit_student_ethnicity (action, database_user, ethnicity_id, student_id, created)
+    SELECT
+      'delete',
+      USER(),
+      OLD.ethnicity_id,
+      OLD.student_id,
+      OLD.created
+    FROM setting s
+    WHERE s.name = 'AUDIT_TRIGGER_ENABLE' AND s.value = 'TRUE';
