@@ -3,9 +3,9 @@ USE ${schemaName};
 
 UPDATE setting SET value = 'FALSE' WHERE name = 'AUDIT_TRIGGER_ENABLE';
 
-/*
-  exam triggers
-*/
+-- ------------------------------------------------------------------------------------------------------------------------------------
+-- exam triggers
+-- ------------------------------------------------------------------------------------------------------------------------------------
 
 -- UPDATE
 DROP TRIGGER trg__exam__update;
@@ -203,9 +203,9 @@ FOR EACH ROW
     FROM setting s
     WHERE s.name = 'AUDIT_TRIGGER_ENABLE' AND s.value = 'TRUE';
 
-/*
-  exam_claim_score audit triggers
-*/
+-- ------------------------------------------------------------------------------------------------------------------------------------
+--  exam_claim_score audit triggers
+-- ------------------------------------------------------------------------------------------------------------------------------------
 
 -- UPDATE
 DROP TRIGGER trg__exam_claim_score__update;
@@ -257,9 +257,9 @@ FOR EACH ROW
     FROM setting s
     WHERE s.name = 'AUDIT_TRIGGER_ENABLE' AND s.value = 'TRUE';
 
-/*
-  exam_item audit triggers
-*/
+-- ------------------------------------------------------------------------------------------------------------------------------------
+--  exam_item audit triggers
+-- ------------------------------------------------------------------------------------------------------------------------------------
 
 -- UPDATE
 DROP TRIGGER trg__exam_item__update;

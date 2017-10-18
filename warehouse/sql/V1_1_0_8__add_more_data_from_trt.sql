@@ -12,9 +12,9 @@ INSERT INTO response_type (id, code) VALUES
   (2, 'reference');
 
 ALTER TABLE item
-    ADD COLUMN fiel_test tinyint,
+    ADD COLUMN field_test tinyint,
     ADD COLUMN active tinyint,
-    ADD COLUMN type  varchar(40);
+    ADD COLUMN type varchar(40);
 
 ALTER TABLE exam
     ADD COLUMN examinee_id bigint,
