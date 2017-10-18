@@ -366,5 +366,3 @@ FOR EACH ROW
       OLD.response_type_id
     FROM setting s
     WHERE s.name = 'AUDIT_TRIGGER_ENABLE' AND s.value = 'TRUE';
-
-UPDATE setting SET value = 'TRUE' WHERE name = 'AUDIT_TRIGGER_ENABLE';
