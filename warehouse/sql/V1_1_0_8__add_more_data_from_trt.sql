@@ -96,7 +96,7 @@ ALTER TABLE exam_item
 ALTER TABLE audit_exam_item
     ADD COLUMN administered_at timestamp(0),
     ADD COLUMN submitted tinyint,
-    ADD COLUMN submited_at timestamp(0),
+    ADD COLUMN submitted_at timestamp(0),
     ADD COLUMN number_of_visits smallint,
     ADD COLUMN response_duration float,
     ADD COLUMN response_content_type varchar(50),
