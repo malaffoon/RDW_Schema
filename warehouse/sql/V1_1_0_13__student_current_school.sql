@@ -51,8 +51,6 @@ CALL loop_by_partition(
     WHERE e2.student_id IS NULL ',
     @student_partition_start, @student_partition_end);
 
-CALL loop_by_partition(@student_partition_start, @student_partition_end);
-
 DROP PROCEDURE loop_by_partition;
 
 ALTER TABLE student
