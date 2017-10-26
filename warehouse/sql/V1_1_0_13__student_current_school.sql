@@ -6,6 +6,76 @@ ALTER TABLE student
   ADD INDEX idx__student__inferred_school (inferred_school_id),
   ADD CONSTRAINT fk__student__inferred_school FOREIGN KEY fk__student__inferred_school (inferred_school_id) REFERENCES school(id);
 
+-- audit table
+ALTER TABLE audit_student
+  ADD COLUMN inferred_effective_date TIMESTAMP(6) DEFAULT NULL,
+  ADD COLUMN inferred_school_id INT;
+
+-- update trigger
+DROP TRIGGER trg__student__update;
+
+CREATE TRIGGER trg__student__update
+BEFORE UPDATE ON student
+FOR EACH ROW
+  INSERT INTO audit_student (action, database_user, student_id, ssid, last_or_surname, first_name, middle_name,
+                             gender_id, first_entry_into_us_school_at, lep_entry_at, lep_exit_at, birthday, inferred_effective_date, inferred_school_id, import_id,
+                             update_import_id, deleted, created, updated)
+    SELECT
+      'update',
+      USER(),
+      OLD.id,
+      OLD.ssid,
+      OLD.last_or_surname,
+      OLD.first_name,
+      OLD.middle_name,
+      OLD.gender_id,
+      OLD.first_entry_into_us_school_at,
+      OLD.lep_entry_at,
+      OLD.lep_exit_at,
+      OLD.birthday,
+      OLD.inferred_effective_date,
+      OLD.inferred_school_id,
+      OLD.import_id,
+      OLD.update_import_id,
+      OLD.deleted,
+      OLD.created,
+      OLD.updated
+    FROM setting s
+    WHERE s.name = 'AUDIT_TRIGGER_ENABLE' AND s.value = 'TRUE';
+
+-- delete trigger
+DROP TRIGGER trg__student__delete;
+
+CREATE TRIGGER trg__student__delete
+BEFORE DELETE ON student
+FOR EACH ROW
+  INSERT INTO audit_student (action, database_user, student_id, ssid, last_or_surname, first_name, middle_name,
+                             gender_id, first_entry_into_us_school_at, lep_entry_at, lep_exit_at, birthday, inferred_effective_date, inferred_school_id, import_id,
+                             update_import_id, deleted, created, updated)
+    SELECT
+      'delete',
+      USER(),
+      OLD.id,
+      OLD.ssid,
+      OLD.last_or_surname,
+      OLD.first_name,
+      OLD.middle_name,
+      OLD.gender_id,
+      OLD.first_entry_into_us_school_at,
+      OLD.lep_entry_at,
+      OLD.lep_exit_at,
+      OLD.birthday,
+      OLD.inferred_effective_date,
+      OLD.inferred_school_id,
+      OLD.import_id,
+      OLD.update_import_id,
+      OLD.deleted,
+      OLD.created,
+      OLD.updated
+    FROM setting s
+    WHERE s.name = 'AUDIT_TRIGGER_ENABLE' AND s.value = 'TRUE';
+
+
 /************************************* Stored procedures ***************************************/
 
 DROP PROCEDURE IF EXISTS student_upsert;
