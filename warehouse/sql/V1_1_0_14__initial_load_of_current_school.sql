@@ -57,6 +57,8 @@ CALL loop_by_partition(
 
 DROP PROCEDURE loop_by_partition;
 
+SELECT max(id) into @maxImportId from import;
+
 -- distribute imports for migrate to have smaller chunks
 UPDATE import
 SET status = 1,
