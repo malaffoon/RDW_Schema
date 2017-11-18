@@ -64,7 +64,7 @@ INSERT INTO iab_validation (testNum, result1, result2, result3, result4, result5
     (SELECT max(testNum)
      FROM iab_validation),
     count(*),
-    a.natural_id,
+    a.id,
     a.school_year,
     ac.code,
     CASE WHEN e.completeness_id = 2
@@ -76,10 +76,10 @@ INSERT INTO iab_validation (testNum, result1, result2, result3, result4, result5
   WHERE a.type_id = 2
   GROUP BY
     a.school_year,
-    a.natural_id,
+    a.id,
     e.administration_condition_id,
     e.completeness_id
-  ORDER BY count(*), a.natural_id;
+  ORDER BY count(*), a.id;
 
 -- Exam breakdown by district and school
 INSERT INTO iab_validation (testNum, result1, result2, result3, result4)
@@ -95,21 +95,21 @@ INSERT INTO iab_validation (testNum, result1, result2, result3, result4)
     (SELECT max(testNum)
      FROM iab_validation),
     ex.count,
-    sch.natural_id,
+    sch.id,
     UPPER(d.name),
     UPPER(sch.name)
   FROM (
          SELECT
            count(*) AS count,
-           s.natural_id
+           s.id
          FROM exam e
            JOIN school s ON s.id = e.school_id
          WHERE e.type_id = 2
-         GROUP BY s.natural_id
+         GROUP BY s.id
        ) ex
-    JOIN school sch ON sch.natural_id = ex.natural_id
+    JOIN school sch ON sch.id = ex.id
     JOIN district d ON d.id = sch.district_id
-  ORDER BY ex.count, ex.natural_id;
+  ORDER BY ex.count, ex.id;
 
 -- Exam accommodations
 INSERT INTO iab_validation (testNum, result1, result2)

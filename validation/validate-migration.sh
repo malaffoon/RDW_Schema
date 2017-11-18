@@ -55,8 +55,8 @@ if [ -z ${reporting_olap_user} ]; then echo "reporting_olap_user must be set"; e
 timestamp=`date '+%Y-%m-%d-%H%M%S'`
 start_time=`date -u +%s`
 
-script_dir=.
-out_dir=`mktemp -d`
+sql_dir=sql
+out_dir="results-${timestamp}"
 warehouse_mysql_conf=`mktemp`
 reporting_mysql_conf=`mktemp`
 
@@ -86,22 +86,22 @@ echo -e "[client]\npassword=${reporting_password}" > ${reporting_mysql_conf} && 
 
 echo 'analyzing warehouse data...'
 
-mysql --defaults-extra-file=${warehouse_mysql_conf} -h ${warehouse_host} -P ${warehouse_port} -u ${warehouse_user} ${warehouse_schema} -v < ${script_dir}/validate-reporting-ica.sql
+mysql --defaults-extra-file=${warehouse_mysql_conf} -h ${warehouse_host} -P ${warehouse_port} -u ${warehouse_user} ${warehouse_schema} -v < ${sql_dir}/validate-reporting-ica.sql
 mysql --defaults-extra-file=${warehouse_mysql_conf} -h ${warehouse_host} -P ${warehouse_port} -u ${warehouse_user} ${warehouse_schema} -B -e "${report_query}" | tr '\t' ',' > ${warehouse_ica}
-mysql --defaults-extra-file=${warehouse_mysql_conf} -h ${warehouse_host} -P ${warehouse_port} -u ${warehouse_user} ${warehouse_schema} -v < ${script_dir}/validate-reporting-iab.sql
+mysql --defaults-extra-file=${warehouse_mysql_conf} -h ${warehouse_host} -P ${warehouse_port} -u ${warehouse_user} ${warehouse_schema} -v < ${sql_dir}/validate-reporting-iab.sql
 mysql --defaults-extra-file=${warehouse_mysql_conf} -h ${warehouse_host} -P ${warehouse_port} -u ${warehouse_user} ${warehouse_schema} -B -e "${report_query}" | tr '\t' ',' > ${warehouse_iab}
 
 echo 'analyzing reporting data...'
 
-mysql --defaults-extra-file=${reporting_mysql_conf} -h ${reporting_host} -P ${reporting_port} -u ${reporting_user} ${reporting_schema} -v < ${script_dir}/validate-warehouse-ica.sql
+mysql --defaults-extra-file=${reporting_mysql_conf} -h ${reporting_host} -P ${reporting_port} -u ${reporting_user} ${reporting_schema} -v < ${sql_dir}/validate-warehouse-ica.sql
 mysql --defaults-extra-file=${reporting_mysql_conf} -h ${reporting_host} -P ${reporting_port} -u ${reporting_user} ${reporting_schema} -B -e "${report_query}" | tr '\t' ',' > ${reporting_ica}
-mysql --defaults-extra-file=${reporting_mysql_conf} -h ${reporting_host} -P ${reporting_port} -u ${reporting_user} ${reporting_schema} -v < ${script_dir}/validate-warehouse-iab.sql
+mysql --defaults-extra-file=${reporting_mysql_conf} -h ${reporting_host} -P ${reporting_port} -u ${reporting_user} ${reporting_schema} -v < ${sql_dir}/validate-warehouse-iab.sql
 mysql --defaults-extra-file=${reporting_mysql_conf} -h ${reporting_host} -P ${reporting_port} -u ${reporting_user} ${reporting_schema} -B -e "${report_query}" | tr '\t' ',' > ${reporting_iab}
 
 echo 'analyzing reporting olap data...'
 
 set PGPASSWORD=${reporting_olap_password}
-psql -w -h ${reporting_olap_host} -p ${reporting_olap_port} -U ${reporting_olap_user} -d ${reporting_olap_schema} -a -f ${script_dir}/validate-reporting-olap-ica.sql
+psql -w -h ${reporting_olap_host} -p ${reporting_olap_port} -U ${reporting_olap_user} -d ${reporting_olap_schema} -a -f ${sql_dir}/validate-reporting-olap-ica.sql
 psql -w -h ${reporting_olap_host} -p ${reporting_olap_port} -U ${reporting_olap_user} -d ${reporting_olap_schema} -t -F, -A -c "${report_query}" > ${reporting_olap_ica}
 
 echo 'creating reports...'

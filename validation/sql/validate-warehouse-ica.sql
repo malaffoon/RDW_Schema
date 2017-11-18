@@ -63,7 +63,7 @@ INSERT INTO ica_validation (testNum, result1, result2, result3, result4, result5
     (SELECT max(testNum)
      FROM ica_validation),
     count(*),
-    a.natural_id,
+    a.id,
     a.school_year,
     ac.code,
     CASE WHEN e.completeness_id = 2
@@ -74,11 +74,11 @@ INSERT INTO ica_validation (testNum, result1, result2, result3, result4, result5
     JOIN administration_condition ac ON e.administration_condition_id = ac.id
   WHERE a.type_id = 1
   GROUP BY
-    a.natural_id,
+    a.id,
     a.school_year,
     e.administration_condition_id,
     e.completeness_id
-  ORDER BY count(*), a.natural_id;
+  ORDER BY count(*), a.id;
 
 -- Exam breakdown by district and school
 INSERT INTO ica_validation (testNum, result1, result2, result3, result4)
@@ -94,21 +94,21 @@ INSERT INTO ica_validation (testNum, result1, result2, result3, result4)
     (SELECT max(testNum)
      FROM ica_validation),
     ex.count,
-    sch.natural_id,
+    sch.id,
     UPPER(d.name),
     UPPER(sch.name)
   FROM (
          SELECT
            count(*) AS count,
-           s.natural_id
+           s.id
          FROM exam e
            JOIN school s ON s.id = e.school_id
          WHERE e.type_id = 1
-         GROUP BY s.natural_id
+         GROUP BY s.id
        ) ex
-    JOIN school sch ON sch.natural_id = ex.natural_id
+    JOIN school sch ON sch.id = ex.id
     JOIN district d ON d.id = sch.district_id
-  ORDER BY ex.count, ex.natural_id;
+  ORDER BY ex.count, ex.id;
 
 -- Exam accommodations
 INSERT INTO ica_validation (testNum, result1, result2)

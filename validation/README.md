@@ -9,9 +9,13 @@ First make sure the script is executable.
 ```bash
 chmod 755 validate-migration.sh
 ``` 
-Next create an environment-specific secrets file under the git-ignored secrets directory and replace all the properties as needed.
+Next create an environment-specific secrets file under the git-ignored `secrets` directory.
 It is important to place them somewhere that will not get checked in.
-
+Also, you will need to set the access to just the file creator.
+```bash
+touch secrets/my-secrets.sh && chmod 600 secrets/my-secrets.sh
+```
+Next enter the below variables into the secrets file:
 ```bash
 #!/usr/bin/env bash
 
@@ -34,8 +38,9 @@ reporting_olap_user=root
 reporting_olap_password=
 ```
 #### Execution
+To run the script simply execute it and pass in the file path to your secrets file.
 ```bash
-./validate-migration.sh [environment_properties_file]
+./validate-migration.sh secrets/my-secrets.sh
 ```
 #### Output
 
@@ -43,7 +48,7 @@ reporting_olap_password=
 ```
 completed in 00:00:08
 
-/var/folders/h6/gw7zs2cd0cl0v5pd42gtf4740000gp/T/tmp.EdjR0AEZ
+results-2017-11-17-201418
 ├── reporting_iab.csv
 ├── reporting_ica.csv
 ├── reporting_olap_ica.csv
@@ -61,7 +66,7 @@ The results can then be viewed in the output listed in the summary directory.
 ```
 completed in 00:00:08
 
-/var/folders/h6/gw7zs2cd0cl0v5pd42gtf4740000gp/T/tmp.EdjR0AEZ
+results-2017-11-17-201418
 ├── reporting_iab.csv
 ├── reporting_ica.csv
 ├── reporting_olap_ica.csv
