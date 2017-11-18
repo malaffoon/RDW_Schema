@@ -21,6 +21,12 @@ warehouse_schema=warehouse
 warehouse_user=root
 warehouse_password=
 
+reporting_host=localhost
+reporting_port=3306
+reporting_schema=reporting
+reporting_user=root
+reporting_password=
+
 reporting_olap_host=localhost
 reporting_olap_port=5439
 reporting_olap_schema=reporting_olap
