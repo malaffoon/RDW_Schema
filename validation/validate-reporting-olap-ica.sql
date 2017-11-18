@@ -1,8 +1,10 @@
-USE reporting;
+-- Note: this schema has no asmt.natural_id, school.natural_id or accommodations
+
+SET SEARCH_PATH TO reporting_olap;
 
 CREATE TABLE IF NOT EXISTS ica_validation
 (
-  id      BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  id      BIGINT IDENTITY (1, 1),
   testNum INT,
   result1 VARCHAR(1000),
   result2 VARCHAR(1000),
@@ -12,7 +14,7 @@ CREATE TABLE IF NOT EXISTS ica_validation
   result6 VARCHAR(1000),
   result7 VARCHAR(1000),
   result8 VARCHAR(1000),
-  created TIMESTAMP       DEFAULT current_timestamp
+  created TIMESTAMP DEFAULT current_timestamp
 );
 
 -- Clear results from previous script executions
@@ -28,8 +30,7 @@ INSERT INTO ica_validation (testNum, result1)
     (SELECT max(testNum)
      FROM ica_validation),
     count(*)
-  FROM exam
-  WHERE type_id = 1;
+  FROM fact_student_ica_exam;
 
 INSERT INTO ica_validation (testNum, result1, result2, result3)
   SELECT
@@ -41,14 +42,25 @@ INSERT INTO ica_validation (testNum, result1, result2, result3)
 INSERT INTO ica_validation (testNum, result1, result2, result3)
   SELECT
     (SELECT max(testNum)
-     FROM ica_validation),
+     FROM post_validation),
     sum(scale_score),
     sum(scale_score_std_err),
     sum(performance_level)
-  FROM exam
-  WHERE type_id = 1;
+  FROM fact_student_ica_exam;
 
--- Exam break down by asmt year, admin condition and complete
+INSERT INTO ica_validation (testNum, result1)
+  SELECT
+    (SELECT max(testNum)
+     FROM post_validation) + 1,
+    'total students';
+INSERT INTO ica_validation (testNum, result1)
+  SELECT
+    (SELECT max(testNum)
+     FROM post_validation),
+    count(*)
+  FROM student;
+
+-- Exam break down by assessment year, admin condition and complete
 INSERT INTO ica_validation (testNum, result1, result2, result3, result4, result5)
   SELECT
     (SELECT max(testNum)
@@ -63,21 +75,21 @@ INSERT INTO ica_validation (testNum, result1, result2, result3, result4, result5
     (SELECT max(testNum)
      FROM ica_validation),
     count(*),
-    a.natural_id,
+    a.id,
     a.school_year,
-    e.administration_condition_code,
-    CASE WHEN e.completeness_code = 'Complete'
+    ac.code,
+    CASE WHEN completeness_id = 2
       THEN 'TRUE'
     ELSE 'FALSE' END
-  FROM exam e
-    JOIN asmt a ON e.asmt_id = a.id
-  WHERE a.type_id = 1
+  FROM fact_student_ica_exam e
+    JOIN ica_asmt a ON e.asmt_id = a.id
+    JOIN administration_condition ac ON e.administration_condition_id = ac.id
   GROUP BY
-    a.natural_id,
+    a.id,
     a.school_year,
-    e.administration_condition_code,
-    e.completeness_code
-  ORDER BY count(*), a.natural_id;
+    ac.code,
+    completeness_id
+  ORDER BY count(*), a.id;
 
 -- Exam breakdown by district and school
 INSERT INTO ica_validation (testNum, result1, result2, result3, result4)
@@ -92,40 +104,19 @@ INSERT INTO ica_validation (testNum, result1, result2, result3, result4)
   SELECT
     (SELECT max(testNum)
      FROM ica_validation),
-    ex.count,
-    sch.natural_id,
+    s.count,
+    sch.id,
     UPPER(d.name),
     UPPER(sch.name)
   FROM (
          SELECT
            count(*) AS count,
-           s.natural_id
-         FROM exam e
-           JOIN asmt a ON a.id = e.asmt_id
+           s.id
+         FROM fact_student_ica_exam e
+           JOIN ica_asmt a ON a.id = e.asmt_id
            JOIN school s ON s.id = e.school_id
-         WHERE a.type_id = 1
-         GROUP BY ex.natural_id
-       ) ex
-    JOIN school sch ON sch.natural_id = ex.natural_id
+         GROUP BY s.id
+       ) s
+    JOIN school sch ON sch.id = s.id
     JOIN district d ON d.id = sch.district_id
-  ORDER BY ex.count, ex.natural_id;
-
--- Exam accommodations
-INSERT INTO ica_validation (testNum, result1, result2)
-  SELECT
-    (SELECT max(testNum)
-     FROM ica_validation) + 1,
-    'ica accommodations count',
-    'ethnicity';
-INSERT INTO ica_validation (testNum, result1, result2)
-  SELECT
-    (SELECT max(testNum)
-     FROM ica_validation),
-    count(*),
-    code
-  FROM exam e
-    JOIN exam_available_accommodation ea ON e.id = ea.exam_id
-    JOIN accommodation a ON a.id = ea.accommodation_id
-  WHERE e.type_id = 1
-  GROUP BY ea.accommodation_id
-  ORDER BY count(*);
+  ORDER BY s.id, s.count;

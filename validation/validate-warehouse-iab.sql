@@ -130,3 +130,34 @@ INSERT INTO iab_validation (testNum, result1, result2)
   WHERE e.type_id = 2
   GROUP BY ea.accommodation_id
   ORDER BY count(*);
+
+#-- Students
+# INSERT INTO post_validation (testNum, result1)
+#   SELECT
+#     (SELECT max(testNum)
+#      FROM post_validation) + 1,
+#     'total students';
+# INSERT INTO post_validation (testNum, result1)
+#   SELECT
+#     (SELECT max(testNum)
+#      FROM post_validation),
+#     count(*)
+#   FROM student;
+#
+#-- Student Ethnicity
+# INSERT INTO post_validation (testNum, result1, result2)
+#   SELECT
+#     (SELECT max(testNum)
+#      FROM post_validation) + 1,
+#     'ethnicity count',
+#     'ethnicity';
+# INSERT INTO post_validation (testNum, result1, result2)
+#   SELECT
+#     (SELECT max(testNum)
+#      FROM post_validation),
+#     count(*),
+#     e.code
+#   FROM student_ethnicity se
+#     JOIN ethnicity e ON se.ethnicity_id = e.id
+#   GROUP BY ethnicity_id
+#   ORDER BY count(*);
