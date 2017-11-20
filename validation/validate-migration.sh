@@ -57,6 +57,7 @@ start_time=`date -u +%s`
 
 sql_dir=sql
 out_dir="results-${timestamp}"
+
 warehouse_mysql_conf=`mktemp`
 reporting_mysql_conf=`mktemp`
 
@@ -73,14 +74,36 @@ reporting_reporting_olap_ica_diff=${out_dir}/reporting_reporting_olap_ica.diff
 diff_options="-y --suppress-common-lines"
 tree_options="--noreport"
 
-report_query="select testNum, result1, result2, result3, result4, result5 FROM ica_validation ORDER BY testNum, id;"
+report_query="select testNum, result1, result2, result3, result4, result5 FROM post_validation ORDER BY testNum, id;"
 
-# set up
+# methods
 
-mkdir -p ${out_dir}
+function create_mysql_password_file() {
+    password=$1
+    file_path=$2
+    echo -e "[client]\npassword=${password}" > ${file_path} && chmod 600 ${file_path}
+}
 
-echo -e "[client]\npassword=${warehouse_password}" > ${warehouse_mysql_conf} && chmod 600 ${warehouse_mysql_conf}
-echo -e "[client]\npassword=${reporting_password}" > ${reporting_mysql_conf} && chmod 600 ${reporting_mysql_conf}
+function setup() {
+    mkdir -p ${out_dir}
+    create_mysql_password_file "${warehouse_password}" "${warehouse_mysql_conf}"
+    create_mysql_password_file "${reporting_password}" "${reporting_mysql_conf}"
+}
+
+function teardown() {
+    rm ${warehouse_mysql_conf}
+    rm ${reporting_mysql_conf}
+}
+
+trap ctrl_c INT
+
+function ctrl_c() {
+    teardown
+}
+
+# execution
+
+setup
 
 # run sql analysis scripts
 
@@ -110,10 +133,7 @@ diff ${diff_options} ${warehouse_ica} ${reporting_ica} > ${warehouse_reporting_i
 diff ${diff_options} ${warehouse_iab} ${reporting_iab} > ${warehouse_reporting_iab_diff}
 diff ${diff_options} ${reporting_ica} ${reporting_olap_ica} > ${reporting_reporting_olap_ica_diff}
 
-# clean up
-
-rm ${warehouse_mysql_conf}
-rm ${reporting_mysql_conf}
+teardown # clean up
 
 # conclusion
 

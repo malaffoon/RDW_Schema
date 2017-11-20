@@ -1,6 +1,6 @@
 USE warehouse;
 
-CREATE TABLE IF NOT EXISTS iab_validation
+CREATE TABLE IF NOT EXISTS post_validation
 (
   id      BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
   testNum INT,
@@ -16,53 +16,55 @@ CREATE TABLE IF NOT EXISTS iab_validation
 );
 
 -- Clear results from previous script executions
-DELETE FROM iab_validation;
+DELETE FROM post_validation;
 
 -- Total counts
-INSERT INTO iab_validation (testNum, result1)
+INSERT INTO post_validation (testNum, result1)
   SELECT
     (SELECT max(testNum)
-     FROM iab_validation) + 1,
+     FROM post_validation) + 1,
     'total_iab';
-INSERT INTO iab_validation (testNum, result1)
+INSERT INTO post_validation (testNum, result1)
   SELECT
     (SELECT max(testNum)
-     FROM iab_validation),
+     FROM post_validation),
     count(*)
   FROM exam
-  WHERE type_id = 2;
+  WHERE type_id = 2
+    AND deleted = 0;
 
-INSERT INTO iab_validation (testNum, result1, result2, result3)
+INSERT INTO post_validation (testNum, result1, result2, result3)
   SELECT
     (SELECT max(testNum)
-     FROM iab_validation) + 1,
+     FROM post_validation) + 1,
     'total iab score',
     'total std err',
     'total perf level';
-INSERT INTO iab_validation (testNum, result1, result2, result3)
+INSERT INTO post_validation (testNum, result1, result2, result3)
   SELECT
     (SELECT max(testNum)
-     FROM iab_validation),
+     FROM post_validation),
     sum(scale_score),
     sum(scale_score_std_err),
     sum(performance_level)
   FROM exam
-  WHERE type_id = 2;
+  WHERE type_id = 2
+    AND deleted = 0;
 
 -- Exam break down by asmt year, admin condition and complete
-INSERT INTO iab_validation (testNum, result1, result2, result3, result4, result5)
+INSERT INTO post_validation (testNum, result1, result2, result3, result4, result5)
   SELECT
     (SELECT max(testNum)
-     FROM iab_validation) + 1,
+     FROM post_validation) + 1,
     'iab exams',
     'asmt',
     'asmt year',
     'admin condition',
     'complete';
-INSERT INTO iab_validation (testNum, result1, result2, result3, result4, result5)
+INSERT INTO post_validation (testNum, result1, result2, result3, result4, result5)
   SELECT
     (SELECT max(testNum)
-     FROM iab_validation),
+     FROM post_validation),
     count(*),
     a.id,
     a.school_year,
@@ -74,6 +76,8 @@ INSERT INTO iab_validation (testNum, result1, result2, result3, result4, result5
     JOIN asmt a ON e.asmt_id = a.id
     JOIN administration_condition ac ON e.administration_condition_id = ac.id
   WHERE a.type_id = 2
+    AND a.deleted = 0
+    AND e.deleted = 0
   GROUP BY
     a.school_year,
     a.id,
@@ -82,18 +86,18 @@ INSERT INTO iab_validation (testNum, result1, result2, result3, result4, result5
   ORDER BY count(*), a.id;
 
 -- Exam breakdown by district and school
-INSERT INTO iab_validation (testNum, result1, result2, result3, result4)
+INSERT INTO post_validation (testNum, result1, result2, result3, result4)
   SELECT
     (SELECT max(testNum)
-     FROM iab_validation) + 1,
+     FROM post_validation) + 1,
     'iab exams',
     'school id',
     'district',
     'school';
-INSERT INTO iab_validation (testNum, result1, result2, result3, result4)
+INSERT INTO post_validation (testNum, result1, result2, result3, result4)
   SELECT
     (SELECT max(testNum)
-     FROM iab_validation),
+     FROM post_validation),
     ex.count,
     sch.id,
     UPPER(d.name),
@@ -105,6 +109,7 @@ INSERT INTO iab_validation (testNum, result1, result2, result3, result4)
          FROM exam e
            JOIN school s ON s.id = e.school_id
          WHERE e.type_id = 2
+           AND e.deleted = 0
          GROUP BY s.id
        ) ex
     JOIN school sch ON sch.id = ex.id
@@ -112,24 +117,25 @@ INSERT INTO iab_validation (testNum, result1, result2, result3, result4)
   ORDER BY ex.count, ex.id;
 
 -- Exam accommodations
-INSERT INTO iab_validation (testNum, result1, result2)
-  SELECT
-    (SELECT max(testNum)
-     FROM iab_validation) + 1,
-    'iab accommodations count',
-    'ethnicity';
-INSERT INTO iab_validation (testNum, result1, result2)
-  SELECT
-    (SELECT max(testNum)
-     FROM iab_validation),
-    count(*),
-    code
-  FROM exam e
-    JOIN exam_available_accommodation ea ON e.id = ea.exam_id
-    JOIN accommodation a ON a.id = ea.accommodation_id
-  WHERE e.type_id = 2
-  GROUP BY ea.accommodation_id
-  ORDER BY count(*);
+-- INSERT INTO post_validation (testNum, result1, result2)
+--   SELECT
+--     (SELECT max(testNum)
+--      FROM post_validation) + 1,
+--     'iab accommodations count',
+--     'ethnicity';
+-- INSERT INTO post_validation (testNum, result1, result2)
+--   SELECT
+--     (SELECT max(testNum)
+--      FROM post_validation),
+--     count(*),
+--     code
+--   FROM exam e
+--     JOIN exam_available_accommodation ea ON e.id = ea.exam_id
+--     JOIN accommodation a ON a.id = ea.accommodation_id
+--   WHERE e.type_id = 2
+--     AND e.deleted = 0
+--   GROUP BY ea.accommodation_id
+--   ORDER BY count(*);
 
 #-- Students
 # INSERT INTO post_validation (testNum, result1)
