@@ -58,28 +58,14 @@ start_time=`date -u +%s`
 sql_dir=sql
 out_dir="results-${timestamp}"
 
-warehouse_mysql_conf=`mktemp`
-reporting_mysql_conf=`mktemp`
+diff_options="-y --suppress-common-lines"
 
-declare -a warehouse_connection=("${warehouse_host}" "${warehouse_port}" "${warehouse_schema}" "${warehouse_user}" "${warehouse_mysql_conf}")
-declare -a reporting_connection=("${reporting_host}" "${reporting_port}" "${reporting_schema}" "${reporting_user}" "${reporting_mysql_conf}")
+# (host port schema user password)
+declare -a warehouse_connection=("${warehouse_host}" "${warehouse_port}" "${warehouse_schema}" "${warehouse_user}" "${warehouse_password}")
+declare -a reporting_connection=("${reporting_host}" "${reporting_port}" "${reporting_schema}" "${reporting_user}" "${reporting_password}")
 declare -a reporting_olap_connection=("${reporting_olap_host}" "${reporting_olap_port}" "${reporting_olap_schema}" "${reporting_olap_user}" "${reporting_olap_password}")
 
-warehouse_ica=${out_dir}/warehouse_ica.csv
-warehouse_iab=${out_dir}/warehouse_iab.csv
-reporting_ica=${out_dir}/reporting_ica.csv
-reporting_iab=${out_dir}/reporting_iab.csv
-reporting_olap_ica=${out_dir}/reporting_olap_ica.csv
-
-warehouse_reporting_ica_diff=${out_dir}/warehouse_reporting_ica.diff
-warehouse_reporting_iab_diff=${out_dir}/warehouse_reporting_iab.diff
-reporting_reporting_olap_ica_diff=${out_dir}/reporting_reporting_olap_ica.diff
-
-diff_options="-y --suppress-common-lines"
-tree_options="--noreport"
-
-report_query="select testNum, result1, result2, result3, result4, result5 FROM post_validation ORDER BY testNum, id;"
-
+# type|test_name|query,result,headers,csv
 declare -a tests=(
     "ica|total-ica|total_exams"
     "ica|total-ica-scores|total_scale_score,total_standard_error,total_performance_level"
@@ -93,37 +79,15 @@ declare -a tests=(
 
 # methods
 
-function create_mysql_password_file() {
-    local password=$1
-    local file_path=$2
-    echo -e "[client]\npassword=${password}" > ${file_path} && chmod 600 ${file_path}
-}
-
-function setup() {
-    mkdir -p ${out_dir}
-    create_mysql_password_file "${warehouse_password}" "${warehouse_mysql_conf}"
-    create_mysql_password_file "${reporting_password}" "${reporting_mysql_conf}"
-}
-
-function teardown() {
-    rm ${warehouse_mysql_conf}
-    rm ${reporting_mysql_conf}
-}
-
-trap ctrl_c INT
-
-function ctrl_c() {
-    teardown
-}
-
 function get_line_count() {
     cat $1 | wc -l
 }
 
-function call_mysql() {
-    declare -a connection=("${!1}")
-    local sql_file=$2
-    mysql --defaults-extra-file=${connection[4]} -h ${connection[0]} -P ${connection[1]} -u ${connection[3]} ${connection[2]} -v < ${sql_file}
+function create_mysql_password_file() {
+    local password=$1
+    local file_path=`mktemp`
+    echo -e "[client]\npassword=${password}" > ${file_path} && chmod 600 ${file_path}
+    echo ${file_path}
 }
 
 function mysql_to_csv() {
@@ -131,8 +95,9 @@ function mysql_to_csv() {
     local sql_file=$2
     local csv_file=$3
     local csv_headers=$4
-    echo "${csv_headers}" >> ${csv_file}
-    mysql --defaults-extra-file=${connection[4]} -h ${connection[0]} -P ${connection[1]} -u ${connection[3]} ${connection[2]} -s < ${sql_file} | tr '\t' ',' >> ${csv_file}
+    local password_file=`create_mysql_password_file "${connection[4]}"`
+    mysql --defaults-extra-file=${password_file} -h ${connection[0]} -P ${connection[1]} -u ${connection[3]} ${connection[2]} -s < ${sql_file} | tr '\t' ','
+    rm ${password_file}
 }
 
 function psql_to_csv() {
@@ -140,76 +105,89 @@ function psql_to_csv() {
     local sql_file=$2
     local csv_file=$3
     local csv_headers=$4
-    echo "${csv_headers}" >> ${csv_file}
     set PGPASSWORD=${connection[5]}
-    psql -w -h ${connection[0]} -p ${connection[1]} -U ${connection[3]} -d ${connection[2]} -t -F, -A -f ${sql_file} >> ${csv_file}
+    psql -w -h ${connection[0]} -p ${connection[1]} -U ${connection[3]} -d ${connection[2]} -t -F, -A -f ${sql_file}
+    set PGPASSWORD=
 }
 
-# TODO - each test should have its own diffs
-function test() {
+function run_test() {
+    local cli_command=$1
+    local schema_alias=$2
+    local test_name=`echo $3 | cut -f2 -d"|"`
+    local test_headers=`echo $3 | cut -f3 -d"|"`
+    declare -a connection=("${!4}")
+    local csv_file=`mktemp`
+    echo "${test_headers}" >>  ${csv_file}
+    if [ "${cli_command}" == "mysql" ]; then
+        mysql_to_csv connection[@] ${sql_dir}/${schema_alias}/${test_name}.sql >> ${csv_file}
+    else
+        psql_to_csv connection[@] ${sql_dir}/${schema_alias}/${test_name}.sql >> ${csv_file}
+    fi
+    echo "${csv_file}"
+}
+
+function compare_test_results() {
+    local test_name=$1
+    local a_namespace=$2
+    local a=$3
+    local b_namespace=$4
+    local b=$5
+    local comparison_file=`mktemp`
+
+    diff ${diff_options} ${a} ${b} > ${comparison_file}
+
+    local total_differences=$(( `get_line_count ${comparison_file}` ))
+
+    if [ "${total_differences}" == "0" ]; then
+        echo "  ${a_namespace}/${b_namespace} (passed)"
+    else
+        local test_result_dir=${out_dir}/${test_name}
+        local diff_file=${test_result_dir}/${a_namespace}_${b_namespace}.diff
+        mkdir -p ${test_result_dir}
+        mv ${a} ${test_result_dir}/${a_namespace}.csv
+        mv ${b} ${test_result_dir}/${b_namespace}.csv
+        mv ${comparison_file} ${diff_file}
+        echo "  ${a_namespace}/${b_namespace} (${total_differences} differences) ${diff_file}"
+    fi
+}
+
+function run_test_on_all_schema() {
     local test_type=`echo $1 | cut -f1 -d"|"`
     local test_name=`echo $1 | cut -f2 -d"|"`
     local test_headers=`echo $1 | cut -f3 -d"|"`
 
-    echo "running ${test_type} test: ${test_name}..."
+    echo "${test_name}"
 
+    # get data from warehouse
+    local warehouse_csv=`run_test "mysql" "warehouse" $1 warehouse_connection[@]`
+
+    # get data from reporting and compare
+    local reporting_csv=`run_test "mysql" "reporting" $1 reporting_connection[@]`
+    compare_test_results ${test_name} "warehouse" ${warehouse_csv} "reporting" ${reporting_csv}
+
+    # get data from reporting_olap and compare
     if [ "${test_type}" == "ica" ]; then
-        mysql_to_csv warehouse_connection[@] ${sql_dir}/warehouse/${test_name}.sql ${warehouse_ica} ${test_headers}
-        mysql_to_csv reporting_connection[@] ${sql_dir}/reporting/${test_name}.sql ${reporting_ica} ${test_headers}
-        psql_to_csv reporting_olap_connection[@] ${sql_dir}/reporting_olap/${test_name}.sql ${reporting_olap_ica} ${test_headers}
-    else
-        mysql_to_csv warehouse_connection[@] ${sql_dir}/warehouse/${test_name}.sql ${warehouse_iab} ${test_headers}
-        mysql_to_csv reporting_connection[@] ${sql_dir}/reporting/${test_name}.sql ${reporting_iab} ${test_headers}
+        local reporting_olap_csv=`run_test "psql" "reporting_olap" $1 reporting_olap_connection[@]`
+        compare_test_results ${test_name} "warehouse" ${warehouse_csv} "reporting_olap" ${reporting_olap_csv}
     fi
+
+    echo ''
 }
 
 function run_tests() {
     for i in "${tests[@]}"
     do
-        test ${i}
+        run_test_on_all_schema ${i}
     done
 }
 
-function create_reports() {
-    echo 'creating reports...'
-
-    diff ${diff_options} ${warehouse_ica} ${reporting_ica} > ${warehouse_reporting_ica_diff}
-    diff ${diff_options} ${warehouse_iab} ${reporting_iab} > ${warehouse_reporting_iab_diff}
-    diff ${diff_options} ${reporting_ica} ${reporting_olap_ica} > ${reporting_reporting_olap_ica_diff}
-}
-
-function print_summary() {
-    local total_warehouse_reporting_ica_differences=`get_line_count ${warehouse_reporting_ica_diff}`
-    local total_warehouse_reporting_iab_differences=`get_line_count ${warehouse_reporting_iab_diff}`
-    local total_warehouse_reporting_olap_ica_differences=`get_line_count ${reporting_reporting_olap_ica_diff}`
-    local total_differences=$(( total_warehouse_reporting_ica_differences + total_warehouse_reporting_iab_differences + total_warehouse_reporting_olap_ica_differences ));
-
-    local end_time=`date -u +%s`
-    local elapsed_time="$(($end_time-$start_time))"
-    local elapsed_time_formatted=`date -u -r ${elapsed_time} +%T`
-
-    echo ''
-    echo "completed in ${elapsed_time_formatted}"
-    echo ''
-    tree ${tree_options} ${out_dir}
-    echo ''
-    if [ "${total_differences}" == "0" ]; then
-        echo 'no issues detected.';
-    else
-        echo 'possible issues detected:';
-        echo ''
-        echo "total differences: ${total_differences}"
-        echo "total differences between warehouse and reporting ICAs: ${total_warehouse_reporting_ica_differences}"
-        echo "total differences between warehouse and reporting IABs: ${total_warehouse_reporting_iab_differences}"
-        echo "total differences between reporting and reporting OLAP ICAs: ${total_warehouse_reporting_olap_ica_differences}"
-    fi
-    echo ''
-
-}
-
-# script lifecycle
-setup
+# entry point
 run_tests
-create_reports
-teardown
-print_summary
+
+# summarize results
+end_time=`date -u +%s`
+elapsed_time="$(($end_time-$start_time))"
+elapsed_time_formatted=`date -u -r ${elapsed_time} +%T`
+
+echo "completed in ${elapsed_time_formatted}"
+echo ''
