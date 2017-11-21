@@ -23,9 +23,9 @@ reporting_olap_password=
 # start up
 
 echo $''
-echo $'   __   __                   __   __       ___    __                            __       ___  __   __  '
-echo $'  |__) |  \ |  |     |\/| | / _` |__)  /\   |  | /  \ |\ |    \  /  /\  |    | |  \  /\   |  /  \ |__) '
-echo $'  |  \ |__/ |/\|     |  | | \__> |  \ /~~\  |  | \__/ | \|     \/  /~~\ |___ | |__/ /~~\  |  \__/ |  \ '
+echo $' __   __                   __   __       ___    __                            __       ___  __   __  '
+echo $'|__) |  \ |  |     |\/| | / _` |__)  /\   |  | /  \ |\ |    \  /  /\  |    | |  \  /\   |  /  \ |__) '
+echo $'|  \ |__/ |/\|     |  | | \__> |  \ /~~\  |  | \__/ | \|     \/  /~~\ |___ | |__/ /~~\  |  \__/ |  \ '
 echo $''
 echo $''
 
@@ -79,8 +79,21 @@ declare -a tests=(
 
 # methods
 
+function get_absolute_path() {
+    local basedir=`cd "$(dirname "$0")" ; pwd -P`
+    echo "${basedir}/${1}"
+}
 function get_line_count() {
     cat $1 | wc -l
+}
+
+function get_property_by_index() {
+    echo $1 | cut -f${2} -d"|"
+}
+
+function print_connection() {
+    declare -a connection=("${!1}")
+    echo "${connection[0]}:${connection[1]}:${connection[2]}:${connection[3]}"
 }
 
 function create_mysql_password_file() {
@@ -111,14 +124,14 @@ function psql_to_csv() {
 }
 
 function run_test() {
-    local cli_command=$1
+    local database_type=$1
     local schema_alias=$2
-    local test_name=`echo $3 | cut -f2 -d"|"`
-    local test_headers=`echo $3 | cut -f3 -d"|"`
+    local test_name=`get_property_by_index $3 2`
+    local test_headers=`get_property_by_index $3 3`
     declare -a connection=("${!4}")
     local csv_file=`mktemp`
     echo "${test_headers}" >>  ${csv_file}
-    if [ "${cli_command}" == "mysql" ]; then
+    if [ "${database_type}" == "mysql" ]; then
         mysql_to_csv connection[@] ${sql_dir}/${schema_alias}/${test_name}.sql >> ${csv_file}
     else
         psql_to_csv connection[@] ${sql_dir}/${schema_alias}/${test_name}.sql >> ${csv_file}
@@ -141,20 +154,22 @@ function compare_test_results() {
     if [ "${total_differences}" == "0" ]; then
         echo "  ${a_namespace}/${b_namespace} (passed)"
     else
-        local test_result_dir=${out_dir}/${test_name}
+        local test_result_dir=`get_absolute_path "${out_dir}/${test_name}"`
         local diff_file=${test_result_dir}/${a_namespace}_${b_namespace}.diff
         mkdir -p ${test_result_dir}
         mv ${a} ${test_result_dir}/${a_namespace}.csv
         mv ${b} ${test_result_dir}/${b_namespace}.csv
         mv ${comparison_file} ${diff_file}
-        echo "  ${a_namespace}/${b_namespace} (${total_differences} differences) ${diff_file}"
+        echo "  ${a_namespace}/${b_namespace} (${total_differences} differences) ${test_result_dir}"
     fi
 }
 
 function run_test_on_all_schema() {
-    local test_type=`echo $1 | cut -f1 -d"|"`
-    local test_name=`echo $1 | cut -f2 -d"|"`
-    local test_headers=`echo $1 | cut -f3 -d"|"`
+
+    # expand pipe delimited test object into variables
+    local test_type=`get_property_by_index $1 1`
+    local test_name=`get_property_by_index $1 2`
+    local test_headers=`get_property_by_index $1 3`
 
     echo "${test_name}"
 
@@ -175,19 +190,32 @@ function run_test_on_all_schema() {
 }
 
 function run_tests() {
-    for i in "${tests[@]}"
+    declare -a tests=("${!1}")
+    for test in "${tests[@]}"
     do
-        run_test_on_all_schema ${i}
+        run_test_on_all_schema ${test}
     done
 }
 
+function print_settings() {
+    echo "validating..."
+    echo ''
+    echo "  warehouse:      $(print_connection warehouse_connection[@])"
+    echo "  reporting:      $(print_connection reporting_connection[@])"
+    echo "  reporting_olap: $(print_connection reporting_olap_connection[@])"
+    echo ''
+}
+
+function print_summary() {
+    local end_time=`date -u +%s`
+    local elapsed_time="$(($end_time-$start_time))"
+    local elapsed_time_formatted=`date -u -r ${elapsed_time} +%T`
+
+    echo "completed in ${elapsed_time_formatted}"
+    echo ''
+}
+
 # entry point
-run_tests
-
-# summarize results
-end_time=`date -u +%s`
-elapsed_time="$(($end_time-$start_time))"
-elapsed_time_formatted=`date -u -r ${elapsed_time} +%T`
-
-echo "completed in ${elapsed_time_formatted}"
-echo ''
+print_settings
+run_tests tests[@]
+print_summary
