@@ -81,13 +81,13 @@ tree_options="--noreport"
 report_query="select testNum, result1, result2, result3, result4, result5 FROM post_validation ORDER BY testNum, id;"
 
 declare -a tests=(
-#    "ica|total-ica|total_exams"
-#    "ica|total-ica-scores|total_scale_score,total_standard_error,total_performance_level"
-#    "ica|total-ica-by-asmt-asmtyear-condition-complete|total_exams,assessment_id,assessment_year,administrative_condition,complete"
+    "ica|total-ica|total_exams"
+    "ica|total-ica-scores|total_scale_score,total_standard_error,total_performance_level"
+    "ica|total-ica-by-asmt-asmtyear-condition-complete|total_exams,assessment_id,assessment_year,administrative_condition,complete"
     "ica|total-ica-by-school-district|total_exams,school_id,district_name,school_name"
-#    "iab|total-iab|total_exams"
-#    "iab|total-iab-scores|total_scale_score,total_standard_error,total_performance_level"
-#    "iab|total-iab-by-asmt-asmtyear-condition-complete|total_exams,assessment_id,assessment_year,administrative_condition,complete"
+    "iab|total-iab|total_exams"
+    "iab|total-iab-scores|total_scale_score,total_standard_error,total_performance_level"
+    "iab|total-iab-by-asmt-asmtyear-condition-complete|total_exams,assessment_id,assessment_year,administrative_condition,complete"
     "iab|total-iab-by-school-district|total_exams,school_id,district_name,school_name"
 )
 
