@@ -61,6 +61,10 @@ out_dir="results-${timestamp}"
 warehouse_mysql_conf=`mktemp`
 reporting_mysql_conf=`mktemp`
 
+declare -a warehouse_connection=("${warehouse_host}" "${warehouse_port}" "${warehouse_schema}" "${warehouse_user}" "${warehouse_mysql_conf}")
+declare -a reporting_connection=("${reporting_host}" "${reporting_port}" "${reporting_schema}" "${reporting_user}" "${reporting_mysql_conf}")
+declare -a reporting_olap_connection=("${reporting_olap_host}" "${reporting_olap_port}" "${reporting_olap_schema}" "${reporting_olap_user}" "${reporting_olap_password}")
+
 warehouse_ica=${out_dir}/warehouse_ica.csv
 warehouse_iab=${out_dir}/warehouse_iab.csv
 reporting_ica=${out_dir}/reporting_ica.csv
@@ -76,11 +80,22 @@ tree_options="--noreport"
 
 report_query="select testNum, result1, result2, result3, result4, result5 FROM post_validation ORDER BY testNum, id;"
 
+declare -a tests=(
+#    "ica|total-ica|total_exams"
+#    "ica|total-ica-scores|total_scale_score,total_standard_error,total_performance_level"
+#    "ica|total-ica-by-asmt-asmtyear-condition-complete|total_exams,assessment_id,assessment_year,administrative_condition,complete"
+    "ica|total-ica-by-school-district|total_exams,school_id,district_name,school_name"
+#    "iab|total-iab|total_exams"
+#    "iab|total-iab-scores|total_scale_score,total_standard_error,total_performance_level"
+#    "iab|total-iab-by-asmt-asmtyear-condition-complete|total_exams,assessment_id,assessment_year,administrative_condition,complete"
+    "iab|total-iab-by-school-district|total_exams,school_id,district_name,school_name"
+)
+
 # methods
 
 function create_mysql_password_file() {
-    password=$1
-    file_path=$2
+    local password=$1
+    local file_path=$2
     echo -e "[client]\npassword=${password}" > ${file_path} && chmod 600 ${file_path}
 }
 
@@ -101,64 +116,100 @@ function ctrl_c() {
     teardown
 }
 
-# execution
+function get_line_count() {
+    cat $1 | wc -l
+}
 
-setup
+function call_mysql() {
+    declare -a connection=("${!1}")
+    local sql_file=$2
+    mysql --defaults-extra-file=${connection[4]} -h ${connection[0]} -P ${connection[1]} -u ${connection[3]} ${connection[2]} -v < ${sql_file}
+}
 
-# run sql analysis scripts
+function mysql_to_csv() {
+    declare -a connection=("${!1}")
+    local sql_file=$2
+    local csv_file=$3
+    local csv_headers=$4
+    echo "${csv_headers}" >> ${csv_file}
+    mysql --defaults-extra-file=${connection[4]} -h ${connection[0]} -P ${connection[1]} -u ${connection[3]} ${connection[2]} -s < ${sql_file} | tr '\t' ',' >> ${csv_file}
+}
 
-echo 'analyzing warehouse data...'
+function psql_to_csv() {
+    declare -a connection=("${!1}")
+    local sql_file=$2
+    local csv_file=$3
+    local csv_headers=$4
+    echo "${csv_headers}" >> ${csv_file}
+    set PGPASSWORD=${connection[5]}
+    psql -w -h ${connection[0]} -p ${connection[1]} -U ${connection[3]} -d ${connection[2]} -t -F, -A -f ${sql_file} >> ${csv_file}
+}
 
-mysql --defaults-extra-file=${warehouse_mysql_conf} -h ${warehouse_host} -P ${warehouse_port} -u ${warehouse_user} ${warehouse_schema} -v < ${sql_dir}/validate-reporting-ica.sql
-mysql --defaults-extra-file=${warehouse_mysql_conf} -h ${warehouse_host} -P ${warehouse_port} -u ${warehouse_user} ${warehouse_schema} -B -e "${report_query}" | tr '\t' ',' > ${warehouse_ica}
-mysql --defaults-extra-file=${warehouse_mysql_conf} -h ${warehouse_host} -P ${warehouse_port} -u ${warehouse_user} ${warehouse_schema} -v < ${sql_dir}/validate-reporting-iab.sql
-mysql --defaults-extra-file=${warehouse_mysql_conf} -h ${warehouse_host} -P ${warehouse_port} -u ${warehouse_user} ${warehouse_schema} -B -e "${report_query}" | tr '\t' ',' > ${warehouse_iab}
+# TODO - each test should have its own diffs
+function test() {
+    local test_type=`echo $1 | cut -f1 -d"|"`
+    local test_name=`echo $1 | cut -f2 -d"|"`
+    local test_headers=`echo $1 | cut -f3 -d"|"`
 
-echo 'analyzing reporting data...'
+    echo "running ${test_type} test: ${test_name}..."
 
-mysql --defaults-extra-file=${reporting_mysql_conf} -h ${reporting_host} -P ${reporting_port} -u ${reporting_user} ${reporting_schema} -v < ${sql_dir}/validate-warehouse-ica.sql
-mysql --defaults-extra-file=${reporting_mysql_conf} -h ${reporting_host} -P ${reporting_port} -u ${reporting_user} ${reporting_schema} -B -e "${report_query}" | tr '\t' ',' > ${reporting_ica}
-mysql --defaults-extra-file=${reporting_mysql_conf} -h ${reporting_host} -P ${reporting_port} -u ${reporting_user} ${reporting_schema} -v < ${sql_dir}/validate-warehouse-iab.sql
-mysql --defaults-extra-file=${reporting_mysql_conf} -h ${reporting_host} -P ${reporting_port} -u ${reporting_user} ${reporting_schema} -B -e "${report_query}" | tr '\t' ',' > ${reporting_iab}
+    if [ "${test_type}" == "ica" ]; then
+        mysql_to_csv warehouse_connection[@] ${sql_dir}/warehouse/${test_name}.sql ${warehouse_ica} ${test_headers}
+        mysql_to_csv reporting_connection[@] ${sql_dir}/reporting/${test_name}.sql ${reporting_ica} ${test_headers}
+        psql_to_csv reporting_olap_connection[@] ${sql_dir}/reporting_olap/${test_name}.sql ${reporting_olap_ica} ${test_headers}
+    else
+        mysql_to_csv warehouse_connection[@] ${sql_dir}/warehouse/${test_name}.sql ${warehouse_iab} ${test_headers}
+        mysql_to_csv reporting_connection[@] ${sql_dir}/reporting/${test_name}.sql ${reporting_iab} ${test_headers}
+    fi
+}
 
-echo 'analyzing reporting olap data...'
+function run_tests() {
+    for i in "${tests[@]}"
+    do
+        test ${i}
+    done
+}
 
-set PGPASSWORD=${reporting_olap_password}
-psql -w -h ${reporting_olap_host} -p ${reporting_olap_port} -U ${reporting_olap_user} -d ${reporting_olap_schema} -a -f ${sql_dir}/validate-reporting-olap-ica.sql
-psql -w -h ${reporting_olap_host} -p ${reporting_olap_port} -U ${reporting_olap_user} -d ${reporting_olap_schema} -t -F, -A -c "${report_query}" > ${reporting_olap_ica}
+function create_reports() {
+    echo 'creating reports...'
 
-echo 'creating reports...'
+    diff ${diff_options} ${warehouse_ica} ${reporting_ica} > ${warehouse_reporting_ica_diff}
+    diff ${diff_options} ${warehouse_iab} ${reporting_iab} > ${warehouse_reporting_iab_diff}
+    diff ${diff_options} ${reporting_ica} ${reporting_olap_ica} > ${reporting_reporting_olap_ica_diff}
+}
 
-diff ${diff_options} ${warehouse_ica} ${reporting_ica} > ${warehouse_reporting_ica_diff}
-diff ${diff_options} ${warehouse_iab} ${reporting_iab} > ${warehouse_reporting_iab_diff}
-diff ${diff_options} ${reporting_ica} ${reporting_olap_ica} > ${reporting_reporting_olap_ica_diff}
+function print_summary() {
+    local total_warehouse_reporting_ica_differences=`get_line_count ${warehouse_reporting_ica_diff}`
+    local total_warehouse_reporting_iab_differences=`get_line_count ${warehouse_reporting_iab_diff}`
+    local total_warehouse_reporting_olap_ica_differences=`get_line_count ${reporting_reporting_olap_ica_diff}`
+    local total_differences=$(( total_warehouse_reporting_ica_differences + total_warehouse_reporting_iab_differences + total_warehouse_reporting_olap_ica_differences ));
 
-teardown # clean up
+    local end_time=`date -u +%s`
+    local elapsed_time="$(($end_time-$start_time))"
+    local elapsed_time_formatted=`date -u -r ${elapsed_time} +%T`
 
-# conclusion
-
-total_warehouse_reporting_ica_differences=`cat ${warehouse_reporting_ica_diff} | wc -l`
-total_warehouse_reporting_iab_differences=`cat ${warehouse_reporting_iab_diff} | wc -l`
-total_warehouse_reporting_olap_ica_differences=`cat ${reporting_reporting_olap_ica_diff} | wc -l`
-total_differences=$(( total_warehouse_reporting_ica_differences + total_warehouse_reporting_iab_differences + total_warehouse_reporting_olap_ica_differences ));
-
-end_time=`date -u +%s`
-elapsed_time="$(($end_time-$start_time))"
-elapsed_time_formatted=`date -u -r ${elapsed_time} +%T`
-
-echo ''
-echo "completed in ${elapsed_time_formatted}"
-echo ''
-tree ${tree_options} ${out_dir}
-echo ''
-if [ "${total_differences}" == "0" ]; then
-    echo 'no issues detected.';
-else
-    echo 'possible issues detected:';
     echo ''
-    echo "total differences: ${total_differences}"
-    echo "total differences between warehouse and reporting ICAs: ${total_warehouse_reporting_ica_differences}"
-    echo "total differences between warehouse and reporting IABs: ${total_warehouse_reporting_iab_differences}"
-    echo "total differences between reporting and reporting OLAP ICAs: ${total_warehouse_reporting_olap_ica_differences}"
-fi
-echo ''
+    echo "completed in ${elapsed_time_formatted}"
+    echo ''
+    tree ${tree_options} ${out_dir}
+    echo ''
+    if [ "${total_differences}" == "0" ]; then
+        echo 'no issues detected.';
+    else
+        echo 'possible issues detected:';
+        echo ''
+        echo "total differences: ${total_differences}"
+        echo "total differences between warehouse and reporting ICAs: ${total_warehouse_reporting_ica_differences}"
+        echo "total differences between warehouse and reporting IABs: ${total_warehouse_reporting_iab_differences}"
+        echo "total differences between reporting and reporting OLAP ICAs: ${total_warehouse_reporting_olap_ica_differences}"
+    fi
+    echo ''
+
+}
+
+# script lifecycle
+setup
+run_tests
+create_reports
+teardown
+print_summary
