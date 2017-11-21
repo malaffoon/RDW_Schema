@@ -62,8 +62,8 @@ DELIMITER ;
 -- ------------------------------------------------------------------------------------------------------------
 -- STEP 4: load exams to be deleted
 -- ------------------------------------------------------------------------------------------------------------
-SET @loadExamDeletePartionSql = concat('INSERT IGNORE INTO exam_delete_partition (exam_id) ', @select_exam_ids);
-PREPARE stmt FROM @loadExamDeletePartionSql;
+SET @load_exam_delete_partion = concat('INSERT IGNORE INTO exam_delete_partition (exam_id) ', @select_exam_ids);
+PREPARE stmt FROM @load_exam_delete_partion;
 EXECUTE stmt;
 DEALLOCATE PREPARE stmt;
 
