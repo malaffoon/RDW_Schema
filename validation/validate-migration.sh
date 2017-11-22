@@ -69,8 +69,8 @@ function run_tests() {
 function run_test() {
     local database_type=$1
     local sql_file=$2
-    local test_name=`get_property_by_index $3 2`
-    local test_headers=`get_property_by_index $3 3`
+    local test_name=`get_property_by_index $3 1`
+    local test_headers=`get_property_by_index $3 2`
     declare -a connection=("${!4}")
     local csv_file=`mktemp`
     echo "${test_headers}" >>  ${csv_file}
@@ -112,22 +112,25 @@ function compare_test_results() {
 function run_test_on_all_schema() {
 
     # expand pipe delimited test object into variables
-    local test_type=`get_property_by_index $1 1`
-    local test_name=`get_property_by_index $1 2`
-    local test_headers=`get_property_by_index $1 3`
+    local test_name=`get_property_by_index $1 1`
+    local test_headers=`get_property_by_index $1 2`
 
     echo "${test_name}"
 
     # get data from warehouse
-    local warehouse_csv=`run_test "mysql" ${sql_dir}/warehouse/${test_name}.sql $1 warehouse_connection[@]`
+    local warehouse_csv=`run_test "mysql" ${sql_dir}/${test_name}/warehouse.sql $1 warehouse_connection[@]`
 
     # get data from reporting and compare
-    local reporting_csv=`run_test "mysql" ${sql_dir}/reporting/${test_name}.sql $1 reporting_connection[@]`
-    compare_test_results ${test_name} "warehouse" ${warehouse_csv} "reporting" ${reporting_csv} ${out_dir}/${test_name}
+    local reporting_sql=${sql_dir}/${test_name}/reporting.sql
+    if [ -f ${reporting_sql} ]; then
+        local reporting_csv=`run_test "mysql" ${reporting_sql} $1 reporting_connection[@]`
+        compare_test_results ${test_name} "warehouse" ${warehouse_csv} "reporting" ${reporting_csv} ${out_dir}/${test_name}
+    fi
 
     # get data from reporting_olap and compare
-    if [ "${test_type}" == "ica" ]; then
-        local reporting_olap_csv=`run_test "psql" ${sql_dir}/reporting_olap/${test_name}.sql $1 reporting_olap_connection[@]`
+    local reporting_olap_sql=${sql_dir}/${test_name}/reporting_olap.sql
+    if [ -f ${reporting_olap_sql} ]; then
+        local reporting_olap_csv=`run_test "psql" ${reporting_olap_sql} $1 reporting_olap_connection[@]`
         compare_test_results ${test_name} "warehouse" ${warehouse_csv} "reporting_olap" ${reporting_olap_csv} ${out_dir}/${test_name}
     fi
 
@@ -199,14 +202,14 @@ declare -a reporting_olap_connection=("${reporting_olap_host}" "${reporting_olap
 
 # type|test_name|query,result,headers,csv
 declare -a tests=(
-    "ica|total-ica|total_exams"
-    "ica|total-ica-scores|total_scale_score,total_standard_error,total_performance_level"
-    "ica|total-ica-by-asmt-asmtyear-condition-complete|total_exams,assessment_id,assessment_year,administrative_condition,complete"
-    "ica|total-ica-by-school-district|total_exams,school_id,district_name,school_name"
-    "iab|total-iab|total_exams"
-    "iab|total-iab-scores|total_scale_score,total_standard_error,total_performance_level"
-    "iab|total-iab-by-asmt-asmtyear-condition-complete|total_exams,assessment_id,assessment_year,administrative_condition,complete"
-    "iab|total-iab-by-school-district|total_exams,school_id,district_name,school_name"
+    "total-ica|total_exams"
+    "total-ica-scores|total_scale_score,total_standard_error,total_performance_level"
+    "total-ica-by-asmt-asmtyear-condition-complete|total_exams,assessment_id,assessment_year,administrative_condition,complete"
+    "total-ica-by-school-district|total_exams,school_id,district_name,school_name"
+    "total-iab|total_exams"
+    "total-iab-scores|total_scale_score,total_standard_error,total_performance_level"
+    "total-iab-by-asmt-asmtyear-condition-complete|total_exams,assessment_id,assessment_year,administrative_condition,complete"
+    "total-iab-by-school-district|total_exams,school_id,district_name,school_name"
 )
 
 print_settings

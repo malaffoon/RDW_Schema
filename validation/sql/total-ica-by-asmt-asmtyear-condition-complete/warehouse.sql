@@ -1,6 +1,6 @@
 SELECT
     count(*),
-    a.id,
+    e.asmt_id,
     a.school_year,
     ac.code,
     CASE WHEN e.completeness_id = 2
@@ -9,12 +9,11 @@ SELECT
   FROM exam e
     JOIN asmt a ON e.asmt_id = a.id
     JOIN administration_condition ac ON e.administration_condition_id = ac.id
-  WHERE a.type_id = 1
-    AND a.deleted = 0
+  WHERE e.type_id = 1
     AND e.deleted = 0
   GROUP BY
-    a.id,
+    e.asmt_id,
     a.school_year,
     e.administration_condition_id,
     e.completeness_id
-  ORDER BY count(*), a.id;
+  ORDER BY count(*), e.asmt_id;
