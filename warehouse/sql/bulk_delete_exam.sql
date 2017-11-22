@@ -82,7 +82,7 @@ INSERT INTO import (status, content, contentType, digest, batch)
 -- ------------------------------------------------------------------------------------------------------------
 CALL loop_by_partition(
     'UPDATE exam e
-      JOIN (SELECT id, cast(batch AS UNSIGNED) exam_id FROM import where digest = @digest and status = 0) i ON e.id = i.exam_id
+      JOIN (SELECT id, cast(batch AS UNSIGNED) exam_id FROM import where digest = @digest AND status = 0) i ON e.id = i.exam_id
       JOIN exam_delete_partition p on p.exam_id = e.id
     SET
       e.deleted = 1,
@@ -103,8 +103,8 @@ SET
   created = DATE_ADD(created, INTERVAL (@maxImportId -id)  MICROSECOND),
   updated = DATE_ADD(updated, INTERVAL (@maxImportId -id)  MICROSECOND)
 WHERE status = 0
-      and content = 1
-      and digest =  @digest;
+      AND content = 1
+      AND digest =  @digest;
 
 -- update exams to match imports
 UPDATE exam e
@@ -112,15 +112,17 @@ UPDATE exam e
 SET
   e.updated = i.updated
 WHERE i.status = 0
-      and content = 1
-      and digest = @digest;
+      AND content = 1
+      AND digest = @digest;
 
 -- update import status to release it for the migrate
 UPDATE import
-  SET status = 1
+SET
+  status = 1,
+  updated = updated -- make sure to not reset the timestamp
 WHERE status = 0
-      and content = 1
-      and digest = @digest;
+  AND content = 1
+  AND digest = @digest;
 
 -- ------------------------------------------------------------------------------------------------------------
 -- STEP 9: clean up
