@@ -111,7 +111,7 @@ UPDATE exam e
   JOIN import i ON i.id = e.update_import_id
 SET
   e.updated = i.updated
-WHERE i.status = 1
+WHERE i.status = 0
       and content = 1
       and digest = @digest;
 
