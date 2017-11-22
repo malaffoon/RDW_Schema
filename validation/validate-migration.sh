@@ -205,6 +205,10 @@ base_dir=`cd "$(dirname "$0")" ; pwd -P`
 sql_dir=${base_dir}/sql
 out_dir="${base_dir}/results-$(now_in_YYYY_mm_dd_HHMMSS)"
 diff_options="-y --suppress-common-lines"
+
+# these namespaces are used to lookup the SQL test files corresponding to the warehouse, reporting and reporting olap schema.
+# they also dictate the naming of the output csv and diff files
+# if changed, the SQL test file names must also be changed to match
 warehouse_namespace=warehouse
 reporting_namespace=reporting
 reporting_olap_namespace=reporting_olap
