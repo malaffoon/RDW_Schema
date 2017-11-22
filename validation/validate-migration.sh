@@ -1,83 +1,18 @@
 #!/usr/bin/env bash
 
-# default options
+# utility methods
 
-warehouse_host=localhost
-warehouse_port=3306
-warehouse_schema=warehouse
-warehouse_user=root
-warehouse_password=
+function now_in_seconds() {
+    echo `date -u +%s`;
+}
 
-reporting_host=localhost
-reporting_port=3306
-reporting_schema=reporting
-reporting_user=root
-reporting_password=
+function now_in_YYYY_mm_dd_HHMMSS() {
+    echo `date '+%Y-%m-%d-%H%M%S'`
+}
 
-reporting_olap_host=localhost
-reporting_olap_port=5439
-reporting_olap_schema=reporting_olap
-reporting_olap_user=root
-reporting_olap_password=
-
-# start up
-
-echo $''
-echo $' __   __                   __   __       ___    __                            __       ___  __   __  '
-echo $'|__) |  \ |  |     |\/| | / _` |__)  /\   |  | /  \ |\ |    \  /  /\  |    | |  \  /\   |  /  \ |__) '
-echo $'|  \ |__/ |/\|     |  | | \__> |  \ /~~\  |  | \__/ | \|     \/  /~~\ |___ | |__/ /~~\  |  \__/ |  \ '
-echo $''
-echo $''
-
-# process input
-
-source $1
-
-# validation options
-
-if [ -z ${warehouse_host} ]; then echo "warehouse_host must be set"; exit 1; fi
-if [ -z ${warehouse_port} ]; then echo "warehouse_port must be set"; exit 1; fi
-if [ -z ${warehouse_schema} ]; then echo "warehouse_schema must be set"; exit 1; fi
-if [ -z ${warehouse_user} ]; then echo "warehouse_user must be set"; exit 1; fi
-
-if [ -z ${reporting_host} ]; then echo "reporting_host must be set"; exit 1; fi
-if [ -z ${reporting_port} ]; then echo "reporting_port must be set"; exit 1; fi
-if [ -z ${reporting_schema} ]; then echo "reporting_schema must be set"; exit 1; fi
-if [ -z ${reporting_user} ]; then echo "reporting_user must be set"; exit 1; fi
-
-if [ -z ${reporting_olap_host} ]; then echo "reporting_olap_host must be set"; exit 1; fi
-if [ -z ${reporting_olap_port} ]; then echo "reporting_olap_port must be set"; exit 1; fi
-if [ -z ${reporting_olap_schema} ]; then echo "reporting_olap_schema must be set"; exit 1; fi
-if [ -z ${reporting_olap_user} ]; then echo "reporting_olap_user must be set"; exit 1; fi
-
-# settings
-
-timestamp=`date '+%Y-%m-%d-%H%M%S'`
-start_time=`date -u +%s`
-
-sql_dir=sql
-out_dir="results-${timestamp}"
-
-diff_options="-y --suppress-common-lines"
-
-# (host port schema user password)
-declare -a warehouse_connection=("${warehouse_host}" "${warehouse_port}" "${warehouse_schema}" "${warehouse_user}" "${warehouse_password}")
-declare -a reporting_connection=("${reporting_host}" "${reporting_port}" "${reporting_schema}" "${reporting_user}" "${reporting_password}")
-declare -a reporting_olap_connection=("${reporting_olap_host}" "${reporting_olap_port}" "${reporting_olap_schema}" "${reporting_olap_user}" "${reporting_olap_password}")
-
-# type|test_name|query,result,headers,csv
-declare -a tests=(
-    "ica|total-ica|total_exams"
-    "ica|total-ica-scores|total_scale_score,total_standard_error,total_performance_level"
-    "ica|total-ica-by-asmt-asmtyear-condition-complete|total_exams,assessment_id,assessment_year,administrative_condition,complete"
-    "ica|total-ica-by-school-district|total_exams,school_id,district_name,school_name"
-    "iab|total-iab|total_exams"
-    "iab|total-iab-scores|total_scale_score,total_standard_error,total_performance_level"
-    "iab|total-iab-by-asmt-asmtyear-condition-complete|total_exams,assessment_id,assessment_year,administrative_condition,complete"
-    "iab|total-iab-by-school-district|total_exams,school_id,district_name,school_name"
-)
-
-# methods
+function format_seconds_to_HH_MM_SS() {
+    echo `date -u -r $1 +%T`
+}
 
 function get_absolute_path() {
     local basedir=`cd "$(dirname "$0")" ; pwd -P`
@@ -123,18 +58,26 @@ function psql_to_csv() {
     set PGPASSWORD=
 }
 
+function run_tests() {
+    declare -a tests=("${!1}")
+    for test in "${tests[@]}"
+    do
+        run_test_on_all_schema ${test}
+    done
+}
+
 function run_test() {
     local database_type=$1
-    local schema_alias=$2
+    local sql_file=$2
     local test_name=`get_property_by_index $3 2`
     local test_headers=`get_property_by_index $3 3`
     declare -a connection=("${!4}")
     local csv_file=`mktemp`
     echo "${test_headers}" >>  ${csv_file}
     if [ "${database_type}" == "mysql" ]; then
-        mysql_to_csv connection[@] ${sql_dir}/${schema_alias}/${test_name}.sql >> ${csv_file}
+        mysql_to_csv connection[@] ${sql_file} >> ${csv_file}
     else
-        psql_to_csv connection[@] ${sql_dir}/${schema_alias}/${test_name}.sql >> ${csv_file}
+        psql_to_csv connection[@] ${sql_file} >> ${csv_file}
     fi
     echo "${csv_file}"
 }
@@ -145,6 +88,7 @@ function compare_test_results() {
     local a=$3
     local b_namespace=$4
     local b=$5
+    local test_result_dir=$6
     local comparison_file=`mktemp`
 
     diff ${diff_options} ${a} ${b} > ${comparison_file}
@@ -154,7 +98,6 @@ function compare_test_results() {
     if [ "${total_differences}" == "0" ]; then
         echo "  ${a_namespace}/${b_namespace} (passed)"
     else
-        local test_result_dir=`get_absolute_path "${out_dir}/${test_name}"`
         local diff_file=${test_result_dir}/${a_namespace}_${b_namespace}.diff
         mkdir -p ${test_result_dir}
         mv ${a} ${test_result_dir}/${a_namespace}.csv
@@ -163,6 +106,8 @@ function compare_test_results() {
         echo "  ${a_namespace}/${b_namespace} (${total_differences} differences) ${test_result_dir}"
     fi
 }
+
+# setting dependent methods
 
 function run_test_on_all_schema() {
 
@@ -174,27 +119,19 @@ function run_test_on_all_schema() {
     echo "${test_name}"
 
     # get data from warehouse
-    local warehouse_csv=`run_test "mysql" "warehouse" $1 warehouse_connection[@]`
+    local warehouse_csv=`run_test "mysql" ${sql_dir}/warehouse/${test_name}.sql $1 warehouse_connection[@]`
 
     # get data from reporting and compare
-    local reporting_csv=`run_test "mysql" "reporting" $1 reporting_connection[@]`
-    compare_test_results ${test_name} "warehouse" ${warehouse_csv} "reporting" ${reporting_csv}
+    local reporting_csv=`run_test "mysql" ${sql_dir}/reporting/${test_name}.sql $1 reporting_connection[@]`
+    compare_test_results ${test_name} "warehouse" ${warehouse_csv} "reporting" ${reporting_csv} ${out_dir}/${test_name}
 
     # get data from reporting_olap and compare
     if [ "${test_type}" == "ica" ]; then
-        local reporting_olap_csv=`run_test "psql" "reporting_olap" $1 reporting_olap_connection[@]`
-        compare_test_results ${test_name} "warehouse" ${warehouse_csv} "reporting_olap" ${reporting_olap_csv}
+        local reporting_olap_csv=`run_test "psql" ${sql_dir}/reporting_olap/${test_name}.sql $1 reporting_olap_connection[@]`
+        compare_test_results ${test_name} "warehouse" ${warehouse_csv} "reporting_olap" ${reporting_olap_csv} ${out_dir}/${test_name}
     fi
 
     echo ''
-}
-
-function run_tests() {
-    declare -a tests=("${!1}")
-    for test in "${tests[@]}"
-    do
-        run_test_on_all_schema ${test}
-    done
 }
 
 function print_settings() {
@@ -207,15 +144,71 @@ function print_settings() {
 }
 
 function print_summary() {
-    local end_time=`date -u +%s`
-    local elapsed_time="$(($end_time-$start_time))"
-    local elapsed_time_formatted=`date -u -r ${elapsed_time} +%T`
+    local end_time=`now_in_seconds`
+    local elapsed_time_formatted=`format_seconds_to_HH_MM_SS $(($end_time-$start_time))`
 
     echo "completed in ${elapsed_time_formatted}"
     echo ''
 }
 
+
 # entry point
+
+echo $''
+echo $' __   __                   __   __       ___    __                            __       ___  __   __  '
+echo $'|__) |  \ |  |     |\/| | / _` |__)  /\   |  | /  \ |\ |    \  /  /\  |    | |  \  /\   |  /  \ |__) '
+echo $'|  \ |__/ |/\|     |  | | \__> |  \ /~~\  |  | \__/ | \|     \/  /~~\ |___ | |__/ /~~\  |  \__/ |  \ '
+echo $''
+echo $''
+
+# process input
+
+if [ -z $1 ]; then echo "Please specify config file when executing the script: './validate-migration [path_to_config]' "; exit 1; fi
+
+source $1
+
+# validation options
+
+if [ -z ${warehouse_host} ]; then echo "warehouse_host must be set"; exit 1; fi
+if [ -z ${warehouse_port} ]; then echo "warehouse_port must be set"; exit 1; fi
+if [ -z ${warehouse_schema} ]; then echo "warehouse_schema must be set"; exit 1; fi
+if [ -z ${warehouse_user} ]; then echo "warehouse_user must be set"; exit 1; fi
+
+if [ -z ${reporting_host} ]; then echo "reporting_host must be set"; exit 1; fi
+if [ -z ${reporting_port} ]; then echo "reporting_port must be set"; exit 1; fi
+if [ -z ${reporting_schema} ]; then echo "reporting_schema must be set"; exit 1; fi
+if [ -z ${reporting_user} ]; then echo "reporting_user must be set"; exit 1; fi
+
+if [ -z ${reporting_olap_host} ]; then echo "reporting_olap_host must be set"; exit 1; fi
+if [ -z ${reporting_olap_port} ]; then echo "reporting_olap_port must be set"; exit 1; fi
+if [ -z ${reporting_olap_schema} ]; then echo "reporting_olap_schema must be set"; exit 1; fi
+if [ -z ${reporting_olap_user} ]; then echo "reporting_olap_user must be set"; exit 1; fi
+
+# settings
+
+start_time=`now_in_seconds`
+base_dir=`cd "$(dirname "$0")" ; pwd -P`
+sql_dir=${base_dir}/sql
+out_dir="${base_dir}/results-$(now_in_YYYY_mm_dd_HHMMSS)"
+diff_options="-y --suppress-common-lines"
+
+# (host port schema user password)
+declare -a warehouse_connection=("${warehouse_host}" "${warehouse_port}" "${warehouse_schema}" "${warehouse_user}" "${warehouse_password}")
+declare -a reporting_connection=("${reporting_host}" "${reporting_port}" "${reporting_schema}" "${reporting_user}" "${reporting_password}")
+declare -a reporting_olap_connection=("${reporting_olap_host}" "${reporting_olap_port}" "${reporting_olap_schema}" "${reporting_olap_user}" "${reporting_olap_password}")
+
+# type|test_name|query,result,headers,csv
+declare -a tests=(
+    "ica|total-ica|total_exams"
+    "ica|total-ica-scores|total_scale_score,total_standard_error,total_performance_level"
+    "ica|total-ica-by-asmt-asmtyear-condition-complete|total_exams,assessment_id,assessment_year,administrative_condition,complete"
+    "ica|total-ica-by-school-district|total_exams,school_id,district_name,school_name"
+    "iab|total-iab|total_exams"
+    "iab|total-iab-scores|total_scale_score,total_standard_error,total_performance_level"
+    "iab|total-iab-by-asmt-asmtyear-condition-complete|total_exams,assessment_id,assessment_year,administrative_condition,complete"
+    "iab|total-iab-by-school-district|total_exams,school_id,district_name,school_name"
+)
+
 print_settings
 run_tests tests[@]
 print_summary

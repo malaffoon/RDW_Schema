@@ -1,17 +1,15 @@
 SELECT
-    s.count,
-    sch.id,
+    ex.count,
+    ex.school_id,
     UPPER(d.name),
     UPPER(sch.name)
   FROM (
          SELECT
            count(*) AS count,
-           s.id
-         FROM fact_student_ica_exam e
-           JOIN ica_asmt a ON a.id = e.asmt_id
-           JOIN school s ON s.id = e.school_id
-         GROUP BY s.id
-       ) s
-    JOIN school sch ON sch.id = s.id
+           school_id
+         FROM fact_student_ica_exam
+         GROUP BY school_id
+       ) ex
+    JOIN school sch ON sch.id = ex.school_id
     JOIN district d ON d.id = sch.district_id
-  ORDER BY s.count, s.id;
+  ORDER BY ex.count, ex.school_id;
