@@ -4,7 +4,7 @@
 -- This may create a large volume of data to process. It is highly advisable to run this during the maintenance
 -- window and while the Exam Processor is stopped.
 --
--- Validation scripts should be executed before and after this scrip to check data quality:
+-- Validation script should be executed before and after this scrip to check data quality:
 -- https://github.com/SmarterApp/RDW_Schema/validation-scripts
 -- ------------------------------------------------------------------------------------------------------------
 
@@ -27,7 +27,7 @@ SET @partition_size = 1000000;
 -- create a unique digest fo the bulk run
 SELECT concat('bulk run ' COLLATE utf8_unicode_ci, now()) into @digest;
 
--- create a table to store and partition ids of the exams to be deleted
+-- create a table to store the partition ids of the exams to be deleted
 CREATE TABLE exam_delete_partition (
   exam_id BIGINT NOT NULL PRIMARY KEY,
   partition_id INT
@@ -48,11 +48,9 @@ CREATE PROCEDURE loop_by_partition(IN p_sql VARCHAR(1000), IN p_last INTEGER)
       SELECT concat('executed partition:', iteration);
 
       SET iteration = iteration + 1;
-      IF iteration <= p_last
-      THEN
-        ITERATE partition_loop;
+      IF iteration > p_last
+        THEN LEAVE partition_loop;
       END IF;
-      LEAVE partition_loop;
     END LOOP partition_loop;
 
   END;
@@ -70,8 +68,8 @@ DEALLOCATE PREPARE stmt;
 -- ------------------------------------------------------------------------------------------------------------
 -- STEP 5: partition exams to be process in chunks
 -- ------------------------------------------------------------------------------------------------------------
-SELECT floor(count(*)/@partition_size) INTO @exam_partition_end FROM exam_delete_partition;
-UPDATE exam_delete_partition SET partition_id = MOD(exam_id, @exam_partition_end + 1);
+SELECT ceil(count(*)/@partition_size) INTO @exam_partition_end FROM exam_delete_partition;
+UPDATE exam_delete_partition SET partition_id = MOD(exam_id, @exam_partition_end);
 
 -- ------------------------------------------------------------------------------------------------------------
 -- STEP 6: create imports - one per exam
@@ -101,7 +99,7 @@ SELECT max(id) INTO @maxImportId FROM import WHERE digest = @digest;
 
 -- distribute imports timestamps for migrate to have smaller chunks
 UPDATE import
-SET status = 1,
+SET
   created = DATE_ADD(created, INTERVAL (@maxImportId -id)  MICROSECOND),
   updated = DATE_ADD(updated, INTERVAL (@maxImportId -id)  MICROSECOND)
 WHERE status = 0
@@ -114,6 +112,13 @@ UPDATE exam e
 SET
   e.updated = i.updated
 WHERE i.status = 1
+      and content = 1
+      and digest = @digest;
+
+-- update import status to release it for the migrate
+UPDATE import
+  SET status = 1
+WHERE status = 0
       and content = 1
       and digest = @digest;
 
