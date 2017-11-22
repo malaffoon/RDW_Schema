@@ -5,8 +5,10 @@
 1. `psql`
 
 #### Preparation
-First make sure the script is executable.
+First, clone the repository and make sure the script is executable.
 ```bash
+git clone https://github.com/SmarterApp/RDW_Schema
+cd RDW_Schema/validation
 chmod 755 validate-migration.sh
 ``` 
 Next create an environment-specific secrets file under the git-ignored `secrets` directory.
@@ -86,7 +88,7 @@ total-iab-by-school-district
 completed in 00:00:02
 ```
 To investigate a failed test, open the printed directory link in the terminal output.
-Each directory will include the following:
+If the comparison between warehouse and reporting_olap failed for instance, you would see the following files:
 ```
 validation/results-2017-11-21-104916/total-ica
 ├── reporting_olap.csv

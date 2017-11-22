@@ -2,6 +2,22 @@
 
 # utility methods
 
+function print_banner() {
+    echo $''
+    echo $' __   __                   __   __       ___    __                            __       ___  __   __  '
+    echo $'|__) |  \ |  |     |\/| | / _` |__)  /\   |  | /  \ |\ |    \  /  /\  |    | |  \  /\   |  /  \ |__) '
+    echo $'|  \ |__/ |/\|     |  | | \__> |  \ /~~\  |  | \__/ | \|     \/  /~~\ |___ | |__/ /~~\  |  \__/ |  \ '
+    echo $''
+    echo $''
+}
+
+function not_null() {
+    if [ -z $1 ]; then
+        echo "$2 must not be null"
+        exit 1
+    fi
+}
+
 function now_in_seconds() {
     echo `date -u +%s`;
 }
@@ -18,6 +34,7 @@ function get_absolute_path() {
     local basedir=`cd "$(dirname "$0")" ; pwd -P`
     echo "${basedir}/${1}"
 }
+
 function get_line_count() {
     cat $1 | wc -l
 }
@@ -109,6 +126,23 @@ function compare_test_results() {
 
 # setting dependent methods
 
+function validate_input() {
+    not_null ${warehouse_host} "warehouse_host"
+    not_null ${warehouse_port} "warehouse_port"
+    not_null ${warehouse_schema} "warehouse_schema"
+    not_null ${warehouse_user} "warehouse_user"
+
+    not_null ${reporting_host} "reporting_host"
+    not_null ${reporting_port} "reporting_port"
+    not_null ${reporting_schema} "reporting_schema"
+    not_null ${reporting_user} "reporting_user"
+
+    not_null ${reporting_olap_host} "reporting_olap_host"
+    not_null ${reporting_olap_port} "reporting_olap_port"
+    not_null ${reporting_olap_schema} "reporting_olap_schema"
+    not_null ${reporting_olap_user} "reporting_olap_user"
+}
+
 function run_test_on_all_schema() {
 
     # expand pipe delimited test object into variables
@@ -118,20 +152,20 @@ function run_test_on_all_schema() {
     echo "${test_name}"
 
     # get data from warehouse
-    local warehouse_csv=`run_test "mysql" ${sql_dir}/${test_name}/warehouse.sql $1 warehouse_connection[@]`
+    local warehouse_csv=`run_test "mysql" ${sql_dir}/${test_name}/${warehouse_namespace}.sql $1 warehouse_connection[@]`
 
     # get data from reporting and compare
-    local reporting_sql=${sql_dir}/${test_name}/reporting.sql
+    local reporting_sql=${sql_dir}/${test_name}/${reporting_namespace}.sql
     if [ -f ${reporting_sql} ]; then
         local reporting_csv=`run_test "mysql" ${reporting_sql} $1 reporting_connection[@]`
-        compare_test_results ${test_name} "warehouse" ${warehouse_csv} "reporting" ${reporting_csv} ${out_dir}/${test_name}
+        compare_test_results ${test_name} ${warehouse_namespace} ${warehouse_csv} ${reporting_namespace} ${reporting_csv} ${out_dir}/${test_name}
     fi
 
     # get data from reporting_olap and compare
-    local reporting_olap_sql=${sql_dir}/${test_name}/reporting_olap.sql
+    local reporting_olap_sql=${sql_dir}/${test_name}/${reporting_olap_namespace}.sql
     if [ -f ${reporting_olap_sql} ]; then
         local reporting_olap_csv=`run_test "psql" ${reporting_olap_sql} $1 reporting_olap_connection[@]`
-        compare_test_results ${test_name} "warehouse" ${warehouse_csv} "reporting_olap" ${reporting_olap_csv} ${out_dir}/${test_name}
+        compare_test_results ${test_name} ${warehouse_namespace} ${warehouse_csv} ${reporting_olap_namespace} ${reporting_olap_csv} ${out_dir}/${test_name}
     fi
 
     echo ''
@@ -140,9 +174,9 @@ function run_test_on_all_schema() {
 function print_settings() {
     echo "validating..."
     echo ''
-    echo "  warehouse:      $(print_connection warehouse_connection[@])"
-    echo "  reporting:      $(print_connection reporting_connection[@])"
-    echo "  reporting_olap: $(print_connection reporting_olap_connection[@])"
+    echo "  ${warehouse_namespace}: $(print_connection warehouse_connection[@])"
+    echo "  ${reporting_namespace}: $(print_connection reporting_connection[@])"
+    echo "  ${reporting_olap_namespace}: $(print_connection reporting_olap_connection[@])"
     echo ''
 }
 
@@ -155,45 +189,29 @@ function print_summary() {
 }
 
 
-# entry point
 
-echo $''
-echo $' __   __                   __   __       ___    __                            __       ___  __   __  '
-echo $'|__) |  \ |  |     |\/| | / _` |__)  /\   |  | /  \ |\ |    \  /  /\  |    | |  \  /\   |  /  \ |__) '
-echo $'|  \ |__/ |/\|     |  | | \__> |  \ /~~\  |  | \__/ | \|     \/  /~~\ |___ | |__/ /~~\  |  \__/ |  \ '
-echo $''
-echo $''
+### Entry Point ###
+
+print_banner
 
 # process input
-
-if [ -z $1 ]; then echo "Please specify config file when executing the script: './validate-migration [path_to_config]' "; exit 1; fi
-
+not_null $1 "argument 1: config file path"
 source $1
-
-# validation options
-
-if [ -z ${warehouse_host} ]; then echo "warehouse_host must be set"; exit 1; fi
-if [ -z ${warehouse_port} ]; then echo "warehouse_port must be set"; exit 1; fi
-if [ -z ${warehouse_schema} ]; then echo "warehouse_schema must be set"; exit 1; fi
-if [ -z ${warehouse_user} ]; then echo "warehouse_user must be set"; exit 1; fi
-
-if [ -z ${reporting_host} ]; then echo "reporting_host must be set"; exit 1; fi
-if [ -z ${reporting_port} ]; then echo "reporting_port must be set"; exit 1; fi
-if [ -z ${reporting_schema} ]; then echo "reporting_schema must be set"; exit 1; fi
-if [ -z ${reporting_user} ]; then echo "reporting_user must be set"; exit 1; fi
-
-if [ -z ${reporting_olap_host} ]; then echo "reporting_olap_host must be set"; exit 1; fi
-if [ -z ${reporting_olap_port} ]; then echo "reporting_olap_port must be set"; exit 1; fi
-if [ -z ${reporting_olap_schema} ]; then echo "reporting_olap_schema must be set"; exit 1; fi
-if [ -z ${reporting_olap_user} ]; then echo "reporting_olap_user must be set"; exit 1; fi
+validate_input
 
 # settings
-
 start_time=`now_in_seconds`
 base_dir=`cd "$(dirname "$0")" ; pwd -P`
 sql_dir=${base_dir}/sql
 out_dir="${base_dir}/results-$(now_in_YYYY_mm_dd_HHMMSS)"
 diff_options="-y --suppress-common-lines"
+
+# these namespaces are used to lookup the SQL test files corresponding to the warehouse, reporting and reporting olap schema.
+# they also dictate the naming of the output csv and diff files
+# if changed, the SQL test file names must also be changed to match
+warehouse_namespace=warehouse
+reporting_namespace=reporting
+reporting_olap_namespace=reporting_olap
 
 # (host port schema user password)
 declare -a warehouse_connection=("${warehouse_host}" "${warehouse_port}" "${warehouse_schema}" "${warehouse_user}" "${warehouse_password}")
