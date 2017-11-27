@@ -32,6 +32,6 @@ CREATE TABLE IF NOT EXISTS state_embargo (
   updated_on TIMESTAMP(6) DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6) NOT NULL,
   updated_by varchar(128),
   PRIMARY KEY(embargo_scope_id, school_year, updated_on),
-  INDEX idx__district_embargo__scope (embargo_scope_id),
-  CONSTRAINT fk__district_embargo__embargo_scope FOREIGN KEY (embargo_scope_id) REFERENCES embargo_scope(id)
+  INDEX idx__state_embargo__scope (embargo_scope_id),
+  CONSTRAINT fk__state_embargo__embargo_scope FOREIGN KEY (embargo_scope_id) REFERENCES embargo_scope(id)
 );
