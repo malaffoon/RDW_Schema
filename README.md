@@ -1,8 +1,10 @@
 ## RDW_Schema 
-The goal of this project is to create MySQL 5.6 db schema for Smarter Balanced Reporting Data Warehouse and load the core data.
+The goal of this project is to create db schema for Smarter Balanced Reporting Data Warehouse and load the core data.
 
 This project uses [flyway](https://flywaydb.org/getstarted). Gradle will take care of getting flyway making sure things work. 
 
+### MySql
+MySQL scripts are compatible with MySQL 5.6 and as well as AWS Aurora.
 
 #### To create the schema 
 There are multiple schemas in this project: a data warehouse ("warehouse") and a data mart ("reporting"). Each has a dev and integration-test-only instance on the server. 
@@ -36,6 +38,20 @@ RDW_Schema$ ./gradlew -Pflyway.url="jdbc:mysql://rdw-aurora-dev.cugsexobhx8t.us-
 
 ```
 
+### Redshift
+After configuring Redshift, connect to the instance and create a schema and a user (make sure to replace user and password with your values):
+
+```sql
+create schema reporting_olap;
+create user your_user with password 'your_user_password';
+grant all privileges on schema reporting_olap TO your_user;
+alter user your_user set search_path = reporting_olap;
+```
+#### To wipe out and re-create tables in the schema
+```bash
+RDW_Schema$ ./gradlew -Pflyway.url=jdbc:redshift://rdw-dev.cibkulpjrgtr.us-west-2.redshift.amazonaws.com:5439/dev -Pflyway.user=your_user -Pflyway.password=your_user_password -Predshift_schema=reporting_olap cleanReporting_olap migrateReporting_olap
+ ```
+     
 #### Other Commands
 To see a listing of all of the tasks available, run
 ```bash
