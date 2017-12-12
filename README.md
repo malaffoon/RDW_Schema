@@ -4,7 +4,7 @@ The goal of this project is to create db schema for Smarter Balanced Reporting D
 This project uses [flyway](https://flywaydb.org/getstarted). Gradle will take care of getting flyway making sure things work. 
 
 ### MySql
-MySQL scripts compatible with MySQL 5.6 and as well as AWS Aurora.
+MySQL scripts are compatible with MySQL 5.6 and as well as AWS Aurora.
 
 #### To create the schema 
 There are multiple schemas in this project: a data warehouse ("warehouse") and a data mart ("reporting"). Each has a dev and integration-test-only instance on the server. 
