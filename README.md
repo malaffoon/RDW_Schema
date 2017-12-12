@@ -49,7 +49,7 @@ alter user your_user set search_path = reporting_olap;
 ```
 #### To wipe out and re-create tables in the schema
 ```bash
-RDW_Schema$ ./gradlew -Pflyway.url=jdbc:redshift://rdw-dev.cibkulpjrgtr.us-west-2.redshift.amazonaws.com:5439/dev -Pflyway.user=your_user -Pflyway.password=your_user_password -Predshift_schema=reporting_olap_rst cleanReporting_olap migrateReporting_olap
+RDW_Schema$ ./gradlew -Pflyway.url=jdbc:redshift://rdw-dev.cibkulpjrgtr.us-west-2.redshift.amazonaws.com:5439/dev -Pflyway.user=your_user -Pflyway.password=your_user_password -Predshift_schema=reporting_olap cleanReporting_olap migrateReporting_olap
  ```
      
 #### Other Commands
