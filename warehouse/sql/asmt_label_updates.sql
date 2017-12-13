@@ -175,12 +175,13 @@ INSERT INTO datagen.asmt_label_mapping (asmt_name, label) VALUES ('SH-SBAC-IAB-M
 
 -- make an import record for these changes
 INSERT INTO warehouse.import (status, content, contentType, digest, batch)
-VALUES (0, 2, 'text/plan', 'MANUAL', 'update assessment labels');
+VALUES (0, 2, 'text/plain', 'MANUAL', 'update assessment labels');
 SELECT LAST_INSERT_ID() INTO @importid;
 
 UPDATE warehouse.asmt a
 JOIN datagen.asmt_label_mapping m on a.name=m.asmt_name
-SET a.label = m.label, a.update_import_id=@importid;
+SET a.label = m.label, a.update_import_id=@importid
+WHERE a.label <> m.label;
 
 -- trigger migration
 UPDATE warehouse.import SET status = 1 WHERE id = @importid;
