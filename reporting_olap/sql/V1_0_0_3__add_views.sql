@@ -1,12 +1,12 @@
--- add views to support filling in missing data in the aggregate reports
-
+-- Add views to support filling in missing data in the aggregate reports.
+-- Note that all views have the same structure so that they could be used interchangeably in the final query.
 SET SEARCH_PATH to ${schemaName};
 
 CREATE VIEW state_subject_grade_school_year(organization_id, organization_name, organization_type, subject_id, grade_id, school_year, asmt_id, asmt_type_id) AS
   SELECT
     -1          AS id,
-    'state'     AS name,
-    'state'     AS organization_type,
+    'State'     AS name,
+    'State'     AS organization_type,
     s.id,
     g.id,
     year,
@@ -21,7 +21,7 @@ CREATE VIEW school_subject_grade_school_year(organization_id, organization_name,
   SELECT
     sch.id,
     sch.name,
-    'school' AS organization_type,
+    'School' AS organization_type,
     s.id,
     g.id,
     year,
@@ -37,7 +37,7 @@ CREATE VIEW district_subject_grade_school_year(organization_id, organization_nam
   SELECT
     d.id,
     d.name,
-    'district' AS organization_type,
+    'District' AS organization_type,
     s.id,
     g.id,
     year,
