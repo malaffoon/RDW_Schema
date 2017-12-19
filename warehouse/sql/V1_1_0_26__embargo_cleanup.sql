@@ -1,0 +1,1 @@
+INSERT INTO import_content (id, name) VALUES (6, 'EMBARGO');
