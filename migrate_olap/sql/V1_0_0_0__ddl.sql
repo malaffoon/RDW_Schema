@@ -21,6 +21,7 @@ CREATE TABLE IF NOT EXISTS migrate (
   last_at timestamp(6) NOT NULL,
   size int,
   migrate_codes tinyint,
+  migrate_embargo tinyint,
   created timestamp(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
   updated timestamp(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6),
   message text,
