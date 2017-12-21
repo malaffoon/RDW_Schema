@@ -34,7 +34,7 @@ CREATE TABLE staging_gender (
 );
 
 CREATE TABLE staging_asmt (
-  id int PRIMARY KEY,
+  id int NOT NULL PRIMARY KEY,
   grade_id smallint NOT NULL,
   school_year smallint NOT NULL,
   subject_id smallint NOT NULL,
@@ -114,7 +114,7 @@ CREATE TABLE staging_exam_claim_score (
 );
 
 CREATE TABLE staging_school_year (
-  year smallint PRIMARY KEY SORTKEY
+  year smallint NOT NULL PRIMARY KEY SORTKEY
 );
 
 -- configuration
@@ -156,12 +156,12 @@ CREATE TABLE administration_condition (
 ) DISTSTYLE ALL;
 
 CREATE TABLE  district (
-  id integer PRIMARY KEY SORTKEY,
+  id integer NOT NULL PRIMARY KEY SORTKEY,
   name varchar(100) NOT NULL
 ) DISTSTYLE ALL;
 
 CREATE TABLE school (
-  id integer encode raw PRIMARY KEY SORTKEY,
+  id integer encode raw NOT NULL PRIMARY KEY SORTKEY,
   name varchar(100) NOT NULL,
   district_id integer NOT NULL,
   migrate_id bigint encode delta NOT NULL,
@@ -169,7 +169,7 @@ CREATE TABLE school (
 ) DISTSTYLE ALL;
 
 CREATE TABLE asmt (
-  id int encode raw  PRIMARY KEY SORTKEY,
+  id int encode raw NOT NULL PRIMARY KEY SORTKEY,
   grade_id smallint NOT NULL,
   school_year smallint NOT NULL,
   subject_id smallint NOT NULL,
@@ -202,7 +202,7 @@ CREATE TABLE ethnicity (
 ) DISTSTYLE ALL;
 
 CREATE TABLE student (
-  id bigint encode raw PRIMARY KEY SORTKEY DISTKEY,
+  id bigint encode raw NOT NULL PRIMARY KEY SORTKEY DISTKEY,
   gender_id int encode lzo,
   migrate_id bigint encode delta NOT NULL,
   update_import_id bigint encode delta NOT NULL
@@ -215,7 +215,7 @@ CREATE TABLE student_ethnicity (
 
 -- facts
 CREATE TABLE fact_student_exam (
-  id bigint encode delta PRIMARY KEY,
+  id bigint encode delta NOT NULL PRIMARY KEY,
   school_id integer encode raw NOT NULL,
   student_id bigint encode raw NOT NULL DISTKEY,
   asmt_id bigint encode raw NOT NULL,
@@ -255,7 +255,7 @@ CREATE TABLE fact_student_exam (
 
 -- helper table used by the diagnostic API
 CREATE TABLE status_indicator (
-  id smallint encode delta PRIMARY KEY,
+  id smallint encode delta NOT NULL PRIMARY KEY,
   updated timestamp DEFAULT current_timestamp
 );
 
