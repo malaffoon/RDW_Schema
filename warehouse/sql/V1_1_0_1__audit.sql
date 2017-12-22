@@ -319,7 +319,6 @@ CREATE TABLE audit_student (
   updated TIMESTAMP(6) NOT NULL
 );
 
--- update trigger
 CREATE TRIGGER trg__student__update
 BEFORE UPDATE ON student
 FOR EACH ROW
@@ -328,11 +327,10 @@ FOR EACH ROW
                              inferred_school_id, import_id, update_import_id, deleted, created, updated)
     SELECT 'update', USER(), OLD.id, OLD.ssid, OLD.last_or_surname, OLD.first_name, OLD.middle_name,
       OLD.gender_id, OLD.first_entry_into_us_school_at, OLD.lep_entry_at, OLD.lep_exit_at, OLD.birthday,
-      OLD.inferred_school_id,OLD.import_id, OLD.update_import_id, OLD.deleted, OLD.created, OLD.updated
+      OLD.inferred_school_id, OLD.import_id, OLD.update_import_id, OLD.deleted, OLD.created, OLD.updated
     FROM setting s
     WHERE s.name = 'AUDIT_TRIGGER_ENABLE' AND s.value = 'TRUE';
 
--- delete trigger
 CREATE TRIGGER trg__student__delete
 BEFORE DELETE ON student
 FOR EACH ROW
@@ -341,7 +339,7 @@ FOR EACH ROW
                              inferred_school_id, import_id, update_import_id, deleted, created, updated)
     SELECT 'delete', USER(), OLD.id, OLD.ssid, OLD.last_or_surname, OLD.first_name, OLD.middle_name,
       OLD.gender_id, OLD.first_entry_into_us_school_at, OLD.lep_entry_at, OLD.lep_exit_at, OLD.birthday,
-      OLD.import_id, OLD.update_import_id, OLD.deleted, OLD.created, OLD.updated
+      OLD.inferred_school_id, OLD.import_id, OLD.update_import_id, OLD.deleted, OLD.created, OLD.updated
     FROM setting s
     WHERE s.name = 'AUDIT_TRIGGER_ENABLE' AND s.value = 'TRUE';
 
