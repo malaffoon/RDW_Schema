@@ -22,7 +22,6 @@
 
 USE ${schemaName};
 
--- TODO - there is already a (updated, status) index; can one of these be removed?
 ALTER TABLE import ADD INDEX idx__import__status_updated (status, updated);
 
 
@@ -102,10 +101,8 @@ ALTER TABLE exam
   MODIFY COLUMN completed_at TIMESTAMP(6) NOT NULL;
 
 -- add and set partition
--- TODO - how many partitions for production?
-SET @exam_partitions = 50;
+SELECT ceil(count(*)/500000) INTO @exam_partitions FROM exam;
 
--- TODO - would it be faster to add index *after* setting all the values? enough faster?
 ALTER TABLE exam_student
   ADD COLUMN partition_id int,
   ADD INDEX idx__exam_student__partition_id (partition_id);
@@ -315,7 +312,7 @@ ALTER TABLE student
   ADD COLUMN partition_id INT,
   ADD INDEX idx__student__partition_id (partition_id);
 
-SET @student_partitions = 100;
+SELECT ceil(count(*)/100000) INTO @student_partitions FROM student;
 UPDATE student s SET s.partition_id = MOD(s.id, @student_partitions);
 
 -- one import record per student
