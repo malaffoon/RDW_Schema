@@ -13,7 +13,6 @@ embargo is FALSE and "default" for aggregate embargo is TRUE:
        F    | F | F | F |  | F | F | F |
        null | T | F | F |  | T | F | T |
              -----------    -----------
- TODO - it would be slightly more efficient to get just districts that have schools associated with them
 */
 CREATE VIEW embargo AS
   SELECT
