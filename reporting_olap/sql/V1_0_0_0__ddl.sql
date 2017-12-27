@@ -49,6 +49,8 @@ CREATE TABLE staging_asmt (
 CREATE TABLE staging_district (
   id int NOT NULL PRIMARY KEY,
   name character varying(100) NOT NULL,
+  natural_id varchar(40) NOT NULL,
+  external_id varchar(40),
   migrate_id bigint NOT NULL
 );
 
@@ -56,9 +58,29 @@ CREATE TABLE staging_school (
   id int NOT NULL PRIMARY KEY,
   district_id int NOT NULL,
   name character varying(100) NOT NULL,
+  natural_id varchar(40) NOT NULL,
+  external_id varchar(40),
+  school_group_id integer,
+  district_group_id integer,
   deleted boolean NOT NULL,
   migrate_id bigint NOT NULL,
   update_import_id bigint NOT NULL
+);
+
+CREATE TABLE staging_district_group (
+  id integer encode raw NOT NULL PRIMARY KEY,
+  natural_id varchar(40) NOT NULL,
+  name varchar(100) NOT NULL,
+  external_id varchar(40),
+  migrate_id bigint NOT NULL
+);
+
+CREATE TABLE staging_school_group (
+  id integer encode raw NOT NULL PRIMARY KEY,
+  natural_id varchar(40) NOT NULL,
+  name varchar(100) NOT NULL,
+  external_id varchar(40),
+  migrate_id bigint NOT NULL
 );
 
 CREATE TABLE staging_student (
@@ -156,17 +178,43 @@ CREATE TABLE administration_condition (
   code character varying(20) NOT NULL UNIQUE
 ) DISTSTYLE ALL;
 
-CREATE TABLE  district (
+CREATE TABLE district_group (
+  id integer encode raw NOT NULL PRIMARY KEY SORTKEY,
+  natural_id varchar(40) NOT NULL,
+  name varchar(100) NOT NULL,
+  external_id varchar(40),
+  migrate_id bigint NOT NULL
+) DISTSTYLE ALL;
+
+CREATE TABLE school_group (
+  id integer encode raw NOT NULL PRIMARY KEY SORTKEY,
+  natural_id varchar(40) NOT NULL,
+  name varchar(100) NOT NULL,
+  external_id varchar(40),
+  migrate_id bigint NOT NULL
+) DISTSTYLE ALL;
+
+CREATE TABLE district (
   id integer NOT NULL PRIMARY KEY SORTKEY,
-  name varchar(100) NOT NULL
+  name varchar(100) NOT NULL,
+  natural_id varchar(40) NOT NULL,
+  external_id varchar(40),
+  migrate_id bigint NOT NULL
 ) DISTSTYLE ALL;
 
 CREATE TABLE school (
   id integer encode raw NOT NULL PRIMARY KEY SORTKEY,
   name varchar(100) NOT NULL,
+  natural_id varchar(40) NOT NULL,
+  external_id varchar(40),
   district_id integer NOT NULL,
+  school_group_id integer,
+  district_group_id integer,
   migrate_id bigint encode delta NOT NULL,
-  update_import_id bigint encode delta NOT NULL
+  update_import_id bigint encode delta NOT NULL,
+  CONSTRAINT fk__school__district FOREIGN KEY (district_id) REFERENCES district (id),
+  CONSTRAINT fk__school__district_group FOREIGN KEY (district_group_id) REFERENCES district_group (id),
+  CONSTRAINT fk__school__school_group FOREIGN KEY (school_group_id) REFERENCES school_group (id)
 ) DISTSTYLE ALL;
 
 CREATE TABLE asmt (
