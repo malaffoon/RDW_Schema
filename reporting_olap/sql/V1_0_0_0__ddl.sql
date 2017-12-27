@@ -100,7 +100,8 @@ CREATE TABLE staging_exam (
   deleted boolean NOT NULL,
   completed_at timestamp without time zone NOT NULL,
   migrate_id bigint NOT NULL,
-  update_import_id bigint NOT NULL
+  update_import_id bigint NOT NULL,
+  latest boolean
 );
 
 CREATE TABLE staging_exam_claim_score (
