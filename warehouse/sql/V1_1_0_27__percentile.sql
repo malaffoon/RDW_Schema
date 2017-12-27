@@ -19,6 +19,8 @@ CREATE TABLE percentile_score (
   percentile_id INT NOT NULL,
   percent TINYINT NOT NULL,
   score FLOAT NOT NULL,
+  min_score SMALLINT NOT NULL,
+  max_score SMALLINT NOT NULL,
   PRIMARY KEY (percentile_id, percent),
   CONSTRAINT fk__percentile_score__percentile FOREIGN KEY (percentile_id) REFERENCES percentile (id)
 );
