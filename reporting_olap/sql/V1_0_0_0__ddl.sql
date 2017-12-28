@@ -83,6 +83,12 @@ CREATE TABLE staging_school_group (
   migrate_id bigint NOT NULL
 );
 
+CREATE TABLE staging_district_embargo (
+  district_id integer NOT NULL,
+  aggregate boolean NOT NULL,
+  migrate_id bigint NOT NULL
+);
+
 CREATE TABLE staging_student (
   id int NOT NULL PRIMARY KEY,
   ssid character varying(65) NOT NULL,
@@ -210,6 +216,7 @@ CREATE TABLE school (
   district_id integer NOT NULL,
   school_group_id integer,
   district_group_id integer,
+  embargo_enabled boolean NOT NULL,
   migrate_id bigint encode delta NOT NULL,
   update_import_id bigint encode delta NOT NULL,
   CONSTRAINT fk__school__district FOREIGN KEY (district_id) REFERENCES district (id),
