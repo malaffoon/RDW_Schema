@@ -89,6 +89,11 @@ CREATE TABLE staging_district_embargo (
   migrate_id bigint NOT NULL
 );
 
+CREATE TABLE staging_state_embargo (
+  aggregate boolean NOT NULL,
+  migrate_id bigint NOT NULL
+);
+
 CREATE TABLE staging_student (
   id int NOT NULL PRIMARY KEY,
   ssid character varying(65) NOT NULL,
@@ -223,6 +228,11 @@ CREATE TABLE school (
   CONSTRAINT fk__school__district_group FOREIGN KEY (district_group_id) REFERENCES district_group (id),
   CONSTRAINT fk__school__school_group FOREIGN KEY (school_group_id) REFERENCES school_group (id)
 ) DISTSTYLE ALL;
+
+CREATE TABLE state_embargo (
+  aggregate boolean NOT NULL,
+  migrate_id bigint NOT NULL
+);
 
 CREATE TABLE asmt (
   id int encode raw NOT NULL PRIMARY KEY SORTKEY,
