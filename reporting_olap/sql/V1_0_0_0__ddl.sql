@@ -85,12 +85,12 @@ CREATE TABLE staging_school_group (
 
 CREATE TABLE staging_district_embargo (
   district_id integer NOT NULL,
-  aggregate smallint,
+  aggregate boolean NOT NULL,
   migrate_id bigint NOT NULL
 );
 
 CREATE TABLE staging_state_embargo (
-  aggregate smallint,
+  aggregate boolean NOT NULL,
   migrate_id bigint NOT NULL
 );
 
@@ -231,7 +231,7 @@ CREATE TABLE school (
 ) DISTSTYLE ALL;
 
 CREATE TABLE state_embargo (
-  aggregate smallint,
+  aggregate boolean NOT NULL,
   migrate_id bigint NOT NULL
 ) DISTSTYLE ALL;
 
