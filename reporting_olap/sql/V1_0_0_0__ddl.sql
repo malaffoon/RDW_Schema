@@ -42,7 +42,7 @@ CREATE TABLE staging_asmt (
   label character varying(255) NOT NULL,
   deleted boolean NOT NULL,
   migrate_id bigint NOT NULL,
-  updated timestamptz NOT NULL,
+  updated timestamp without time zone NOT NULL,
   update_import_id bigint NOT NULL
 ) DISTSTYLE ALL;
 
@@ -64,7 +64,7 @@ CREATE TABLE staging_school (
   district_group_id integer,
   deleted boolean NOT NULL,
   migrate_id bigint NOT NULL,
-  updated timestamptz NOT NULL,
+  updated timestamp without time zone NOT NULL,
   update_import_id bigint NOT NULL
 );
 
@@ -100,7 +100,7 @@ CREATE TABLE staging_student (
   gender_id smallint,
   deleted boolean NOT NULL,
   migrate_id bigint NOT NULL,
-  updated timestamptz NOT NULL,
+  updated timestamp without time zone NOT NULL,
   update_import_id bigint NOT NULL
  );
 
@@ -131,7 +131,7 @@ CREATE TABLE staging_exam (
   deleted boolean NOT NULL,
   completed_at timestamp without time zone NOT NULL,
   migrate_id bigint NOT NULL,
-  updated timestamptz NOT NULL,
+  updated timestamp without time zone NOT NULL,
   update_import_id bigint NOT NULL,
   latest boolean
 );
