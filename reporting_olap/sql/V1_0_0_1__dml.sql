@@ -4,10 +4,10 @@ Initial data load for SBAC OLAP Reporting Data Warehouse 1.0.0
 
 SET SEARCH_PATH to ${schemaName};
 
-INSERT INTO asmt_type (id, code, name) VALUES
-  (1, 'ica', 'Interim Comprehensive'),
-  (2, 'iab', 'Interim Assessment Block'),
-  (3, 'sum', 'Summative');
+INSERT INTO asmt_type (id, code) VALUES
+  (1, 'ica'),
+  (2, 'iab'),
+  (3, 'sum');
 
 INSERT INTO subject (id, code) VALUES
   (1, 'Math'),

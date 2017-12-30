@@ -9,8 +9,7 @@ SET client_encoding = 'UTF8';
 -- staging tables
 CREATE TABLE staging_grade (
   id smallint NOT NULL PRIMARY KEY,
-  code character varying(2) NOT NULL UNIQUE,
-  name character varying(100) NOT NULL UNIQUE
+  code character varying(2) NOT NULL UNIQUE
 );
 
 CREATE TABLE staging_completeness (
@@ -43,6 +42,7 @@ CREATE TABLE staging_asmt (
   label character varying(255) NOT NULL,
   deleted boolean NOT NULL,
   migrate_id bigint NOT NULL,
+  updated timestamp without time zone NOT NULL,
   update_import_id bigint NOT NULL
 ) DISTSTYLE ALL;
 
@@ -64,6 +64,7 @@ CREATE TABLE staging_school (
   district_group_id integer,
   deleted boolean NOT NULL,
   migrate_id bigint NOT NULL,
+  updated timestamp without time zone NOT NULL,
   update_import_id bigint NOT NULL
 );
 
@@ -96,13 +97,10 @@ CREATE TABLE staging_state_embargo (
 
 CREATE TABLE staging_student (
   id int NOT NULL PRIMARY KEY,
-  ssid character varying(65) NOT NULL,
-  last_or_surname character varying(60),
-  first_name character varying(60),
-  middle_name character varying(60),
   gender_id smallint,
   deleted boolean NOT NULL,
   migrate_id bigint NOT NULL,
+  updated timestamp without time zone NOT NULL,
   update_import_id bigint NOT NULL
  );
 
@@ -133,6 +131,7 @@ CREATE TABLE staging_exam (
   deleted boolean NOT NULL,
   completed_at timestamp without time zone NOT NULL,
   migrate_id bigint NOT NULL,
+  updated timestamp without time zone NOT NULL,
   update_import_id bigint NOT NULL,
   latest boolean
 );
@@ -169,14 +168,12 @@ CREATE TABLE subject (
 
 CREATE TABLE grade (
   id smallint NOT NULL PRIMARY KEY SORTKEY,
-  code character varying(2) NOT NULL UNIQUE,
-  name character varying(100) NOT NULL UNIQUE
+  code character varying(2) NOT NULL UNIQUE
 ) DISTSTYLE ALL;
 
 CREATE TABLE asmt_type (
   id smallint NOT NULL PRIMARY KEY SORTKEY,
-  code character varying(10) NOT NULL UNIQUE,
-  name character varying(24) NOT NULL UNIQUE
+  code character varying(10) NOT NULL UNIQUE
 ) DISTSTYLE ALL;
 
 CREATE TABLE completeness (
@@ -223,6 +220,7 @@ CREATE TABLE school (
   district_group_id integer,
   embargo_enabled boolean NOT NULL,
   migrate_id bigint encode delta NOT NULL,
+  updated timestamptz NOT NULL,
   update_import_id bigint encode delta NOT NULL,
   CONSTRAINT fk__school__district FOREIGN KEY (district_id) REFERENCES district (id),
   CONSTRAINT fk__school__district_group FOREIGN KEY (district_group_id) REFERENCES district_group (id),
@@ -243,6 +241,7 @@ CREATE TABLE asmt (
   name character varying(250) NOT NULL,
   label character varying(255) NOT NULL,
   migrate_id bigint encode delta NOT NULL,
+  updated timestamptz NOT NULL,
   update_import_id bigint encode delta NOT NULL,
   CONSTRAINT fk__asmt__type FOREIGN KEY(type_id) REFERENCES asmt(id),
   CONSTRAINT fk__asmt__subject FOREIGN KEY(subject_id) REFERENCES subject(id),
@@ -271,6 +270,7 @@ CREATE TABLE student (
   id bigint encode raw NOT NULL PRIMARY KEY SORTKEY DISTKEY,
   gender_id int encode lzo,
   migrate_id bigint encode delta NOT NULL,
+  updated timestamptz NOT NULL,
   update_import_id bigint encode delta NOT NULL
 ) DISTSTYLE KEY;
 
@@ -312,6 +312,7 @@ CREATE TABLE fact_student_exam (
   claim4_category smallint encode lzo,
   completed_at timestamptz encode lzo NOT NULL,
   migrate_id bigint encode delta NOT NULL,
+  updated timestamptz NOT NULL,
   update_import_id bigint encode delta NOT NULL,
   CONSTRAINT fk__fact_student_exam__asmt FOREIGN KEY(asmt_id) REFERENCES asmt(id),
   CONSTRAINT fk__fact_student_exam__school_year FOREIGN KEY(school_year) REFERENCES school_year(year),
