@@ -332,8 +332,8 @@ CREATE TABLE fact_student_exam (
   CONSTRAINT fk__fact_student_exam__lep FOREIGN KEY(lep) REFERENCES strict_boolean(id),
   CONSTRAINT fk__fact_student_exam__section504 FOREIGN KEY(section504) REFERENCES boolean(id),
   CONSTRAINT fk__fact_student_exam__economic_disadvantage FOREIGN KEY(economic_disadvantage) REFERENCES strict_boolean(id),
-  CONSTRAINT fk__fact_student_exam__migrant_statust FOREIGN KEY(migrant_status) REFERENCES boolean(id)
-);
+  CONSTRAINT fk__fact_student_exam__migrant_status FOREIGN KEY(migrant_status) REFERENCES boolean(id)
+)  COMPOUND SORTKEY (asmt_id, school_id, school_year, student_id);
 
 -- helper table used by the diagnostic API
 CREATE TABLE status_indicator (
