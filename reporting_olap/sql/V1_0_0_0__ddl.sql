@@ -161,6 +161,16 @@ CREATE TABLE exam_claim_score_mapping (
 );
 
 -- dimensions
+CREATE TABLE strict_boolean (
+  id smallint NOT NULL PRIMARY KEY SORTKEY,
+  code character varying(10) NOT NULL UNIQUE
+) DISTSTYLE ALL;
+
+CREATE TABLE boolean (
+  id smallint NOT NULL PRIMARY KEY SORTKEY,
+  code character varying(10) NOT NULL UNIQUE
+) DISTSTYLE ALL;
+
 CREATE TABLE subject (
   id smallint NOT NULL PRIMARY KEY SORTKEY,
   code character varying(10) NOT NULL UNIQUE
@@ -288,11 +298,11 @@ CREATE TABLE fact_student_exam (
   grade_id smallint encode lzo NOT NULL,
   asmt_grade_id smallint encode lzo NOT NULL, -- TODO: research if this is needed
   school_year smallint encode raw NOT NULL,
-  iep boolean encode raw NOT NULL,
-  lep boolean encode raw NOT NULL,
-  section504 boolean encode raw,
-  economic_disadvantage boolean encode raw NOT NULL,
-  migrant_status boolean encode raw,
+  iep smallint encode lzo NOT NULL,
+  lep smallint encode lzo NOT NULL,
+  section504 smallint encode lzo NOT NULL,
+  economic_disadvantage smallint encode lzo NOT NULL,
+  migrant_status smallint encode lzo NOT NULL,
   completeness_id smallint encode lzo NOT NULL,
   administration_condition_id smallint encode lzo NOT NULL,
   scale_score float NOT NULL encode bytedict ,
@@ -317,8 +327,13 @@ CREATE TABLE fact_student_exam (
   CONSTRAINT fk__fact_student_exam__asmt FOREIGN KEY(asmt_id) REFERENCES asmt(id),
   CONSTRAINT fk__fact_student_exam__school_year FOREIGN KEY(school_year) REFERENCES school_year(year),
   CONSTRAINT fk__fact_student_exam__school FOREIGN KEY(school_id) REFERENCES school(id),
-  CONSTRAINT fk__fact_student_exam__student FOREIGN KEY(student_id) REFERENCES student(id)
-)  COMPOUND SORTKEY (asmt_id, school_id, school_year, student_id);
+  CONSTRAINT fk__fact_student_exam__student FOREIGN KEY(student_id) REFERENCES student(id),
+  CONSTRAINT fk__fact_student_exam__iep FOREIGN KEY(iep) REFERENCES strict_boolean(id),
+  CONSTRAINT fk__fact_student_exam__lep FOREIGN KEY(lep) REFERENCES strict_boolean(id),
+  CONSTRAINT fk__fact_student_exam__section504 FOREIGN KEY(section504) REFERENCES boolean(id),
+  CONSTRAINT fk__fact_student_exam__economic_disadvantage FOREIGN KEY(economic_disadvantage) REFERENCES strict_boolean(id),
+  CONSTRAINT fk__fact_student_exam__migrant_statust FOREIGN KEY(migrant_status) REFERENCES boolean(id)
+);
 
 -- helper table used by the diagnostic API
 CREATE TABLE status_indicator (

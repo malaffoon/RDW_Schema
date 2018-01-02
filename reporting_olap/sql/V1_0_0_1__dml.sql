@@ -4,6 +4,15 @@ Initial data load for SBAC OLAP Reporting Data Warehouse 1.0.0
 
 SET SEARCH_PATH to ${schemaName};
 
+INSERT INTO strict_boolean (id, code) VALUES
+  (0, 'no'),
+  (1, 'yes');
+
+INSERT INTO boolean (id, code) VALUES
+  (0, 'no'),
+  (1, 'yes'),
+  (2, 'undefined');
+
 INSERT INTO asmt_type (id, code) VALUES
   (1, 'ica'),
   (2, 'iab'),
