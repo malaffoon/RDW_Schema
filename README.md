@@ -33,7 +33,7 @@ RDW_Schema$ ./gradlew cleanAll
 #### Other Commands
 To see a listing of all of the tasks available, run (output will depend on properties):
 ```bash
-./gradlew tasks
+RDW_Schema$ ./gradlew tasks
 
 ------------------------------------------------------------
 All tasks runnable from root project
@@ -43,24 +43,30 @@ All tasks runnable from root project
 
 Schema tasks
 ------------
-cleanMigrate_olap - Drops all objects in the configured schemas.
 cleanReporting - Drops all objects in the configured schemas.
 cleanReporting_test - Drops all objects in the configured schemas.
 cleanWarehouse - Drops all objects in the configured schemas.
 cleanWarehouse_test - Drops all objects in the configured schemas.
 ...
-migrateMigrate_olap - Migrates the schema to the latest version.
 migrateReporting - Migrates the schema to the latest version.
 migrateReporting_test - Migrates the schema to the latest version.
 migrateWarehouse - Migrates the schema to the latest version.
 migrateWarehouse_test - Migrates the schema to the latest version.
 
+Schema (disabled) tasks
+-----------------------
+cleanMigrate_olap - Disabled cleanMigrate_olap schema task, set properties [database_url, database_user, migrate_olap_schema] to enable
+cleanReporting_olap - Disabled cleanReporting_olap schema task, set properties [redshift_url, redshift_schema, redshift_user] to enable
+...
+migrateMigrate_olap - Disabled migrateMigrate_olap schema task, set properties [database_url, database_user, migrate_olap_schema] to enable
+migrateReporting_olap - Disabled migrateReporting_olap schema task, set properties [redshift_url, redshift_schema, redshift_user] to enable
+
 SchemaGroup tasks
 -----------------
-cleanAll - Custom group task for: cleanReporting, cleanWarehouse
-cleanAll_test - Custom group task for: cleanReporting_test, cleanWarehouse_test
-migrateAll - Custom group task for: migrateReporting, migrateWarehouse
-migrateAll_test - Custom group task for: migrateReporting_test, migrateWarehouse_test
+cleanAll - Custom group task for: cleanReporting, cleanWarehouse, cleanMigrate_olap, cleanReporting_olap
+cleanAll_test - Custom group task for: cleanReporting_test, cleanWarehouse_test, cleanMigrate_olap, cleanReporting_olap
+migrateAll - Custom group task for: migrateReporting, migrateWarehouse, migrateMigrate_olap, migrateReporting_olap
+migrateAll_test - Custom group task for: migrateReporting_test, migrateWarehouse_test, migrateMigrate_olap, migrateReporting_olap
 ```
 
 Other task examples:
@@ -99,16 +105,15 @@ RDW_Schema$ gradle -Predshift_url=jdbc:redshift://rdw-dev.cibkulpjrgtr.us-west-2
     cleanReporting_olap migrateReporting_olap
 ```
 
-When testing the OLAP migration process, there is also the MySQL migrate_olap schema to worry about. There are
-group tasks that combine reporting_olap and migrate_olap flyway tasks but they requires a lot of settings since 
-they are dealing with two separate AWS databases, e.g.:
+When testing the OLAP migration process, there is also the MySQL migrate_olap schema to worry about. The additional
+tasks can be specified but it requires a lot of settings dealing with two separate AWS databases, e.g.:
 ```bash
 RDW_Schema$ gradle \
     -Predshift_url=jdbc:redshift://rdw-dev.cibkulpjrgtr.us-west-2.redshift.amazonaws.com:5439/dev \
     -Predshift_schema=reporting_bob -Predshift_user=bob -Predshift_password=bob_redshift_password \
     -Pdatabase_url=rdw-aurora-dev.cugsexobhx8t.us-west-2.rds.amazonaws.com:3306 \
     -Pmigrate_olap_schema=bob_migrate_olap -Pdatabase_user=bob -Pdatabase_password=bob_aurora_password \
-    cleanOlap migrateOlap    
+    cleanReporting_olap cleanMigrate_olap migrateReporting_olap migrateMigrate_olap    
 ```
 
 ### Developing

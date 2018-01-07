@@ -45,42 +45,72 @@ def configs = []
 // Only define redshift config if the required redshift schema is set.
 // The redshift configs don't have separate _test schemas because the schema is explicitly set.
 if (hasProperty('database_url') && database_url && hasProperty('database_user') && database_user) {
-    configs << ['reporting', 'reporting', database_url, 'reporting', database_user, database_password, 'com.mysql.jdbc.Driver', 'all']
-    configs << ['reporting_test', 'reporting', database_url, 'reporting_test', database_user, database_password, 'com.mysql.jdbc.Driver', 'all_test']
-    configs << ['warehouse', 'warehouse', database_url, 'warehouse', database_user, database_password, 'com.mysql.jdbc.Driver', 'all']
-    configs << ['warehouse_test', 'warehouse', database_url, 'warehouse_test', database_user, database_password, 'com.mysql.jdbc.Driver', 'all_test']
+    configs << ['reporting', 'reporting', database_url, 'reporting', database_user, database_password, 'com.mysql.jdbc.Driver']
+    configs << ['reporting_test', 'reporting', database_url, 'reporting_test', database_user, database_password, 'com.mysql.jdbc.Driver']
+    configs << ['warehouse', 'warehouse', database_url, 'warehouse', database_user, database_password, 'com.mysql.jdbc.Driver']
+    configs << ['warehouse_test', 'warehouse', database_url, 'warehouse_test', database_user, database_password, 'com.mysql.jdbc.Driver']
     if (hasProperty('migrate_olap_schema') && migrate_olap_schema) {
-        configs << ['migrate_olap', 'migrate_olap', database_url, migrate_olap_schema, database_user, database_password, 'com.mysql.jdbc.Driver', 'olap']
+        configs << ['migrate_olap', 'migrate_olap', database_url, migrate_olap_schema, database_user, database_password, 'com.mysql.jdbc.Driver']
+    } else {
+        configs << ['migrate_olap', 'database_url, database_user, migrate_olap_schema']
     }
+} else {
+    configs << ['reporting', 'database_url, database_user']
+    configs << ['reporting_test', 'database_url, database_user']
+    configs << ['warehouse', 'database_url, database_user']
+    configs << ['warehouse_test', 'database_url, database_user']
+    configs << ['migrate_olap', 'database_url, database_user, migrate_olap_schema']
 }
 if (hasProperty('redshift_url') && redshift_url && hasProperty('redshift_schema') && redshift_schema && hasProperty('redshift_user') && redshift_user) {
     configs << ['reporting_olap', 'reporting_olap', redshift_url, redshift_schema, redshift_user, redshift_password, 'com.amazon.redshift.jdbc42.Driver', 'olap']
+} else {
+    configs << ['reporting_olap', 'redshift_url, redshift_schema, redshift_user']
 }
 
 def groupTasks = [:] // collect map of action+group -> list of tasks
 flywayActions.keySet().each { action ->
     configs.each { config ->
-        def task = task(action + config[0].capitalize(), type: flywayActions[action]) {
-            locations = ['filesystem:' + [rootDir.path, config[1], 'sql'].join('/')]
-            url = config[2]
-            user = config[4]
-            password = config[5]
-            driver = config[6]
-            schemas = [config[3]]
-            placeholders = ['schemaName': config[3]]
-            group = 'Schema'
+        def taskName = action + config[0].capitalize()
+        def schemaTask
+        if (config.size() == 2) {
+            schemaTask = task(taskName) {
+                group = 'Schema (disabled)'
+                description = MessageFormat.format("Disabled {0} schema task, set properties [{1}] to enable", taskName, config[1])
+                doFirst {
+                    logger.warn(MessageFormat.format("{0} is disabled because properties [{1}] are not set", taskName, config[1]))
+                }
+            }
+        } else {
+            schemaTask = task(taskName, type: flywayActions[action]) {
+                locations = ['filesystem:' + [rootDir.path, config[1], 'sql'].join('/')]
+                url = config[2]
+                schemas = [config[3]]
+                user = config[4]
+                password = config[5]
+                driver = config[6]
+                placeholders = ['schemaName': config[3]]
+                group = 'Schema'
+            }
         }
-        groupTasks.get(action + config[7], []) << task
-        task
+        // Add this task to tasks for 'All' and 'All_test'
+        // Note that the olap tasks are added to both the 'All' and 'All_test' groups
+        if (taskName.endsWith('_test') || taskName.endsWith('_olap')) {
+            groupTasks.get(action + 'All_test', []) << schemaTask
+        }
+        if (!taskName.endsWith('_test')) {
+            groupTasks.get(action + 'All', []) << schemaTask
+        }
+
+        schemaTask  // must return task from closure
     }
 }
 
 // create group tasks for clean and migrate
 ['clean', 'migrate'].each { action ->
-    ['all', 'all_test', 'olap'].each { configGroup ->
+    ['All', 'All_test'].each { configGroup ->
         def subTasks = groupTasks.get(action + configGroup)
         if (!subTasks || subTasks.size() < 2) return
-        task(action + configGroup.capitalize(), dependsOn: subTasks) {
+        task(action + configGroup, dependsOn: subTasks) {
             group = 'SchemaGroup'
             description = MessageFormat.format("Custom group task for: {0}", subTasks.collect() { task -> task.name }.join(', '))
         }
