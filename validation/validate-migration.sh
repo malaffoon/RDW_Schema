@@ -79,7 +79,7 @@ function run_tests() {
     declare -a tests=("${!1}")
     for test in "${tests[@]}"
     do
-        run_test_on_all_schema ${test}
+        run_test_and_compare_restults ${test} $2 $3 $4 $5
     done
 }
 
@@ -143,40 +143,37 @@ function validate_input() {
     not_null ${reporting_olap_user} "reporting_olap_user"
 }
 
-function run_test_on_all_schema() {
+function run_test_and_compare_restults() {
 
     # expand pipe delimited test object into variables
     local test_name=`get_property_by_index $1 1`
     local test_headers=`get_property_by_index $1 2`
-
-    echo "${test_name}"
-
-    # get data from warehouse
-    local warehouse_csv=`run_test "mysql" ${sql_dir}/${test_name}/${warehouse_namespace}.sql $1 warehouse_connection[@]`
-
-    # get data from reporting and compare
-    local reporting_sql=${sql_dir}/${test_name}/${reporting_namespace}.sql
-    if [ -f ${reporting_sql} ]; then
-        local reporting_csv=`run_test "mysql" ${reporting_sql} $1 reporting_connection[@]`
-        compare_test_results ${test_name} ${warehouse_namespace} ${warehouse_csv} ${reporting_namespace} ${reporting_csv} ${out_dir}/${test_name}
-    fi
+    local reporting_sql=$3
+    local warehouse_sql=$4
 
     # get data from reporting_olap and compare
-    local reporting_olap_sql=${sql_dir}/${test_name}/${reporting_olap_namespace}.sql
-    if [ -f ${reporting_olap_sql} ]; then
-        local reporting_olap_csv=`run_test "psql" ${reporting_olap_sql} $1 reporting_olap_connection[@]`
-        compare_test_results ${test_name} ${warehouse_namespace} ${warehouse_csv} ${reporting_olap_namespace} ${reporting_olap_csv} ${out_dir}/${test_name}
-    fi
+    local the_reporting_sql=${sql_dir}/${test_name}/${reporting_sql}.sql
+    if [ -f ${the_reporting_sql} ]; then
+        echo "Running Test: ${test_name} *******************"
 
-    echo ''
+        echo "getting data from warehouse"
+        # get data from warehouse
+        local warehouse_csv=`run_test "mysql" ${sql_dir}/${test_name}/${warehouse_sql}.sql $1 warehouse_connection[@]`
+
+        echo "getting data from reporting"
+        local reporting_csv=`run_test $2 ${the_reporting_sql} $1 $5`
+        compare_test_results ${test_name} ${warehouse_sql} ${warehouse_csv} ${reporting_sql} ${reporting_csv} ${out_dir}/${test_name}
+
+        echo ''
+    fi
 }
 
 function print_settings() {
     echo "validating..."
     echo ''
-    echo "  ${warehouse_namespace}: $(print_connection warehouse_connection[@])"
-    echo "  ${reporting_namespace}: $(print_connection reporting_connection[@])"
-    echo "  ${reporting_olap_namespace}: $(print_connection reporting_olap_connection[@])"
+    echo " warehouse connection: $(print_connection warehouse_connection[@])"
+    echo " reporting connection : $(print_connection reporting_connection[@])"
+    echo " reporting olap connection: $(print_connection reporting_olap_connection[@])"
     echo ''
 }
 
@@ -187,8 +184,6 @@ function print_summary() {
     echo "completed in ${elapsed_time_formatted}"
     echo ''
 }
-
-
 
 ### Entry Point ###
 
@@ -206,13 +201,6 @@ sql_dir=${base_dir}/sql
 out_dir="${base_dir}/results-$(now_in_YYYY_mm_dd_HHMMSS)"
 diff_options="-y --suppress-common-lines"
 
-# these namespaces are used to lookup the SQL test files corresponding to the warehouse, reporting and reporting olap schema.
-# they also dictate the naming of the output csv and diff files
-# if changed, the SQL test file names must also be changed to match
-warehouse_namespace=warehouse
-reporting_namespace=reporting
-reporting_olap_namespace=reporting_olap
-
 # (host port schema user password)
 declare -a warehouse_connection=("${warehouse_host}" "${warehouse_port}" "${warehouse_schema}" "${warehouse_user}" "${warehouse_password}")
 declare -a reporting_connection=("${reporting_host}" "${reporting_port}" "${reporting_schema}" "${reporting_user}" "${reporting_password}")
@@ -222,14 +210,24 @@ declare -a reporting_olap_connection=("${reporting_olap_host}" "${reporting_olap
 declare -a tests=(
     "total-ica|total_exams"
     "total-ica-scores|total_scale_score,total_standard_error,total_performance_level"
-    "total-ica-by-asmt-asmtyear-condition-complete|total_exams,assessment_id,assessment_year,administrative_condition,complete"
+    "total-ica-by-asmt-schoolyear-condition-complete|total_exams,assessment_id,school_year,administrative_condition,complete"
     "total-ica-by-school-district|total_exams,school_id,district_name,school_name"
     "total-iab|total_exams"
     "total-iab-scores|total_scale_score,total_standard_error,total_performance_level"
-    "total-iab-by-asmt-asmtyear-condition-complete|total_exams,assessment_id,assessment_year,administrative_condition,complete"
+    "total-iab-by-asmt-schoolyear-condition-complete|total_exams,assessment_id,school_year,administrative_condition,complete"
     "total-iab-by-school-district|total_exams,school_id,district_name,school_name"
 )
 
 print_settings
-run_tests tests[@]
+if [ $# == 1 ] || [ $2 == olap ]; then
+    echo "************ Running reporting olap tests ************"
+    # 'olap_reporting' and 'olap_warehouse' are used to lookup the SQL test files, they also dictate the naming of the output csv and diff files
+    run_tests tests[@] psql olap_reporting  olap_warehouse reporting_olap_connection[@]
+fi
+
+if [ $# == 1 ] || [ $2 == reporting ]; then
+      echo "************ Running reporting tests ************"
+      # 'reporting' and 'warehouse' are used to lookup the SQL test files, they also dictate the naming of the output csv and diff files
+      run_tests tests[@] mysql reporting warehouse reporting_connection[@]
+fi
 print_summary

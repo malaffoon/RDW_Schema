@@ -40,10 +40,19 @@ reporting_olap_user=root
 reporting_olap_password=
 ```
 #### Running
-To run the script simply execute it and pass in the file path to your secrets file.
+1. To validate both reporting and aggregate reporting (aka OLAP), simply execute it and pass in the file path to your secrets file.
 ```bash
 ./validate-migration.sh secrets/local.sh
 ```
+2. To validate both reporting only
+```bash
+./validate-migration.sh secrets/local.sh reporting
+```
+3. To validate aggregate reporting only
+```bash
+./validate-migration.sh secrets/local.sh olap
+```
+
 #### Example Output
 ```
  __   __                   __   __       ___    __                            __       ___  __   __  
@@ -53,45 +62,79 @@ To run the script simply execute it and pass in the file path to your secrets fi
 
 validating...
 
-  warehouse:      localhost:3306:warehouse:root
-  reporting:      localhost:3306:reporting:root
-  reporting_olap: localhost:5439:reporting_olap:root
+  warehouse connection:      localhost:3306:warehouse:root
+  reporting connection:      localhost:3306:reporting:root
+  reporting olap connection: localhost:5439:reporting_olap:root
 
-total-ica
+************ Running reporting olap tests ************
+Running Test: total-ica *******************
+getting data from warehouse
+getting data from reporting
+  olap_warehouse/olap_reporting (passed)
+
+Running Test: total-ica-scores *******************
+getting data from warehouse
+getting data from reporting
+  olap_warehouse/olap_reporting (passed)
+
+Running Test: total-ica-by-asmt-schoolyear-condition-complete *******************
+getting data from warehouse
+getting data from reporting
+  olap_warehouse/olap_reporting (passed)
+
+Running Test: total-ica-by-school-district *******************
+getting data from warehouse
+getting data from reporting
+  olap_warehouse/olap_reporting (passed)
+
+************ Running reporting tests ************
+Running Test: total-ica *******************
+getting data from warehouse
+getting data from reporting
   warehouse/reporting (passed)
-  warehouse/reporting_olap (1 differences) /RDW_Schema/validation/results-2017-11-21-104916/total-ica
 
-total-ica-scores
-  warehouse/reporting (passed)
-  warehouse/reporting_olap (1 differences) /RDW_Schema/validation/results-2017-11-21-104916/total-ica-scores
+Running Test: total-ica-scores *******************
+getting data from warehouse
+getting data from reporting
+  warehouse/reporting (1 differences) /Users/allagorina/development/SBRDW/RDW_Schema/validation/results-2018-01-08-091053/total-ica-scores
 
-total-ica-by-asmt-asmtyear-condition-complete
-  warehouse/reporting (passed)
-  warehouse/reporting_olap (42 differences) /RDW_Schema/validation/results-2017-11-21-104916/total-ica-by-asmt-asmtyear-condition-complete
-
-total-ica-by-school-district
-  warehouse/reporting (passed)
-  warehouse/reporting_olap (1066 differences) /RDW_Schema/validation/results-2017-11-21-104916/total-ica-by-school-district
-
-total-iab
+Running Test: total-ica-by-asmt-schoolyear-condition-complete *******************
+getting data from warehouse
+getting data from reporting
   warehouse/reporting (passed)
 
-total-iab-scores
-  warehouse/reporting (1 differences) /RDW_Schema/validation/results-2017-11-21-104916/total-iab-scores
-
-total-iab-by-asmt-asmtyear-condition-complete
+Running Test: total-ica-by-school-district *******************
+getting data from warehouse
+getting data from reporting
   warehouse/reporting (passed)
 
-total-iab-by-school-district
+Running Test: total-iab *******************
+getting data from warehouse
+getting data from reporting
   warehouse/reporting (passed)
 
-completed in 00:00:02
+Running Test: total-iab-scores *******************
+getting data from warehouse
+getting data from reporting
+  warehouse/reporting (1 differences) /Users/allagorina/development/SBRDW/RDW_Schema/validation/results-2018-01-08-091053/total-iab-scores
+
+Running Test: total-iab-by-asmt-asmtyear-condition-complete *******************
+getting data from warehouse
+getting data from reporting
+  warehouse/reporting (passed)
+
+Running Test: total-iab-by-school-district *******************
+getting data from warehouse
+getting data from reporting
+  warehouse/reporting (passed)
+
+completed in 00:10:37
 ```
 To investigate a failed test, open the printed directory link in the terminal output.
 If the comparison between warehouse and reporting_olap failed for instance, you would see the following files:
 ```
-validation/results-2017-11-21-104916/total-ica
-├── reporting_olap.csv
+validation/results-2018-01-08-091053/total-ica-scores
+├── reporting.csv
 ├── warehouse.csv
-└── warehouse_reporting_olap.diff
+└── warehouse_reporting.diff
 ```
