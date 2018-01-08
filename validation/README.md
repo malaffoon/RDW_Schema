@@ -53,6 +53,8 @@ reporting_olap_password=
 ./validate-migration.sh secrets/local.sh olap
 ```
 
+NOTE: When running tests you may see multiple "Warning: Using a password on the command line interface can be insecure.", please ignore it. 
+
 #### Example Output
 ```
  __   __                   __   __       ___    __                            __       ___  __   __  
