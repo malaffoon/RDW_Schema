@@ -57,22 +57,12 @@ function create_mysql_password_file() {
 
 function mysql_to_csv() {
     declare -a connection=("${!1}")
-    local sql_file=$2
-    local csv_file=$3
-    local csv_headers=$4
-    local password_file=`create_mysql_password_file "${connection[4]}"`
-    mysql --defaults-extra-file=${password_file} -h ${connection[0]} -P ${connection[1]} -u ${connection[3]} ${connection[2]} -s < ${sql_file} | tr '\t' ','
-    rm ${password_file}
+    mysql -h ${connection[0]} -P ${connection[1]} -u ${connection[3]} ${connection[2]} -p${connection[4]} -s < ${sql_file} | tr '\t' ','
 }
 
 function psql_to_csv() {
     declare -a connection=("${!1}")
-    local sql_file=$2
-    local csv_file=$3
-    local csv_headers=$4
-    set PGPASSWORD=${connection[5]}
-    psql -w -h ${connection[0]} -p ${connection[1]} -U ${connection[3]} -d ${connection[2]} -t -F, -A -f ${sql_file}
-    set PGPASSWORD=
+    psql postgresql://${connection[3]}:${connection[4]}@${connection[0]}:${connection[1]}/${connection[2]} -t -F, -A -f ${sql_file}
 }
 
 function run_tests() {
