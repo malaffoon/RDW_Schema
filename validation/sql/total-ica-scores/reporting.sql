@@ -3,4 +3,4 @@ SELECT
     sum(scale_score_std_err),
     sum(performance_level)
   FROM exam
-  WHERE type_id = 1;
+  WHERE type_id = 1 AND scale_score IS NOT NULL;
