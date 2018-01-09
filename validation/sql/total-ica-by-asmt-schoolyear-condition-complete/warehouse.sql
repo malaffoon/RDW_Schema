@@ -13,4 +13,9 @@ SELECT
     e.school_year,
     e.administration_condition_id,
     e.completeness_id
-  ORDER BY count(*), e.asmt_id;
+  ORDER BY
+    count(*),
+    e.asmt_id,
+    e.school_year,
+    ac.code,
+    e.completeness_id;

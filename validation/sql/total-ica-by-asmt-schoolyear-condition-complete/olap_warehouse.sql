@@ -27,4 +27,4 @@ FROM  (
           e1.completeness_id
       )  e
   JOIN administration_condition ac ON e.administration_condition_id = ac.id
-ORDER BY count, asmt_id;
+ORDER BY count, asmt_id, school_year, code, completeness_id;
