@@ -86,16 +86,13 @@ RDW_Schema$ ./gradlew -Pdatabase_url="jdbc:mysql://rdw-aurora-dev.cugsexobhx8t.u
 ```
 
 ### Redshift
-After configuring Redshift, connect to the instance and create a user/database, for example for developer Bob to
-do some testing:
-
+After configuring Redshift, connect to the instance and create a user/schema, for example for developer Bob to
+do some testing, using the CI instance and ci database:
 ```sql
-create database bob;
-\connect bob
-create schema reporting_test;
+create schema bob_reporting_test;
 create user bob with password 'bob_redshift_password';
-grant all privileges on database bob to bob;
-alter user bob set search_path to reporting_test;
+grant all privileges on schema bob_reporting_test to bob;
+alter user bob set search_path to bob_reporting_test;
 ```
 
 IntelliJ developers: https://stackoverflow.com/questions/32319052/connect-intellij-to-amazon-redshift
@@ -103,7 +100,8 @@ IntelliJ developers: https://stackoverflow.com/questions/32319052/connect-intell
 #### To wipe out and re-create tables for redshift
 To deal with just the redshift tables, use the `reporting_olap` tasks. Using the same example developer Bob:
 ```bash
-RDW_Schema$ gradle -Predshift_url=jdbc:redshift://rdw-dev.cibkulpjrgtr.us-west-2.redshift.amazonaws.com:5439/bob \
+RDW_Schema$ gradle -Pschema_prefix=bob_ \ 
+    -Predshift_url=jdbc:redshift://rdw-qa.cibkulpjrgtr.us-west-2.redshift.amazonaws.com:5439/ci \
     -Predshift_user=bob -Predshift_password=bob_redshift_password \
     cleanReporting_olap_test migrateReporting_olap_test
 ```
@@ -112,16 +110,16 @@ When testing the OLAP migration process, there is also the MySQL migrate_olap sc
 tasks can be specified but it requires a lot of settings dealing with two separate AWS databases. Continuing with
 Bob, assume they have created `bob_migrate_olap_test` schema in the dev instance of Aurora:
 ```bash
-RDW_Schema$ gradle \
-    -Predshift_url=jdbc:redshift://rdw-dev.cibkulpjrgtr.us-west-2.redshift.amazonaws.com:5439/bob \
+RDW_Schema$ gradle -Pschema_prefix=bob_ \
+    -Predshift_url=jdbc:redshift://rdw-qa.cibkulpjrgtr.us-west-2.redshift.amazonaws.com:5439/ci \
     -Predshift_user=bob -Predshift_password=bob_redshift_password \
-    -Pdatabase_url=jdbc:mysql://rdw-aurora-dev.cugsexobhx8t.us-west-2.rds.amazonaws.com:3306 \
-    -Pmigrate_olap_prefix=bob_ -Pdatabase_user=bob -Pdatabase_password=bob_aurora_password \
+    -Pdatabase_url=jdbc:mysql://rdw-aurora-ci.cugsexobhx8t.us-west-2.rds.amazonaws.com:3306 \
+    -Pdatabase_user=bob -Pdatabase_password=bob_aurora_password \
     cleanReporting_olap_test cleanMigrate_olap_test migrateReporting_olap_test migrateMigrate_olap_test    
 ```
 
 #### CI and QA
-For CI only the test schemas exist:
+For CI, only the test schemas exist (with no schema prefix):
 ```bash
 gradle \
 -Predshift_url=jdbc:redshift://rdw-qa.cibkulpjrgtr.us-west-2.redshift.amazonaws.com:5439/ci \
