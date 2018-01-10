@@ -115,7 +115,7 @@ Bob, assume they have created `bob_migrate_olap_test` schema in the dev instance
 RDW_Schema$ gradle \
     -Predshift_url=jdbc:redshift://rdw-dev.cibkulpjrgtr.us-west-2.redshift.amazonaws.com:5439/bob \
     -Predshift_user=bob -Predshift_password=bob_redshift_password \
-    -Pdatabase_url=rdw-aurora-dev.cugsexobhx8t.us-west-2.rds.amazonaws.com:3306 \
+    -Pdatabase_url=jdbc:mysql://rdw-aurora-dev.cugsexobhx8t.us-west-2.rds.amazonaws.com:3306 \
     -Pmigrate_olap_prefix=bob_ -Pdatabase_user=bob -Pdatabase_password=bob_aurora_password \
     cleanReporting_olap_test cleanMigrate_olap_test migrateReporting_olap_test migrateMigrate_olap_test    
 ```
