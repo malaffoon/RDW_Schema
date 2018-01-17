@@ -342,43 +342,48 @@ CREATE TABLE status_indicator (
 );
 
 -- Views to support filling in missing data in the aggregate reports.
-CREATE VIEW asmt_active(id, grade_id, school_year, subject_id, type_id) AS
+CREATE VIEW asmt_active(id, grade_id, school_year, subject_id, type_id, label) AS
   SELECT
     ay.asmt_id      AS id,
     a.grade_id AS grade_id,
     ay.school_year,
     a.subject_id,
-    a.type_id
+    a.type_id,
+    a.label
   FROM asmt_active_year ay
     JOIN asmt a ON a.id = ay.asmt_id;
 
 -- Note that all three views below have the same structure so that they could be used interchangeably in the final query.
-CREATE VIEW state_subject_grade_school_year(organization_id, organization_name, organization_type, organization_natural_id, subject_id, grade_id, school_year, asmt_id, asmt_type_id) AS
+CREATE VIEW state_subject_grade_school_year(organization_id, organization_name, organization_type, organization_natural_id, subject_id, subject_code, grade_id, school_year, asmt_id, asmt_label, asmt_type_id) AS
   SELECT
     -1          AS id,
     'State'     AS name,
     'State'     AS organization_type,
     null        AS organization_natural_id,
     s.id,
+    s.code,
     g.id,
     year,
     a.id,
+    a.label,
     a.type_id
   FROM subject s
     CROSS JOIN grade g
     CROSS JOIN school_year y
     JOIN asmt_active a  on a.grade_id = g.id and a.subject_id = s.id and a.school_year = y.year;
 
-CREATE VIEW school_subject_grade_school_year(organization_id, organization_name, organization_type, organization_natural_id, subject_id, grade_id, school_year, asmt_id, asmt_type_id) AS
+CREATE VIEW school_subject_grade_school_year(organization_id, organization_name, organization_type, organization_natural_id, subject_id, subject_code, grade_id, school_year, asmt_id, asmt_label, asmt_type_id) AS
   SELECT
     sch.id,
     sch.name,
     'School' AS organization_type,
     sch.natural_id,
     s.id,
+    s.code,
     g.id,
     year,
     a.id as asmt_id,
+    a.label,
     a.type_id
   FROM school sch
     CROSS JOIN subject s
@@ -386,16 +391,18 @@ CREATE VIEW school_subject_grade_school_year(organization_id, organization_name,
     CROSS JOIN school_year y
     JOIN asmt_active a  on a.grade_id = g.id and a.subject_id = s.id and a.school_year = y.year;
 
-CREATE VIEW district_subject_grade_school_year(organization_id, organization_name, organization_type, organization_natural_id, subject_id, grade_id, school_year, asmt_id, asmt_type_id) AS
+CREATE VIEW district_subject_grade_school_year(organization_id, organization_name, organization_type, organization_natural_id, subject_id, subject_code, grade_id, school_year, asmt_id, asmt_label, asmt_type_id) AS
   SELECT
     d.id,
     d.name,
     'District' AS organization_type,
     d.natural_id,
     s.id,
+    s.code,
     g.id,
     year,
     a.id as asmt_id,
+    a.label,
     a.type_id
   FROM district d
     CROSS JOIN subject s
