@@ -14,6 +14,7 @@ ALTER TABLE percentile
 
 ALTER TABLE percentile_score
   CHANGE COLUMN percent percentile_rank TINYINT NOT NULL,
+  ADD COLUMN score float NOT NULL AFTER percentile_rank,
   CHANGE COLUMN min_score min_inclusive FLOAT NOT NULL,
   CHANGE COLUMN max_score max_exclusive FLOAT NOT NULL;
 
@@ -26,5 +27,6 @@ ALTER TABLE staging_percentile
 
 ALTER TABLE staging_percentile_score
   CHANGE COLUMN percent percentile_rank TINYINT NOT NULL,
+  ADD COLUMN score float NOT NULL AFTER percentile_rank,
   CHANGE COLUMN min_score min_inclusive FLOAT NOT NULL,
   CHANGE COLUMN max_score max_exclusive FLOAT NOT NULL;
