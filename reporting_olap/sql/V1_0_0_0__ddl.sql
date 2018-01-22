@@ -335,6 +335,16 @@ CREATE TABLE fact_student_exam (
   CONSTRAINT fk__fact_student_exam__migrant_status FOREIGN KEY(migrant_status) REFERENCES boolean(id)
 )  COMPOUND SORTKEY (asmt_id, school_id, school_year, student_id);
 
+CREATE VIEW fact_student_exam_new AS SELECT * FROM fact_student_exam;
+CREATE VIEW fact_student_exam_iep AS SELECT * FROM fact_student_exam;
+CREATE VIEW fact_student_exam_lep AS SELECT * FROM fact_student_exam;
+CREATE VIEW fact_student_exam_section504 AS SELECT * FROM fact_student_exam;
+CREATE VIEW fact_student_exam_economic_disadvantage AS SELECT * FROM fact_student_exam;
+CREATE VIEW fact_student_exam_migrant_status AS SELECT * FROM fact_student_exam;
+CREATE VIEW fact_student_exam_gender AS SELECT * FROM fact_student_exam;
+CREATE VIEW fact_student_exam_ethnicity AS SELECT * FROM fact_student_exam;
+CREATE VIEW fact_student_exam_student_grade_id AS SELECT * FROM fact_student_exam;
+
 -- helper table used by the diagnostic API
 CREATE TABLE status_indicator (
   id smallint encode delta NOT NULL PRIMARY KEY,
