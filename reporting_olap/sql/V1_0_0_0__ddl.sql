@@ -296,7 +296,6 @@ CREATE TABLE fact_student_exam (
   student_id bigint encode raw NOT NULL DISTKEY,
   asmt_id bigint encode raw NOT NULL,
   grade_id smallint encode lzo NOT NULL,
-  asmt_grade_id smallint encode lzo NOT NULL, -- TODO: research if this is needed
   school_year smallint encode raw NOT NULL,
   iep smallint encode lzo NOT NULL,
   lep smallint encode lzo NOT NULL,
@@ -333,89 +332,10 @@ CREATE TABLE fact_student_exam (
   CONSTRAINT fk__fact_student_exam__section504 FOREIGN KEY(section504) REFERENCES boolean(id),
   CONSTRAINT fk__fact_student_exam__economic_disadvantage FOREIGN KEY(economic_disadvantage) REFERENCES strict_boolean(id),
   CONSTRAINT fk__fact_student_exam__migrant_status FOREIGN KEY(migrant_status) REFERENCES boolean(id)
-)  COMPOUND SORTKEY (asmt_id, school_id, school_year, student_id);
-
-CREATE VIEW fact_student_exam_new AS SELECT * FROM fact_student_exam;
-CREATE VIEW fact_student_exam_iep AS SELECT * FROM fact_student_exam;
-CREATE VIEW fact_student_exam_lep AS SELECT * FROM fact_student_exam;
-CREATE VIEW fact_student_exam_section504 AS SELECT * FROM fact_student_exam;
-CREATE VIEW fact_student_exam_economic_disadvantage AS SELECT * FROM fact_student_exam;
-CREATE VIEW fact_student_exam_migrant_status AS SELECT * FROM fact_student_exam;
-CREATE VIEW fact_student_exam_gender AS SELECT * FROM fact_student_exam;
-CREATE VIEW fact_student_exam_ethnicity AS SELECT * FROM fact_student_exam;
-CREATE VIEW fact_student_exam_student_grade_id AS SELECT * FROM fact_student_exam;
+)  INTERLEAVED SORTKEY (school_year, asmt_id, school_id, student_id);
 
 -- helper table used by the diagnostic API
 CREATE TABLE status_indicator (
   id smallint encode delta NOT NULL PRIMARY KEY,
   updated timestamptz DEFAULT current_timestamp
 );
-
--- Views to support filling in missing data in the aggregate reports.
-CREATE VIEW asmt_active(id, grade_id, school_year, subject_id, type_id, label) AS
-  SELECT
-    ay.asmt_id      AS id,
-    a.grade_id AS grade_id,
-    ay.school_year,
-    a.subject_id,
-    a.type_id,
-    a.label
-  FROM asmt_active_year ay
-    JOIN asmt a ON a.id = ay.asmt_id;
-
--- Note that all three views below have the same structure so that they could be used interchangeably in the final query.
-CREATE VIEW state_subject_grade_school_year(organization_id, organization_name, organization_type, organization_natural_id, subject_id, subject_code, grade_id, school_year, asmt_id, asmt_label, asmt_type_id) AS
-  SELECT
-    -1          AS id,
-    'State'     AS name,
-    'State'     AS organization_type,
-    null        AS organization_natural_id,
-    s.id,
-    s.code,
-    g.id,
-    year,
-    a.id,
-    a.label,
-    a.type_id
-  FROM subject s
-    CROSS JOIN grade g
-    CROSS JOIN school_year y
-    JOIN asmt_active a  on a.grade_id = g.id and a.subject_id = s.id and a.school_year = y.year;
-
-CREATE VIEW school_subject_grade_school_year(organization_id, organization_name, organization_type, organization_natural_id, subject_id, subject_code, grade_id, school_year, asmt_id, asmt_label, asmt_type_id) AS
-  SELECT
-    sch.id,
-    sch.name,
-    'School' AS organization_type,
-    sch.natural_id,
-    s.id,
-    s.code,
-    g.id,
-    year,
-    a.id as asmt_id,
-    a.label,
-    a.type_id
-  FROM school sch
-    CROSS JOIN subject s
-    CROSS JOIN grade g
-    CROSS JOIN school_year y
-    JOIN asmt_active a  on a.grade_id = g.id and a.subject_id = s.id and a.school_year = y.year;
-
-CREATE VIEW district_subject_grade_school_year(organization_id, organization_name, organization_type, organization_natural_id, subject_id, subject_code, grade_id, school_year, asmt_id, asmt_label, asmt_type_id) AS
-  SELECT
-    d.id,
-    d.name,
-    'District' AS organization_type,
-    d.natural_id,
-    s.id,
-    s.code,
-    g.id,
-    year,
-    a.id as asmt_id,
-    a.label,
-    a.type_id
-  FROM district d
-    CROSS JOIN subject s
-    CROSS JOIN grade g
-    CROSS JOIN school_year y
-    JOIN asmt_active a  on a.grade_id = g.id and a.subject_id = s.id and a.school_year = y.year;
