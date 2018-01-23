@@ -339,3 +339,13 @@ CREATE TABLE status_indicator (
   id smallint encode delta NOT NULL PRIMARY KEY,
   updated timestamptz DEFAULT current_timestamp
 );
+
+CREATE VIEW fact_student_exam_test AS
+SELECT
+  fe.*,
+  a.grade_id   AS asmt_grade_id,
+  a.subject_id AS asmt_subject_id,
+  s.gender_id  AS student_gender_id
+FROM fact_student_exam_saved fe
+  JOIN asmt a ON a.id = fe.asmt_id
+  JOIN student s ON s.id = fe.student_id;
