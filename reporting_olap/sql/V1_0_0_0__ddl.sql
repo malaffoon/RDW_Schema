@@ -240,10 +240,10 @@ CREATE TABLE school (
 CREATE TABLE state_embargo (
   aggregate boolean NOT NULL,
   migrate_id bigint NOT NULL
-);
+) DISTSTYLE ALL;
 
 CREATE TABLE asmt (
-  id int encode raw NOT NULL PRIMARY KEY SORTKEY,
+  id int encode raw NOT NULL PRIMARY KEY,
   grade_id smallint NOT NULL,
   school_year smallint NOT NULL,
   subject_id smallint NOT NULL,
@@ -253,11 +253,11 @@ CREATE TABLE asmt (
   migrate_id bigint encode delta NOT NULL,
   updated timestamptz NOT NULL,
   update_import_id bigint encode delta NOT NULL,
-  CONSTRAINT fk__asmt__type FOREIGN KEY(type_id) REFERENCES asmt(id),
+  CONSTRAINT fk__asmt__type FOREIGN KEY(type_id) REFERENCES asmt_type(id),
   CONSTRAINT fk__asmt__subject FOREIGN KEY(subject_id) REFERENCES subject(id),
   CONSTRAINT fk__asmt__grade FOREIGN KEY(grade_id) REFERENCES grade(id),
   CONSTRAINT fk__asmt__school_year FOREIGN KEY(school_year) REFERENCES school_year(year)
-) DISTSTYLE ALL;
+) DISTSTYLE ALL COMPOUND SORTKEY (id, type_id, grade_id, subject_id);
 
 CREATE TABLE asmt_active_year (
   asmt_id int NOT NULL,
@@ -294,7 +294,7 @@ CREATE TABLE fact_student_exam (
   id bigint encode delta NOT NULL PRIMARY KEY,
   school_id integer encode raw NOT NULL,
   student_id bigint encode raw NOT NULL DISTKEY,
-  asmt_id bigint encode raw NOT NULL,
+  asmt_id int encode raw NOT NULL,
   grade_id smallint encode lzo NOT NULL,
   school_year smallint encode raw NOT NULL,
   iep smallint encode lzo NOT NULL,
@@ -339,13 +339,3 @@ CREATE TABLE status_indicator (
   id smallint encode delta NOT NULL PRIMARY KEY,
   updated timestamptz DEFAULT current_timestamp
 );
-
-CREATE VIEW fact_student_exam_test AS
-SELECT
-  fe.*,
-  a.grade_id   AS asmt_grade_id,
-  a.subject_id AS asmt_subject_id,
-  s.gender_id  AS student_gender_id
-FROM fact_student_exam fe
-  JOIN asmt a ON a.id = fe.asmt_id
-  JOIN student s ON s.id = fe.student_id;
