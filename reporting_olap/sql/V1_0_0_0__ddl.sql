@@ -243,7 +243,7 @@ CREATE TABLE state_embargo (
 ) DISTSTYLE ALL;
 
 CREATE TABLE asmt (
-  id int encode raw NOT NULL PRIMARY KEY SORTKEY,
+  id int encode raw NOT NULL PRIMARY KEY,
   grade_id smallint NOT NULL,
   school_year smallint NOT NULL,
   subject_id smallint NOT NULL,
