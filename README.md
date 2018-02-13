@@ -82,7 +82,7 @@ RDW_Schema$ ./gradlew repairWarehouse
 The flyway tasks use gradle properties to set the database url, schema, user, password, etc. These can be set in the
 `gradle.properties` file or overridden on the command line, e.g.
 ```bash
-RDW_Schema$ ./gradlew -Pdatabase_url="jdbc:mysql://rdw-aurora-dev.cugsexobhx8t.us-west-2.rds.amazonaws.com:3306/" -Pdatabase_user=sbac -Pdatabse_password=mypassword infoReporting
+RDW_Schema$ ./gradlew -Pdatabase_url="jdbc:mysql://rdw-aurora-dev.cugsexobhx8t.us-west-2.rds.amazonaws.com:3306/" -Pdatabase_user=sbac -Pdatabase_password=mypassword infoReporting
 ```
 
 ### Redshift
