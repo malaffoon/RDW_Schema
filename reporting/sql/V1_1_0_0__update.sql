@@ -15,6 +15,12 @@
 --   V1_1_0_1__add_user_report_chunk_tracking.sql
 --   ...
 --   V1_1_0_16__migrate_embargo.sql
+--
+-- A second merge happened when RDW_Schema was on build 316 and incorporated:
+--   V1_1_0_1__percentile.sql
+--   ...
+--   V1_1_0_5__migrate_user_report_values.sql
+-- It also included some changes that would've been in V1_1_0_6__claim_names.sql
 
 USE ${schemaName};
 
@@ -23,11 +29,13 @@ ALTER TABLE migrate
   MODIFY COLUMN size int,
   ADD COLUMN migrate_embargo tinyint;
 
-
-ALTER TABLE user_report
-  ADD COLUMN total_chunk_count INT NOT NULL DEFAULT 0,
-  ADD COLUMN complete_chunk_count INT NOT NULL DEFAULT 0;
-
+CREATE TABLE user_report_metadata (
+  report_id BIGINT NOT NULL,
+  name VARCHAR(50) NOT NULL,
+  value VARCHAR(255) NOT NULL,
+  PRIMARY KEY (report_id, name),
+  CONSTRAINT fk__user_report__report_id FOREIGN KEY (report_id) REFERENCES user_report (id) ON DELETE CASCADE
+);
 
 CREATE TABLE IF NOT EXISTS staging_district_group (
   id int NOT NULL PRIMARY KEY,
@@ -151,6 +159,7 @@ ALTER TABLE item
   ADD COLUMN field_test tinyint,
   ADD COLUMN active tinyint,
   ADD COLUMN type varchar(40),
+  ADD COLUMN performance_task_writing_type varchar(16),
   ADD COLUMN options_count tinyint,
   ADD COLUMN answer_key varchar(50);
 
@@ -158,6 +167,7 @@ ALTER TABLE staging_item
   ADD COLUMN field_test tinyint,
   ADD COLUMN active tinyint,
   ADD COLUMN type varchar(40),
+  ADD COLUMN performance_task_writing_type varchar(16),
   ADD COLUMN options_count tinyint,
   ADD COLUMN answer_key varchar(50);
 
@@ -169,4 +179,74 @@ ALTER TABLE instructional_resource
   ADD COLUMN performance_level TINYINT DEFAULT 0,
   ADD COLUMN org_id INT,
   ADD UNIQUE INDEX idx__instructional_resource (asmt_name, org_level, performance_level, org_id);
+
+
+-- percentile -----------------------------------------------------------------------------------
+
+CREATE TABLE percentile (
+  id INT NOT NULL PRIMARY KEY,
+  asmt_id INT NOT NULL,
+  start_date DATE NOT NULL,
+  end_date DATE NOT NULL,
+  count INT NOT NULL,
+  mean FLOAT NOT NULL,
+  standard_deviation FLOAT NULL,
+  min_score FLOAT NOT NULL,
+  max_score FLOAT NOT NULL,
+  update_import_id BIGINT NOT NULL,
+  updated TIMESTAMP(6) NOT NULL,
+  migrate_id BIGINT NOT NULL,
+  UNIQUE INDEX idx__percentile__asmt_start_date_end_date (asmt_id, start_date, end_date),
+  CONSTRAINT fk__percentile__asmt FOREIGN KEY (asmt_id) REFERENCES asmt (id)
+);
+
+CREATE TABLE percentile_score (
+  percentile_id INT NOT NULL,
+  percentile_rank TINYINT NOT NULL,
+  score float NOT NULL,
+  min_inclusive FLOAT NOT NULL,
+  max_exclusive FLOAT NOT NULL,
+  PRIMARY KEY (percentile_id, percentile_rank),
+  CONSTRAINT fk__percentile_score__percentile FOREIGN KEY (percentile_id) REFERENCES percentile (id)
+);
+
+CREATE TABLE staging_percentile (
+  id INT NOT NULL PRIMARY KEY,
+  asmt_id INT NOT NULL,
+  start_date DATE NOT NULL,
+  end_date DATE NOT NULL,
+  count INT NOT NULL,
+  mean FLOAT NOT NULL,
+  standard_deviation FLOAT NULL,
+  min_score FLOAT NOT NULL,
+  max_score FLOAT NOT NULL,
+  update_import_id BIGINT NOT NULL,
+  updated TIMESTAMP(6) NOT NULL,
+  migrate_id BIGINT NOT NULL,
+  deleted TINYINT NOT NULL,
+  UNIQUE INDEX idx__staging_percentile__asmt_start_date_end_date (asmt_id, start_date, end_date)
+);
+
+CREATE TABLE staging_percentile_score (
+  percentile_id INT NOT NULL,
+  percentile_rank TINYINT NOT NULL,
+  score float NOT NULL,
+  min_inclusive FLOAT NOT NULL,
+  max_exclusive FLOAT NOT NULL,
+  PRIMARY KEY (percentile_id, percentile_rank)
+);
+
+
+-- fix claim names (these aren't really used but let's make them correct anyway) ----------------
+UPDATE claim SET name='Reading' WHERE code='1-IT';
+UPDATE claim SET name='Reading' WHERE code='1-LT';
+UPDATE claim SET name='Writing' WHERE code='2-W';
+UPDATE claim SET name='Listening' WHERE code='3-L';
+UPDATE claim SET name='Listening' WHERE code='3-S';
+UPDATE claim SET name='Research and Inquiry' WHERE code='4-CR';
+
+-- remove obsolete Known Issues text
+REPLACE INTO translation (label_code, namespace, language_code, label) VALUES
+  ('html.system-news', 'frontend', 'eng',
+   '<h2 class="blue-dark h3 mb-md">Note</h2><div class="summary-reports-container mb-md"><p>Item level data and session IDs are not available for tests administered prior to the 2017-18 school year.</p></div>');
 

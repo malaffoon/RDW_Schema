@@ -19,6 +19,12 @@
 --   V1_1_0_1__add_school_groups.sql
 --   ...
 --   V1_1_0_26__embargo_cleanup.sql
+--
+-- A second merge happened when RDW_Schema was on build 316 and incorporated:
+--   V1_1_0_2__percentile.sql
+--   ...
+--   V1_1_0_9__percentile_deleted.sql
+-- It also included some changes that would've been in V1_1_0_10__claim_names.sql
 
 USE ${schemaName};
 
@@ -187,6 +193,7 @@ ALTER TABLE item
   ADD COLUMN field_test tinyint,
   ADD COLUMN active tinyint,
   ADD COLUMN type varchar(40),
+  ADD COLUMN performance_task_writing_type varchar(16),
   ADD COLUMN options_count tinyint,
   ADD COLUMN answer_key varchar(50);
 
@@ -213,6 +220,10 @@ ALTER TABLE exam_item
 ALTER TABLE exam_available_accommodation
   ADD COLUMN created timestamp(6) DEFAULT CURRENT_TIMESTAMP(6) NOT NULL;
 
+-- NOTE: these two indexes significantly improve the validation scripts run time.
+-- If you need to improve ingest performance when DB is a bottleneck, consider dropping them and re-creating during the validation run time
+ALTER TABLE exam ADD INDEX idx__exam__student_school_year_asmt (student_id, school_year, asmt_id);
+ALTER TABLE exam ADD INDEX idx__exam__type_deleted_student_score_and_more (type_id, deleted, student_id, scale_score, scale_score_std_err, performance_level);
 
 
 -- organization ---------------------------------------------------------------------------------
@@ -300,6 +311,40 @@ CREATE TABLE IF NOT EXISTS state_embargo (
   updated TIMESTAMP(6) DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6) NOT NULL,
   updated_by varchar(255),
   PRIMARY KEY(school_year)
+);
+
+
+-- percentile -----------------------------------------------------------------------------------
+
+INSERT INTO import_content (id, name) VALUES (7, 'NORMS');
+
+CREATE TABLE percentile (
+  id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  asmt_id INT NOT NULL,
+  start_date DATE NOT NULL,
+  end_date DATE NOT NULL,
+  count INT NOT NULL,
+  mean FLOAT NOT NULL,
+  standard_deviation FLOAT NULL,
+  min_score FLOAT NOT NULL,
+  max_score FLOAT NOT NULL,
+  deleted TINYINT NOT NULL,
+  import_id BIGINT NOT NULL,
+  update_import_id BIGINT NOT NULL,
+  created TIMESTAMP(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
+  updated TIMESTAMP(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6),
+  UNIQUE INDEX idx__percentile__asmt_start_date_end_date (asmt_id, start_date, end_date),
+  CONSTRAINT fk__percentile__asmt FOREIGN KEY (asmt_id) REFERENCES asmt (id)
+);
+
+CREATE TABLE percentile_score (
+  percentile_id INT NOT NULL,
+  percentile_rank TINYINT NOT NULL,
+  score FLOAT NOT NULL,
+  min_inclusive FLOAT NOT NULL,
+  max_exclusive FLOAT NOT NULL,
+  PRIMARY KEY (percentile_id, percentile_rank),
+  CONSTRAINT fk__percentile_score__percentile FOREIGN KEY (percentile_id) REFERENCES percentile (id)
 );
 
 
@@ -439,6 +484,15 @@ CREATE PROCEDURE student_upsert(IN  p_ssid                          VARCHAR(65),
   END;
 //
 DELIMITER ;
+
+
+-- fix claim names (these aren't really used but let's make them correct anyway) ----------------
+UPDATE claim SET name='Reading' WHERE code='1-IT';
+UPDATE claim SET name='Reading' WHERE code='1-LT';
+UPDATE claim SET name='Writing' WHERE code='2-W';
+UPDATE claim SET name='Listening' WHERE code='3-L';
+UPDATE claim SET name='Listening' WHERE code='3-S';
+UPDATE claim SET name='Research and Inquiry' WHERE code='4-CR';
 
 
 -- clean up helper
