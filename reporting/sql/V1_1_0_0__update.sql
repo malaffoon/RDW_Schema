@@ -20,7 +20,7 @@
 --   V1_1_0_1__percentile.sql
 --   ...
 --   V1_1_0_5__migrate_user_report_values.sql
--- It also included some changes that would've been in V1_1_0_6__claim_names.sql
+-- It also included changes that would've been in V1_1_0_6__claim_names.sql and V1_1_0_7__user_report.sql
 
 USE ${schemaName};
 
@@ -36,6 +36,16 @@ CREATE TABLE user_report_metadata (
   PRIMARY KEY (report_id, name),
   CONSTRAINT fk__user_report__report_id FOREIGN KEY (report_id) REFERENCES user_report (id) ON DELETE CASCADE
 );
+
+ALTER TABLE user_report
+  ADD COLUMN updated TIMESTAMP(6),
+  DROP COLUMN job_execution_id;
+
+UPDATE user_report SET updated = created;
+
+ALTER TABLE user_report
+  MODIFY COLUMN updated TIMESTAMP(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6);
+
 
 CREATE TABLE IF NOT EXISTS staging_district_group (
   id int NOT NULL PRIMARY KEY,
