@@ -193,8 +193,8 @@ SELECT * FROM schema_version;
 -- if things look good, reset entries to match condensed scripts:
 DELETE FROM schema_version WHERE installed_rank > 3;
 INSERT INTO schema_version VALUES
-  (4, '1.1.0.0', 'update', 'SQL', 'V1_1_0_0__update.sql', -182972627, 'root', '2018-02-28 12:00:00', 340542, 1),
-  (5, '1.1.0.1', 'audit', 'SQL', 'V1_1_0_1__audit.sql', -506401667, 'root', '2018-02-28 12:00:00', 621, 1);
+  (4, '1.1.0.0', 'update', 'SQL', 'V1_1_0_0__update.sql', 518740504, 'root', '2018-02-28 12:00:00', 340542, 1),
+  (5, '1.1.0.1', 'audit', 'SQL', 'V1_1_0_1__audit.sql', -1236730527, 'root', '2018-02-28 12:00:00', 621, 1);
 
 USE reporting;
 -- query schema_version and make sure the applied scripts match the list of pre-condensed scripts

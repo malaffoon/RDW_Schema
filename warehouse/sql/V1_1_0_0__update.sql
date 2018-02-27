@@ -25,6 +25,8 @@
 --   ...
 --   V1_1_0_9__percentile_deleted.sql
 -- It also included some changes that would've been in V1_1_0_10__claim_names.sql
+--
+-- Final cleanup happened during builds 319-321 with embargo audit and a couple minor tweaks.
 
 USE ${schemaName};
 
@@ -328,7 +330,7 @@ CREATE TABLE percentile (
   standard_deviation FLOAT NULL,
   min_score FLOAT NOT NULL,
   max_score FLOAT NOT NULL,
-  deleted TINYINT NOT NULL,
+  deleted TINYINT NOT NULL DEFAULT 0,
   import_id BIGINT NOT NULL,
   update_import_id BIGINT NOT NULL,
   created TIMESTAMP(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
