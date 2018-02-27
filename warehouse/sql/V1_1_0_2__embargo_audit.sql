@@ -108,3 +108,6 @@ FOR EACH ROW
       OLD.aggregate,
       OLD.updated,
       OLD.updated_by;
+
+-- unrelated - fixing it to be consistent
+ALTER TABLE percentile MODIFY deleted tinyint NOT NULL DEFAULT 0;
