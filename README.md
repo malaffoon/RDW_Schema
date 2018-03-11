@@ -205,3 +205,13 @@ DELETE FROM schema_version WHERE installed_rank > 3;
 INSERT INTO schema_version VALUES
   (4, '1.1.0.0', 'update', 'SQL', 'V1_1_0_0__update.sql', -1706757701, 'root', '2018-02-28 12:00:00', 9533, 1);
 ```
+
+#### v1.1.1
+
+The V1_1_1 script(s) are patches to v1.1. They have been applied to production so should not be 
+condensed. If you do insist on condensing them, please modify the update instructions to deal with 
+tweaking the flyway table. They add the following row(s) to the flyway table:
+```sql
+INSERT INTO schema_version VALUES
+  (6,'1.1.1.0','student upsert','SQL','V1_1_1_0__student_upsert.sql',-223870699,'root','2018-03-11 15:58:28',1,1);
+```
