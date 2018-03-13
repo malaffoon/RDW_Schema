@@ -126,7 +126,6 @@ CREATE TABLE staging_exam (
   completeness_id smallint NOT NULL,
   administration_condition_id smallint NOT NULL,
   scale_score float NOT NULL ,
-  scale_score_std_err float NOT NULL,
   performance_level smallint NOT NULL ,
   deleted boolean NOT NULL,
   completed_at timestamptz NOT NULL,
@@ -136,6 +135,7 @@ CREATE TABLE staging_exam (
   latest boolean
 );
 
+-- TODO: this needs to be reviewed once we know if we need to support Claim Report
 CREATE TABLE staging_exam_claim_score (
   id bigint NOT NULL PRIMARY KEY,
   exam_id bigint NOT NULL,
@@ -305,20 +305,7 @@ CREATE TABLE fact_student_exam (
   completeness_id smallint encode lzo NOT NULL,
   administration_condition_id smallint encode lzo NOT NULL,
   scale_score float NOT NULL encode bytedict ,
-  scale_score_std_err float NOT NULL encode bytedict ,
   performance_level smallint NOT NULL encode lzo,
-  claim1_scale_score float encode bytedict ,
-  claim1_scale_score_std_err float encode bytedict ,
-  claim1_category smallint encode lzo,
-  claim2_scale_score float encode bytedict ,
-  claim2_scale_score_std_err float encode bytedict ,
-  claim2_category smallint encode lzo,
-  claim3_scale_score float encode bytedict,
-  claim3_scale_score_std_err float encode bytedict,
-  claim3_category smallint encode lzo,
-  claim4_scale_score float encode bytedict,
-  claim4_scale_score_std_err float encode bytedict,
-  claim4_category smallint encode lzo,
   completed_at timestamptz encode lzo NOT NULL,
   migrate_id bigint encode delta NOT NULL,
   updated timestamptz NOT NULL,
@@ -332,7 +319,7 @@ CREATE TABLE fact_student_exam (
   CONSTRAINT fk__fact_student_exam__section504 FOREIGN KEY(section504) REFERENCES boolean(id),
   CONSTRAINT fk__fact_student_exam__economic_disadvantage FOREIGN KEY(economic_disadvantage) REFERENCES strict_boolean(id),
   CONSTRAINT fk__fact_student_exam__migrant_status FOREIGN KEY(migrant_status) REFERENCES boolean(id)
-)  INTERLEAVED SORTKEY (school_year, asmt_id, school_id, student_id);
+)  COMPOUND SORTKEY (school_year, asmt_id, school_id, student_id);
 
 -- helper table used by the diagnostic API
 CREATE TABLE status_indicator (
