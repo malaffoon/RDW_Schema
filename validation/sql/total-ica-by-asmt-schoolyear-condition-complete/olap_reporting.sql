@@ -3,7 +3,7 @@ SELECT
     e.asmt_id,
     e.school_year,
     ac.code,
-    CASE WHEN completeness_id = 2 THEN 'TRUE' ELSE 'FALSE' END
+    CASE WHEN e.completeness_id = 2 THEN 'TRUE' ELSE 'FALSE' END
   FROM fact_student_exam e
     JOIN asmt a ON e.asmt_id = a.id
     JOIN administration_condition ac ON e.administration_condition_id = ac.id
@@ -12,10 +12,10 @@ SELECT
     e.asmt_id,
     e.school_year,
     ac.code,
-    completeness_id
+    e.completeness_id
   ORDER BY
     count(*),
     e.asmt_id,
     e.school_year,
     ac.code,
-    completeness_id;
+    e.completeness_id;

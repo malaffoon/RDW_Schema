@@ -6,9 +6,9 @@ SELECT
   FROM (
          SELECT
            count(*) AS count,
-           school_id
+           e.school_id
          FROM fact_student_iab_exam e
-         GROUP BY school_id
+         GROUP BY e.school_id
        ) ex
     JOIN school sch ON sch.id = ex.school_id
     JOIN district d ON d.id = sch.district_id
