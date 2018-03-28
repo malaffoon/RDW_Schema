@@ -47,7 +47,7 @@ reporting_olap_password=
 ```bash
 ./validate-migration.sh secrets/local.sh
 ```
-2. To validate both reporting only
+2. To validate reporting only
 ```bash
 ./validate-migration.sh secrets/local.sh reporting
 ```
