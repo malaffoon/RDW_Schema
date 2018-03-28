@@ -7,9 +7,7 @@ SELECT
          SELECT
            count(*) AS count,
            e.school_id
-         FROM fact_student_exam e
-            JOIN asmt a ON e.asmt_id = a.id
-            WHERE a.type_id = 1
+         FROM fact_student_iab_exam e
          GROUP BY e.school_id
        ) ex
     JOIN school sch ON sch.id = ex.school_id
