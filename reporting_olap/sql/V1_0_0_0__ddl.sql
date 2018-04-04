@@ -300,7 +300,7 @@ CREATE TABLE student_ethnicity (
   student_id int encode raw NOT NULL SORTKEY DISTKEY
 ) DISTSTYLE KEY;
 
--- ICA and Summative fact data
+-- ICA and Summative fact data for custom aggregate report
 CREATE TABLE fact_student_exam (
   id bigint encode delta NOT NULL PRIMARY KEY,
   school_id integer encode raw NOT NULL,
@@ -336,7 +336,7 @@ CREATE TABLE fact_student_exam (
   CONSTRAINT fk__fact_student_exam__migrant_status FOREIGN KEY(migrant_status) REFERENCES boolean(id)
 )  COMPOUND SORTKEY (school_year, asmt_id, school_id, student_id);
 
--- IAB fact data
+-- IAB fact data for custom aggregate report
 CREATE TABLE fact_student_iab_exam (
   id bigint encode delta NOT NULL PRIMARY KEY,
   school_id integer encode raw NOT NULL,
@@ -371,6 +371,43 @@ CREATE TABLE fact_student_iab_exam (
   CONSTRAINT fk__fact_student_iab_exam__economic_disadvantage FOREIGN KEY(economic_disadvantage) REFERENCES strict_boolean(id),
   CONSTRAINT fk__fact_student_iab_exam__migrant_status FOREIGN KEY(migrant_status) REFERENCES boolean(id)
 )  COMPOUND SORTKEY (school_year, asmt_id, school_id, student_id);
+
+-- Exams data for the longitudinal report.
+-- While the tables structure is similar to the other tables, the loaded data is filtered based on the different rules
+CREATE TABLE fact_student_exam_longitudinal (
+  id bigint encode delta NOT NULL PRIMARY KEY,
+  school_id integer encode raw NOT NULL,
+  student_id bigint encode raw NOT NULL DISTKEY,
+  asmt_id int encode raw NOT NULL,
+  grade_id smallint encode lzo NOT NULL,
+  school_year smallint encode raw NOT NULL,
+  iep smallint encode lzo NOT NULL,
+  lep smallint encode lzo NOT NULL,
+  elas_id smallint encode lzo NOT NULL,
+  section504 smallint encode lzo NOT NULL,
+  economic_disadvantage smallint encode lzo NOT NULL,
+  migrant_status smallint encode lzo NOT NULL,
+  completeness_id smallint encode lzo NOT NULL,
+  administration_condition_id smallint encode lzo NOT NULL,
+  scale_score float encode bytedict NOT NULL,
+  performance_level smallint encode lzo NOT NULL,
+  completed_at timestamptz encode lzo NOT NULL,
+  migrate_id bigint encode delta NOT NULL,
+  updated timestamptz NOT NULL,
+  update_import_id bigint encode delta NOT NULL,
+  CONSTRAINT fk__fact_student_exam__asmt FOREIGN KEY(asmt_id) REFERENCES asmt(id),
+  CONSTRAINT fk__fact_student_exam__school_year FOREIGN KEY(school_year) REFERENCES school_year(year),
+  CONSTRAINT fk__fact_student_exam__school FOREIGN KEY(school_id) REFERENCES school(id),
+  CONSTRAINT fk__fact_student_exam__student FOREIGN KEY(student_id) REFERENCES student(id),
+  CONSTRAINT fk__fact_student_exam__iep FOREIGN KEY(iep) REFERENCES strict_boolean(id),
+  CONSTRAINT fk__fact_student_exam__lep FOREIGN KEY(lep) REFERENCES strict_boolean(id),
+  CONSTRAINT fk__fact_student_exam__elas FOREIGN KEY(elas_id) REFERENCES elas(id),
+  CONSTRAINT fk__fact_student_exam__completeness FOREIGN KEY(completeness_id) REFERENCES completeness(id),
+  CONSTRAINT fk__fact_student_exam__administration_comdition FOREIGN KEY(administration_condition_id) REFERENCES administration_condition(id),
+  CONSTRAINT fk__fact_student_exam__section504 FOREIGN KEY(section504) REFERENCES boolean(id),
+  CONSTRAINT fk__fact_student_exam__economic_disadvantage FOREIGN KEY(economic_disadvantage) REFERENCES strict_boolean(id),
+  CONSTRAINT fk__fact_student_exam__migrant_status FOREIGN KEY(migrant_status) REFERENCES boolean(id)
+)  COMPOUND SORTKEY (student_id, school_year, asmt_id, school_id);
 
 -- helper table used by the diagnostic API
 CREATE TABLE status_indicator (
