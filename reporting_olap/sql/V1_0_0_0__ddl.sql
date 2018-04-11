@@ -119,6 +119,8 @@ CREATE TABLE staging_exam (
   id bigint NOT NULL PRIMARY KEY,
   student_id int NOT NULL,
   grade_id smallint NOT NULL,
+  subject_id smallint,    -- this is updated later, not as part of loading into the staging
+  asmt_grade_id smallint, -- this is updated later, not as part of loading into the staging
   school_id int NOT NULL,
   iep smallint NOT NULL,
   lep smallint,
@@ -131,8 +133,8 @@ CREATE TABLE staging_exam (
   asmt_id int NOT NULL,
   completeness_id smallint NOT NULL,
   administration_condition_id smallint NOT NULL,
-  scale_score float NOT NULL ,
-  performance_level smallint NOT NULL ,
+  scale_score float NOT NULL,
+  performance_level smallint NOT NULL,
   deleted boolean NOT NULL,
   completed_at timestamptz NOT NULL,
   migrate_id bigint NOT NULL,
@@ -379,6 +381,8 @@ CREATE TABLE fact_student_exam_longitudinal (
   school_id integer encode raw NOT NULL,
   student_id bigint encode raw NOT NULL DISTKEY,
   asmt_id int encode raw NOT NULL,
+  subject_id smallint NOT NULL,
+  asmt_grade_id smallint NOT NULL,
   grade_id smallint encode lzo NOT NULL,
   school_year smallint encode raw NOT NULL,
   iep smallint encode lzo NOT NULL,
@@ -395,19 +399,22 @@ CREATE TABLE fact_student_exam_longitudinal (
   migrate_id bigint encode delta NOT NULL,
   updated timestamptz NOT NULL,
   update_import_id bigint encode delta NOT NULL,
-  CONSTRAINT fk__fact_student_exam__asmt FOREIGN KEY(asmt_id) REFERENCES asmt(id),
-  CONSTRAINT fk__fact_student_exam__school_year FOREIGN KEY(school_year) REFERENCES school_year(year),
-  CONSTRAINT fk__fact_student_exam__school FOREIGN KEY(school_id) REFERENCES school(id),
-  CONSTRAINT fk__fact_student_exam__student FOREIGN KEY(student_id) REFERENCES student(id),
-  CONSTRAINT fk__fact_student_exam__iep FOREIGN KEY(iep) REFERENCES strict_boolean(id),
-  CONSTRAINT fk__fact_student_exam__lep FOREIGN KEY(lep) REFERENCES strict_boolean(id),
-  CONSTRAINT fk__fact_student_exam__elas FOREIGN KEY(elas_id) REFERENCES elas(id),
-  CONSTRAINT fk__fact_student_exam__completeness FOREIGN KEY(completeness_id) REFERENCES completeness(id),
-  CONSTRAINT fk__fact_student_exam__administration_comdition FOREIGN KEY(administration_condition_id) REFERENCES administration_condition(id),
-  CONSTRAINT fk__fact_student_exam__section504 FOREIGN KEY(section504) REFERENCES boolean(id),
-  CONSTRAINT fk__fact_student_exam__economic_disadvantage FOREIGN KEY(economic_disadvantage) REFERENCES strict_boolean(id),
-  CONSTRAINT fk__fact_student_exam__migrant_status FOREIGN KEY(migrant_status) REFERENCES boolean(id)
-)  COMPOUND SORTKEY (student_id, school_year, asmt_id, school_id);
+  CONSTRAINT fk__fact_student_exam_longitudinal__asmt FOREIGN KEY(asmt_id) REFERENCES asmt(id),
+  CONSTRAINT fk__fact_student_exam_longitudinal__subject_id FOREIGN KEY(subject_id) REFERENCES subject(id),
+  CONSTRAINT fk__fact_student_exam_longitudinal__asmt_grade_id FOREIGN KEY(asmt_grade_id) REFERENCES grade(id),
+  CONSTRAINT fk__fact_student_exam_longitudinal__grade_id FOREIGN KEY(grade_id) REFERENCES grade(id),
+  CONSTRAINT fk__fact_student_exam_longitudinal__school_year FOREIGN KEY(school_year) REFERENCES school_year(year),
+  CONSTRAINT fk__fact_student_exam_longitudinal__school FOREIGN KEY(school_id) REFERENCES school(id),
+  CONSTRAINT fk__fact_student_exam_longitudinal__student FOREIGN KEY(student_id) REFERENCES student(id),
+  CONSTRAINT fk__fact_student_exam_longitudinal__iep FOREIGN KEY(iep) REFERENCES strict_boolean(id),
+  CONSTRAINT fk__fact_student_exam_longitudinal__lep FOREIGN KEY(lep) REFERENCES strict_boolean(id),
+  CONSTRAINT fk__fact_student_exam_longitudinal__elas FOREIGN KEY(elas_id) REFERENCES elas(id),
+  CONSTRAINT fk__fact_student_exam_longitudinal__completeness FOREIGN KEY(completeness_id) REFERENCES completeness(id),
+  CONSTRAINT fk__fact_student_exam_longitudinal__administration_comdition FOREIGN KEY(administration_condition_id) REFERENCES administration_condition(id),
+  CONSTRAINT fk__fact_student_exam_longitudinal__section504 FOREIGN KEY(section504) REFERENCES boolean(id),
+  CONSTRAINT fk__fact_student_exam_longitudinal__economic_disadvantage FOREIGN KEY(economic_disadvantage) REFERENCES strict_boolean(id),
+  CONSTRAINT fk__fact_student_exam_longitudinal__migrant_status FOREIGN KEY(migrant_status) REFERENCES boolean(id)
+)  COMPOUND SORTKEY (student_id, subject_id, school_year, asmt_grade_id, school_id);
 
 -- helper table used by the diagnostic API
 CREATE TABLE status_indicator (
