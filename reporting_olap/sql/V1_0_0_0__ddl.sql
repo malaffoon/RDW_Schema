@@ -9,32 +9,32 @@ SET client_encoding = 'UTF8';
 -- staging tables
 CREATE TABLE staging_grade (
   id smallint NOT NULL PRIMARY KEY,
-  code character varying(2) NOT NULL UNIQUE
+  code varchar(2) NOT NULL UNIQUE
 );
 
 CREATE TABLE staging_completeness (
   id smallint NOT NULL PRIMARY KEY,
-  code character varying(10) NOT NULL UNIQUE
+  code varchar(10) NOT NULL UNIQUE
 );
 
 CREATE TABLE staging_administration_condition (
   id smallint NOT NULL PRIMARY KEY,
-  code character varying(20) NOT NULL UNIQUE
+  code varchar(20) NOT NULL UNIQUE
 );
 
 CREATE TABLE staging_ethnicity (
   id smallint NOT NULL PRIMARY KEY,
-  code character varying(120) NOT NULL UNIQUE
+  code varchar(120) NOT NULL UNIQUE
 );
 
 CREATE TABLE staging_gender (
   id smallint NOT NULL PRIMARY KEY,
-  code character varying(80) NOT NULL UNIQUE
+  code varchar(80) NOT NULL UNIQUE
 );
 
 CREATE TABLE staging_elas (
   id smallint NOT NULL PRIMARY KEY,
-  code character varying(20) NOT NULL UNIQUE
+  code varchar(20) NOT NULL UNIQUE
 );
 
 CREATE TABLE staging_asmt (
@@ -43,8 +43,8 @@ CREATE TABLE staging_asmt (
   school_year smallint NOT NULL,
   subject_id smallint NOT NULL,
   type_id smallint NOT NULL,
-  name character varying(250) NOT NULL,
-  label character varying(255) NOT NULL,
+  name varchar(250) NOT NULL,
+  label varchar(255) NOT NULL,
   deleted boolean NOT NULL,
   migrate_id bigint NOT NULL,
   updated timestamptz NOT NULL,
@@ -53,7 +53,7 @@ CREATE TABLE staging_asmt (
 
 CREATE TABLE staging_district (
   id int NOT NULL PRIMARY KEY,
-  name character varying(100) NOT NULL,
+  name varchar(100) NOT NULL,
   natural_id varchar(40) NOT NULL,
   external_id varchar(40),
   migrate_id bigint NOT NULL
@@ -62,7 +62,7 @@ CREATE TABLE staging_district (
 CREATE TABLE staging_school (
   id int NOT NULL PRIMARY KEY,
   district_id int NOT NULL,
-  name character varying(100) NOT NULL,
+  name varchar(100) NOT NULL,
   natural_id varchar(40) NOT NULL,
   external_id varchar(40),
   school_group_id integer,
@@ -119,8 +119,9 @@ CREATE TABLE staging_exam (
   id bigint NOT NULL PRIMARY KEY,
   student_id int NOT NULL,
   grade_id smallint NOT NULL,
-  subject_id smallint,    -- this is updated later, not as part of loading into the staging
-  asmt_grade_id smallint, -- this is updated later, not as part of loading into the staging
+  subject_id smallint,        -- this is updated later, not as part of loading into the staging
+  asmt_grade_id smallint,     -- this is updated later, not as part of loading into the staging
+  asmt_grade_code varchar(2), -- this is updated later, not as part of loading into the staging
   school_id int NOT NULL,
   iep smallint NOT NULL,
   lep smallint,
@@ -171,37 +172,37 @@ CREATE TABLE exam_claim_score_mapping (
 -- dimensions
 CREATE TABLE strict_boolean (
   id smallint NOT NULL PRIMARY KEY SORTKEY,
-  code character varying(10) NOT NULL UNIQUE
+  code varchar(10) NOT NULL UNIQUE
 ) DISTSTYLE ALL;
 
 CREATE TABLE boolean (
   id smallint NOT NULL PRIMARY KEY SORTKEY,
-  code character varying(10) NOT NULL UNIQUE
+  code varchar(10) NOT NULL UNIQUE
 ) DISTSTYLE ALL;
 
 CREATE TABLE subject (
   id smallint NOT NULL PRIMARY KEY SORTKEY,
-  code character varying(10) NOT NULL UNIQUE
+  code varchar(10) NOT NULL UNIQUE
 ) DISTSTYLE ALL;
 
 CREATE TABLE grade (
   id smallint NOT NULL PRIMARY KEY SORTKEY,
-  code character varying(2) NOT NULL UNIQUE
+  code varchar(2) NOT NULL UNIQUE
 ) DISTSTYLE ALL;
 
 CREATE TABLE asmt_type (
   id smallint NOT NULL PRIMARY KEY SORTKEY,
-  code character varying(10) NOT NULL UNIQUE
+  code varchar(10) NOT NULL UNIQUE
 ) DISTSTYLE ALL;
 
 CREATE TABLE completeness (
   id smallint NOT NULL PRIMARY KEY SORTKEY,
-  code character varying(10) NOT NULL UNIQUE
+  code varchar(10) NOT NULL UNIQUE
 ) DISTSTYLE ALL;
 
 CREATE TABLE administration_condition (
   id smallint NOT NULL PRIMARY KEY SORTKEY,
-  code character varying(20) NOT NULL UNIQUE
+  code varchar(20) NOT NULL UNIQUE
 ) DISTSTYLE ALL;
 
 CREATE TABLE district_group (
@@ -256,8 +257,8 @@ CREATE TABLE asmt (
   school_year smallint NOT NULL,
   subject_id smallint NOT NULL,
   type_id smallint NOT NULL,
-  name character varying(250) NOT NULL,
-  label character varying(255) NOT NULL,
+  name varchar(250) NOT NULL,
+  label varchar(255) NOT NULL,
   migrate_id bigint encode delta NOT NULL,
   updated timestamptz NOT NULL,
   update_import_id bigint encode delta NOT NULL,
@@ -276,17 +277,17 @@ CREATE TABLE asmt_active_year (
 
 CREATE TABLE gender (
   id smallint NOT NULL PRIMARY KEY SORTKEY,
-  code character varying(80) NOT NULL UNIQUE
+  code varchar(80) NOT NULL UNIQUE
 ) DISTSTYLE ALL;
 
 CREATE TABLE ethnicity (
   id smallint NOT NULL PRIMARY KEY SORTKEY ,
-  code character varying(120) NOT NULL UNIQUE
+  code varchar(120) NOT NULL UNIQUE
 ) DISTSTYLE ALL;
 
 CREATE TABLE elas (
   id smallint NOT NULL PRIMARY KEY SORTKEY,
-  code character varying(20) NOT NULL UNIQUE
+  code varchar(20) NOT NULL UNIQUE
 ) DISTSTYLE ALL;
 
 CREATE TABLE student (
@@ -385,6 +386,7 @@ CREATE TABLE fact_student_exam_longitudinal (
   asmt_grade_id smallint NOT NULL,
   grade_id smallint encode lzo NOT NULL,
   school_year smallint encode raw NOT NULL,
+  school_year_asmt_grade_code varchar(7) encode raw NOT NULL,
   iep smallint encode lzo NOT NULL,
   lep smallint encode lzo NOT NULL,
   elas_id smallint encode lzo NOT NULL,
