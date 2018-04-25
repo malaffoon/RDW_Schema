@@ -31,3 +31,5 @@ UPDATE grade g
 
 ALTER TABLE grade MODIFY COLUMN sequence tinyint NOT NULL;
 
+ALTER TABLE staging_grade ADD COLUMN sequence tinyint NOT NULL;
+
