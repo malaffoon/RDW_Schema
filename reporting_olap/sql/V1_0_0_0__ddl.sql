@@ -9,7 +9,8 @@ SET client_encoding = 'UTF8';
 -- staging tables
 CREATE TABLE staging_grade (
   id smallint NOT NULL PRIMARY KEY,
-  code varchar(2) NOT NULL UNIQUE
+  code varchar(2) NOT NULL UNIQUE,
+  sequence smallint NOT NULL
 );
 
 CREATE TABLE staging_completeness (
@@ -45,6 +46,9 @@ CREATE TABLE staging_asmt (
   type_id smallint NOT NULL,
   name varchar(250) NOT NULL,
   label varchar(255) NOT NULL,
+  cut_point_1 smallint,
+  cut_point_2 smallint NOT NULL,
+  cut_point_3 smallint,
   deleted boolean NOT NULL,
   migrate_id bigint NOT NULL,
   updated timestamptz NOT NULL,
@@ -187,7 +191,8 @@ CREATE TABLE subject (
 
 CREATE TABLE grade (
   id smallint NOT NULL PRIMARY KEY SORTKEY,
-  code varchar(2) NOT NULL UNIQUE
+  code varchar(2) NOT NULL UNIQUE,
+  sequence smallint NOT NULL
 ) DISTSTYLE ALL;
 
 CREATE TABLE asmt_type (
@@ -259,6 +264,9 @@ CREATE TABLE asmt (
   type_id smallint NOT NULL,
   name varchar(250) NOT NULL,
   label varchar(255) NOT NULL,
+  cut_point_1 smallint,
+  cut_point_2 smallint NOT NULL,
+  cut_point_3 smallint,
   migrate_id bigint encode delta NOT NULL,
   updated timestamptz NOT NULL,
   update_import_id bigint encode delta NOT NULL,
