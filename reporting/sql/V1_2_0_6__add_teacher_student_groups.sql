@@ -3,7 +3,7 @@
 use ${schemaName};
 
 CREATE TABLE IF NOT EXISTS teacher_student_group (
-  id int NOT NULL PRIMARY KEY,
+  id int NOT NULL AUTO_INCREMENT PRIMARY KEY,
   name varchar(255) NOT NULL,
   school_id int NOT NULL,
   school_year smallint NOT NULL,
