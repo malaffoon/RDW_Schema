@@ -11,6 +11,7 @@ CREATE TABLE IF NOT EXISTS teacher_student_group (
   user_login varchar(255) NOT NULL,
   UNIQUE INDEX idx__teacher_student_group__school_name_year (school_id, name, school_year),
   INDEX idx__teacher_student_group__subject (subject_id),
+  INDEX idx__teacher_student_group__school_year (school_year),
   CONSTRAINT fk__teacher_student_group__school FOREIGN KEY (school_id) REFERENCES school(id),
   CONSTRAINT fk__teacher_student_group__subject FOREIGN KEY (subject_id) REFERENCES subject(id),
   CONSTRAINT fk__teacher_student_group__school_year FOREIGN KEY (school_year) REFERENCES school_year(year)
