@@ -121,6 +121,7 @@ CREATE TABLE staging_student_ethnicity (
   migrate_id bigint NOT NULL
 );
 
+-- only exams with not NULL scores are loaded into this database
 CREATE TABLE staging_exam (
   id bigint NOT NULL PRIMARY KEY,
   student_id int NOT NULL,
@@ -150,14 +151,12 @@ CREATE TABLE staging_exam (
   latest boolean
 );
 
--- TODO: this needs to be reviewed once we know if we need to support Claim Report
+-- only not NULL scores are loaded into this database
 CREATE TABLE staging_exam_claim_score (
   id bigint NOT NULL PRIMARY KEY,
   exam_id bigint NOT NULL,
   subject_claim_score_id smallint NOT NULL,
-  scale_score float,
-  scale_score_std_err float,
-  category smallint,
+  category smallint NOT NULL,
   migrate_id bigint NOT NULL
 );
 
