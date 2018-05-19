@@ -296,7 +296,7 @@ CREATE TABLE target (
 
 CREATE TABLE asmt_target (
   target_id int encode raw NOT NULL,
-  asmt_id int encode raw NOT NULL,
+  asmt_id int encode raw NOT NULL SORTKEY,
   include_in_report boolean NOT NULL,
   CONSTRAINT fk__asmt_target__target FOREIGN KEY(target_id) REFERENCES target(id),
   CONSTRAINT fk__asmt_target__asmt FOREIGN KEY(asmt_id) REFERENCES asmt(id)
