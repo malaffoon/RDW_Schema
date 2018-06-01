@@ -38,6 +38,12 @@ CREATE TABLE staging_elas (
   code varchar(20) NOT NULL UNIQUE
 );
 
+CREATE TABLE staging_target (
+  id smallint NOT NULL PRIMARY KEY,
+  natural_id varchar(20) NOT NULL,
+  claim_code varchar(10) NOT NULL
+);
+
 CREATE TABLE staging_asmt (
   id int NOT NULL PRIMARY KEY,
   grade_id smallint NOT NULL,
@@ -55,6 +61,18 @@ CREATE TABLE staging_asmt (
   migrate_id bigint NOT NULL,
   updated timestamptz NOT NULL,
   update_import_id bigint NOT NULL
+);
+
+CREATE TABLE staging_asmt_target_exclusion (
+  target_id int encode raw NOT NULL,
+  asmt_id int encode raw NOT NULL,
+  migrate_id bigint NOT NULL
+);
+
+CREATE TABLE staging_asmt_target (
+  target_id int encode raw NOT NULL,
+  asmt_id int encode raw NOT NULL,
+  migrate_id bigint NOT NULL
 );
 
 CREATE TABLE staging_district (
@@ -157,6 +175,16 @@ CREATE TABLE staging_exam_claim_score (
   exam_id bigint NOT NULL,
   subject_claim_score_id smallint NOT NULL,
   category smallint NOT NULL,
+  migrate_id bigint NOT NULL
+);
+
+-- only not NULL scores are loaded into this database
+CREATE TABLE staging_exam_target_score (
+  id bigint NOT NULL PRIMARY KEY,
+  exam_id bigint NOT NULL,
+  target_id smallint NOT NULL,
+  student_relative_residual_score float NOT NULL,
+  standard_met_relative_residual_score float NOT NULL,
   migrate_id bigint NOT NULL
 );
 
