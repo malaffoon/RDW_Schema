@@ -183,8 +183,8 @@ CREATE TABLE staging_exam_target_score (
   id bigint NOT NULL PRIMARY KEY,
   exam_id bigint NOT NULL,
   target_id smallint NOT NULL,
-  student_relative_residual_score float,
-  standard_met_relative_residual_score float,
+  student_relative_residual_score float NOT NULL,
+  standard_met_relative_residual_score float NOT NULL,
   migrate_id bigint NOT NULL
 );
 
