@@ -22,3 +22,7 @@ CREATE TABLE staging_exam_target_score (
   student_relative_residual_score float,
   standard_met_relative_residual_score float
 );
+
+-- left over from the translation changes
+DELETE FROM accommodation_translation
+   WHERE label_code = 'html.system-news';
