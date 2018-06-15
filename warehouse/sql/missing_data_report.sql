@@ -45,6 +45,20 @@ FROM exam e
 -- optionally include : WHERE e.deleted = 0
 GROUP BY e.asmt_id, e.school_year;
 
+--  A summary diagnostic report indicating missing exams' items
+-- NOTE: due to a large volume of the exam's items this query may take a while to complete
+SELECT
+	e.school_year                                         AS test_administration_year,
+	e.asmt_id                                             AS assessment_db_id,
+	a.natural_id                                          AS asessment_natural_id,
+	count(*)                                              AS total_results,
+	count(ei.item_id) / count(*) * 100              	  AS percent_of_results_with_items
+FROM exam e
+	JOIN asmt a ON a.id = e.asmt_id
+	JOIN (SELECT e.id as exam_id, max(ei.id) AS item_id FROM exam e LEFT JOIN exam_item ei ON e.id = ei.exam_id GROUP BY e.id) ei ON ei.exam_id = e.id
+-- optionally include : WHERE e.deleted = 0
+GROUP BY e.asmt_id, e.school_year
+
 -- -----------------------------------------------------------------------------------------------------------
 -- Summary diagnostic reports with breakdown by school and an optional filter by district
 -- -----------------------------------------------------------------------------------------------------------
@@ -99,6 +113,28 @@ FROM exam e
   JOIN (SELECT s.id, max(se.ethnicity_id) AS ethnicity_id FROM student s LEFT JOIN student_ethnicity se ON s.id = se.student_id GROUP BY s.id) se ON se.id = e.student_id
   JOIN school sch ON sch.id = e.school_id
   JOIN district d ON d.id = sch.district_id
+-- optionally include : WHERE d.natural_id = 'put district id here'
+-- optionally include : AND e.deleted = 0
+GROUP BY e.asmt_id, e.school_year, e.school_id;
+
+--  A summary diagnostic report indicating missing exams' items
+-- NOTE: due to a large volume of the exam's items this query may take a while to complete
+SELECT
+	e.school_year                           AS test_administration_year,
+	e.asmt_id                               AS assessment_db_id,
+	a.natural_id                            AS asessment_natural_id,
+	e.school_id                             AS schol_db_id,
+	sch.natural_id                          AS school_natural_id,
+	sch.name                                AS school_name,
+	d.natural_id                            AS distict_natural_id,
+	d.name                                  AS district_name,
+	count(*)                                AS total_results,
+	count(ei.item_id) / count(*) * 100      AS percent_of_results_with_items
+FROM exam e
+	JOIN asmt a ON a.id = e.asmt_id
+	JOIN (SELECT e.id as exam_id, max(ei.id) AS item_id FROM exam e LEFT JOIN exam_item ei ON e.id = ei.exam_id GROUP BY e.id) ei ON ei.exam_id = e.id
+	JOIN school sch ON sch.id = e.school_id
+	JOIN district d ON d.id = sch.district_id
 -- optionally include : WHERE d.natural_id = 'put district id here'
 -- optionally include : AND e.deleted = 0
 GROUP BY e.asmt_id, e.school_year, e.school_id;
