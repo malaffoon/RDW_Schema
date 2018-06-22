@@ -16,6 +16,7 @@ ALTER TABLE item_difficulty_cuts ADD CONSTRAINT fk__item_difficulty_cuts__subjec
 
 ALTER TABLE claim
     DROP FOREIGN KEY fk__claim__subject,
+    DROP INDEX idx__claim__subject,
     ADD UNIQUE INDEX idx__claim__subject_code(subject_id, code);
 ALTER TABLE claim ADD CONSTRAINT fk__claim__subject FOREIGN KEY (subject_id) REFERENCES subject(id);
 
@@ -58,6 +59,8 @@ UPDATE subject SET import_id = @import_id, update_import_id = @import_id;
 ALTER TABLE subject
     MODIFY COLUMN import_id BIGINT NOT NULL,
     MODIFY COLUMN update_import_id BIGINT NOT NULL;
+
+UPDATE import SET status = 1 where id = @import_id;
 
 -- TODO: IMPORTANT TO NOT FORGET once we have the ingest changes to support it
 --ALTER TABLE subject_claim_score

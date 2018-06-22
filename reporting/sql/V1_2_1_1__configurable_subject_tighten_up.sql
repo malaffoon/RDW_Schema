@@ -10,6 +10,7 @@ ALTER TABLE depth_of_knowledge ADD CONSTRAINT fk__depth_of_knowledge__subject FO
 
 ALTER TABLE claim
     DROP FOREIGN KEY fk__claim__subject,
+    DROP INDEX idx__claim__subject,
     ADD UNIQUE INDEX idx__claim__subject_code(subject_id, code);
 ALTER TABLE claim ADD CONSTRAINT fk__claim__subject FOREIGN KEY (subject_id) REFERENCES subject(id);
 
