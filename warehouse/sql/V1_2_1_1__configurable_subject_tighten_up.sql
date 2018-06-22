@@ -37,6 +37,18 @@ ALTER TABLE target
     ADD UNIQUE INDEX idx__target__claim_natural_id(claim_id, natural_id);
 ALTER TABLE target ADD CONSTRAINT fk__target__claim FOREIGN KEY (claim_id) REFERENCES claim(id);
 
+-- add a column to support claims pivoting during migrate into reporting
+ALTER TABLE subject_claim_score
+ ADD COLUMN data_order TINYINT;
+
+UPDATE subject_claim_score SET data_order = 1 WHERE code = '1' AND subject_id = 1;
+UPDATE subject_claim_score SET data_order = 2 WHERE code = 'SOCK_2' AND subject_id = 1;
+UPDATE subject_claim_score SET data_order = 3 WHERE code = '3' AND subject_id = 1;
+UPDATE subject_claim_score SET data_order = 1 WHERE code = 'SOCK_R' AND subject_id = 2;
+UPDATE subject_claim_score SET data_order = 2 WHERE code = 'SOCK_LS' AND subject_id = 2;
+UPDATE subject_claim_score SET data_order = 3 WHERE code = '2-W' AND subject_id = 2;
+UPDATE subject_claim_score SET data_order = 4 WHERE code = '4-CR' AND subject_id = 2;
+
 -- Create SUBJECT import content and trigger re-import to synch-up the data and import ids
 INSERT INTO import_content (id, name) VALUES (8, 'SUBJECT');
 
@@ -48,7 +60,11 @@ ALTER TABLE subject
     MODIFY COLUMN import_id BIGINT NOT NULL,
     MODIFY COLUMN update_import_id BIGINT NOT NULL;
 
--- TODO:
+-- TODO: IMPORTANT TO NOT FORGET once we have the ingest changes to support it
+--ALTER TABLE subject_claim_score
+-- MODIFY COLUMN data_order TINYINT NOT NULL;
+
+-- TODO:clean up
 --ALTER TABLE depth_of_knowledge
 --    DROP COLUMN description;
 --ALTER TABLE claim

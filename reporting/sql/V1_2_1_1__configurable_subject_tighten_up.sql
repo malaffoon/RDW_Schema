@@ -31,10 +31,31 @@ ALTER TABLE target
     ADD UNIQUE INDEX idx__target__claim_natural_id(claim_id, natural_id);
 ALTER TABLE target ADD CONSTRAINT fk__target__claim FOREIGN KEY (claim_id) REFERENCES claim(id);
 
+ALTER TABLE staging_subject_claim_score
+  ADD COLUMN name VARCHAR(250) DEFAULT NULL;
+
+-- add a column to support claims pivoting during migrate into reporting
+ALTER TABLE subject_claim_score
+ ADD COLUMN data_order TINYINT;
+
+UPDATE subject_claim_score SET data_order = 1 WHERE code = '1' AND subject_id = 1;
+UPDATE subject_claim_score SET data_order = 2 WHERE code = 'SOCK_2' AND subject_id = 1;
+UPDATE subject_claim_score SET data_order = 3 WHERE code = '3' AND subject_id = 1;
+UPDATE subject_claim_score SET data_order = 1 WHERE code = 'SOCK_R' AND subject_id = 2;
+UPDATE subject_claim_score SET data_order = 2 WHERE code = 'SOCK_LS' AND subject_id = 2;
+UPDATE subject_claim_score SET data_order = 3 WHERE code = '2-W' AND subject_id = 2;
+UPDATE subject_claim_score SET data_order = 4 WHERE code = '4-CR' AND subject_id = 2;
+
+ALTER TABLE subject_claim_score
+ MODIFY COLUMN data_order TINYINT NOT NULL;
+
+ALTER TABLE staging_subject_claim_score
+ ADD COLUMN data_order TINYINT NOT NULL;
+
 -- we can now use `subject_claim_score` table with the id and `display_order`
 DROP TABLE exam_claim_score_mapping;
 
--- there is not used in the reporting
+-- these are not used in reporting
 DROP TABLE item_trait_score;
 DROP TABLE staging_item_trait_score;
 
@@ -58,7 +79,7 @@ ALTER TABLE subject
     MODIFY COLUMN update_import_id BIGINT NOT NULL,
     MODIFY COLUMN migrate_id BIGINT NOT NULL;
 
--- TODO:
+-- TODO:clean up
 --ALTER TABLE depth_of_knowledge
 --    DROP COLUMN description;
 --ALTER TABLE claim
@@ -69,5 +90,18 @@ ALTER TABLE subject
 --ALTER TABLE subject_claim_score
 --    DROP COLUMN name;
 --ALTER TABLE target
+--    DROP COLUMN code,
+--    DROP COLUMN description;
+
+--ALTER TABLE staging_depth_of_knowledge
+--    DROP COLUMN description;
+--ALTER TABLE staging_claim
+--    DROP COLUMN name,
+--    DROP COLUMN description;
+--ALTER TABLE staging_common_core_standard
+--    DROP COLUMN description;
+--ALTER TABLE staging_subject_claim_score
+--    DROP COLUMN name;
+--ALTER TABLE staging_target
 --    DROP COLUMN code,
 --    DROP COLUMN description;
