@@ -22,7 +22,10 @@ ALTER TABLE common_core_standard ADD CONSTRAINT fk__common_core_standard__subjec
 ALTER TABLE subject_claim_score
     DROP FOREIGN KEY fk__subject_claim_score__subject,
     DROP INDEX idx__subject_claim_score__subject,
+    -- add a column to support claims pivoting during migrate into reporting
+    ADD COLUMN data_order TINYINT,
     ADD UNIQUE INDEX idx__subject_claim_score__subject_asmt_code(subject_id, asmt_type_id, code);
+ALTER TABLE subject_claim_score ADD UNIQUE INDEX idx__subject_claim_score__subject_asmt_data_order(subject_id, asmt_type_id, data_order);
 ALTER TABLE subject_claim_score ADD CONSTRAINT fk__subject_claim_score__subject FOREIGN KEY (subject_id) REFERENCES subject(id);
 
 ALTER TABLE target
@@ -34,10 +37,7 @@ ALTER TABLE target ADD CONSTRAINT fk__target__claim FOREIGN KEY (claim_id) REFER
 ALTER TABLE staging_subject_claim_score
   ADD COLUMN name VARCHAR(250) DEFAULT NULL;
 
--- add a column to support claims pivoting during migrate into reporting
-ALTER TABLE subject_claim_score
- ADD COLUMN data_order TINYINT;
-
+-- load data for the existing scores
 UPDATE subject_claim_score SET data_order = 1 WHERE code = '1' AND subject_id = 1;
 UPDATE subject_claim_score SET data_order = 2 WHERE code = 'SOCK_2' AND subject_id = 1;
 UPDATE subject_claim_score SET data_order = 3 WHERE code = '3' AND subject_id = 1;
