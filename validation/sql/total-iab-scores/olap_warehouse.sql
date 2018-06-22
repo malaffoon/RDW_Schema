@@ -13,6 +13,6 @@ SELECT
                   AND e1.school_year = e2.school_year
                   AND e1.asmt_id = e2.asmt_id
                   AND e2.deleted = 0 AND e2.scale_score IS NOT NULL AND e2.scale_score_std_err IS NOT NULL AND e2.performance_level IS NOT NULL
-           WHERE e2.student_id IS NULL AND e1.type_id = 1
+           WHERE e2.student_id IS NULL AND e1.type_id = 2
                  AND e1.deleted = 0 AND e1.scale_score IS NOT NULL AND e1.scale_score_std_err IS NOT NULL AND e1.performance_level IS NOT NULL
        ) e;

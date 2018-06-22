@@ -111,10 +111,8 @@ tasks can be specified but it requires a lot of settings dealing with two separa
 Bob, assume they have created `bob_migrate_olap_test` schema in the dev instance of Aurora:
 ```bash
 RDW_Schema$ gradle -Pschema_prefix=bob_ \
-    -Predshift_url=jdbc:redshift://rdw-qa.cibkulpjrgtr.us-west-2.redshift.amazonaws.com:5439/ci \
-    -Predshift_user=bob -Predshift_password=bob_redshift_password \
-    -Pdatabase_url=jdbc:mysql://rdw-aurora-ci.cugsexobhx8t.us-west-2.rds.amazonaws.com:3306 \
-    -Pdatabase_user=bob -Pdatabase_password=bob_aurora_password \
+    -Predshift_url=jdbc:redshift://rdw-qa.cibkulpjrgtr.us-west-2.redshift.amazonaws.com:5439/ci -Predshift_user=bob -Predshift_password=bob_redshift_password \
+    -Pdatabase_url=jdbc:mysql://rdw-aurora-ci.cugsexobhx8t.us-west-2.rds.amazonaws.com:3306 -Pdatabase_user=bob -Pdatabase_password=bob_aurora_password \
     cleanReporting_olap_test cleanMigrate_olap_test migrateReporting_olap_test migrateMigrate_olap_test    
 ```
 
@@ -122,25 +120,20 @@ RDW_Schema$ gradle -Pschema_prefix=bob_ \
 For CI, only the test schemas exist (with no schema prefix):
 ```bash
 gradle \
--Predshift_url=jdbc:redshift://rdw-qa.cibkulpjrgtr.us-west-2.redshift.amazonaws.com:5439/ci \
--Predshift_user=ci -Predshift_password= \
--Pdatabase_url=jdbc:mysql://rdw-aurora-ci.cugsexobhx8t.us-west-2.rds.amazonaws.com:3306 \
--Pdatabase_user=sbac -Pdatabase_password= \
+-Predshift_url=jdbc:redshift://rdw-qa.cibkulpjrgtr.us-west-2.redshift.amazonaws.com:5439/ci -Predshift_user=ci -Predshift_password= \
+-Pdatabase_url=jdbc:mysql://rdw-aurora-ci.cugsexobhx8t.us-west-2.rds.amazonaws.com:3306 -Pdatabase_user=sbac -Pdatabase_password= \
 cleanAll_test migrateAll_test
 ```
 
 For the `awsqa` instance there are two Aurora databases and we should never be cleaning the data:
 ```bash
 gradle \
--Pdatabase_url=jdbc:mysql://rdw-aurora-qa-warehouse.cugsexobhx8t.us-west-2.rds.amazonaws.com:3306/ \
--Pdatabase_user=sbac -Pdatabase_password= \
--Predshift_url=jdbc:redshift://rdw-qa.cibkulpjrgtr.us-west-2.redshift.amazonaws.com:5439/qa \
--Predshift_user=awsqa -Predshift_password= \
+-Pdatabase_url=jdbc:mysql://rdw-aurora-qa-warehouse.cugsexobhx8t.us-west-2.rds.amazonaws.com:3306/ -Pdatabase_user=sbac -Pdatabase_password= \
+-Predshift_url=jdbc:redshift://rdw-qa.cibkulpjrgtr.us-west-2.redshift.amazonaws.com:5439/qa -Predshift_user=awsqa -Predshift_password= \
 migrateWarehouse migrateMigrate_olap migrateReporting_olap
 
 gradle \
--Pdatabase_url=jdbc:mysql://rdw-aurora-qa-reporting.cugsexobhx8t.us-west-2.rds.amazonaws.com:3306/ \
--Pdatabase_user=sbac -Pdatabase_password= \
+-Pdatabase_url=jdbc:mysql://rdw-aurora-qa-reporting.cugsexobhx8t.us-west-2.rds.amazonaws.com:3306/ -Pdatabase_user=sbac -Pdatabase_password= \
 migrateReporting
 ```
 
@@ -214,4 +207,31 @@ tweaking the flyway table. They add the following row(s) to the flyway table:
 ```sql
 INSERT INTO schema_version VALUES
   (6,'1.1.1.0','student upsert','SQL','V1_1_1_0__student_upsert.sql',-223870699,'root','2018-03-11 15:58:28',1,1);
+```
+
+#### v1.2
+
+The V1_2_0 release scripts are condensed from the incremental scripts created during the development
+of release v1.2. As noted above, a db instance may be reset so the flyway table represents as if
+this script had been used instead of incremental updates.
+```sql
+USE warehouse;
+-- query schema_version and make sure the applied scripts match the list of pre-condensed scripts
+-- as noted in the condensed script, the sixth entry should be V1_1_1_0__student_upsert.sql and the
+-- last entry should be for V1_2_0_18__student_group_index:
+SELECT * FROM schema_version;
+-- if things look good, reset entries to match condensed scripts:
+DELETE FROM schema_version WHERE installed_rank > 6;
+INSERT INTO schema_version VALUES
+  (7, '1.2.0.0', 'update', 'SQL', 'V1_2_0_0__update.sql', -680448587, 'root', '2018-06-18 12:00:00', 10000, 1);
+
+USE reporting;
+-- query schema_version and make sure the applied scripts match the list of pre-condensed scripts
+-- as noted in the condensed script, the fourth entry should be V1_1_0_0__update.sql and the last
+-- entry should be for V1_2_0_13__optional_data.sql
+SELECT * FROM schema_version;
+-- if things look good, reset entries to match condensed scripts:
+DELETE FROM schema_version WHERE installed_rank > 4;
+INSERT INTO schema_version VALUES
+  (5, '1.2.0.0', 'update', 'SQL', 'V1_2_0_0__update.sql', 1999355730, 'root', '2018-06-18 12:00:00', 10000, 1);
 ```
