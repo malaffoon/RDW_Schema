@@ -40,7 +40,7 @@ CREATE TABLE staging_elas (
 
 CREATE TABLE staging_subject (
   id smallint NOT NULL PRIMARY KEY,
-  code varchar(10) NOT NULL UNIQUE,
+  code varchar(10) NOT NULL,
   updated timestamptz NOT NULL,
   update_import_id bigint NOT NULL,
   migrate_id bigint NOT NULL
@@ -56,7 +56,7 @@ CREATE TABLE staging_subject_asmt_type (
 );
 
 CREATE TABLE staging_subject_claim_score (
-  id smallint NOT NULL PRIMARY KEY SORTKEY,
+  id smallint NOT NULL PRIMARY KEY,
   subject_id smallint NOT NULL,
   asmt_type_id smallint NOT NULL,
   code varchar(10) NOT NULL,
