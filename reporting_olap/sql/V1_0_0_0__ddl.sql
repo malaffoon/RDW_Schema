@@ -226,11 +226,6 @@ CREATE TABLE school_year (
   year smallint NOT NULL PRIMARY KEY SORTKEY 
 ) DISTSTYLE ALL;
 
-CREATE TABLE exam_claim_score_mapping (
-  subject_claim_score_id smallint NOT NULL,
-  num smallint NOT NULL
-);
-
 -- dimensions
 CREATE TABLE strict_boolean (
   id smallint NOT NULL PRIMARY KEY SORTKEY,
