@@ -2,8 +2,8 @@ SELECT
   count,
   asmt_id,
   school_year,
-  CASE WHEN code IS NULL THEN 'NULL' ELSE code END as code,
-  CASE WHEN completeness_id IS NULL THEN 'NULL' WHEN completeness_id = 2 THEN 'TRUE' ELSE 'FALSE' END as completeness_id
+  CASE WHEN ac.code IS NULL THEN 'NULL' ELSE ac.code END AS code,
+  CASE WHEN completeness_id IS NULL THEN 'NULL' WHEN completeness_id = 2 THEN 'TRUE' ELSE 'FALSE' END AS completeness_id
 FROM  (
         SELECT
           count(*) as count,
