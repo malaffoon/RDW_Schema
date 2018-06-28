@@ -2,8 +2,8 @@ SELECT
   count,
   asmt_id,
   school_year,
-  code,
-  CASE WHEN completeness_id = 2 THEN 'TRUE' ELSE 'FALSE' END
+  CASE WHEN ac.code IS NULL THEN 'NULL' ELSE ac.code END AS code,
+  CASE WHEN completeness_id IS NULL THEN 'NULL' WHEN completeness_id = 2 THEN 'TRUE' ELSE 'FALSE' END AS completeness_id
 FROM  (
         SELECT
           count(*) as count,
@@ -26,5 +26,5 @@ FROM  (
           e1.administration_condition_id,
           e1.completeness_id
       )  e
-  JOIN administration_condition ac ON e.administration_condition_id = ac.id
+  LEFT JOIN administration_condition ac ON e.administration_condition_id = ac.id
 ORDER BY count, asmt_id, school_year, code, completeness_id;
