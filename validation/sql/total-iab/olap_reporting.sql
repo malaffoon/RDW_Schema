@@ -1,3 +1,3 @@
 SELECT
     count(*)
-  FROM fact_student_iab_exam;
+  FROM iab_exam;
