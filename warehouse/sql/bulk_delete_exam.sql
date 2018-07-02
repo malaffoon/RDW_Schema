@@ -1,10 +1,13 @@
 -- ------------------------------------------------------------------------------------------------------------
 -- IMPORTANT NOTE
 -- ------------------------------------------------------------------------------------------------------------
+-- Additional details for running this script may be found in the docs/Runbook.BulkDeleteExams.md file in the
+-- RDW repository, https://github.com/SmarterApp/RDW.
+--
 -- This may create a large volume of data to process. It is highly advisable to run this during the maintenance
 -- window and while the Exam Processor is stopped.
 --
--- Validation script should be executed before and after this scrip to check data quality:
+-- Validation scripts should be executed before and after this scrip to check data quality:
 -- https://github.com/SmarterApp/RDW_Schema/validation-scripts
 -- ------------------------------------------------------------------------------------------------------------
 
@@ -61,8 +64,8 @@ DELIMITER ;
 -- ------------------------------------------------------------------------------------------------------------
 -- STEP 4: load exams to be deleted
 -- ------------------------------------------------------------------------------------------------------------
-SET @load_exam_delete_partion = concat('INSERT IGNORE INTO exam_delete_partition (exam_id) ', @select_exam_ids);
-PREPARE stmt FROM @load_exam_delete_partion;
+SET @load_exam_delete_partition = concat('INSERT IGNORE INTO exam_delete_partition (exam_id) ', @select_exam_ids);
+PREPARE stmt FROM @load_exam_delete_partition;
 EXECUTE stmt;
 DEALLOCATE PREPARE stmt;
 

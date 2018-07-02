@@ -52,7 +52,7 @@ SELECT
 	e.asmt_id                                             AS assessment_db_id,
 	a.natural_id                                          AS asessment_natural_id,
 	count(*)                                              AS total_results,
-	count(ei.item_id) / count(*) * 100              	  AS percent_of_results_with_items
+	count(ei.item_id) / count(*) * 100              	    AS percent_of_results_with_items
 FROM exam e
 	JOIN asmt a ON a.id = e.asmt_id
 	JOIN (SELECT e.id as exam_id, max(ei.id) AS item_id FROM exam e LEFT JOIN exam_item ei ON e.id = ei.exam_id GROUP BY e.id) ei ON ei.exam_id = e.id
