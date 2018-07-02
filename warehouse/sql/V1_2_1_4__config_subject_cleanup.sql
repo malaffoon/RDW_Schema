@@ -19,9 +19,6 @@ ALTER TABLE target
     DROP COLUMN description,
     MODIFY COLUMN natural_id varchar(20) not null;
 
-ALTER TABLE grade
-    DROP COLUMN name;
-
 ALTER TABLE asmt_type
     DROP COLUMN name;
 
