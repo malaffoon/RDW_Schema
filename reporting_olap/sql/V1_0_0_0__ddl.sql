@@ -38,10 +38,37 @@ CREATE TABLE staging_elas (
   code varchar(20) NOT NULL UNIQUE
 );
 
+CREATE TABLE staging_subject (
+  id smallint NOT NULL PRIMARY KEY,
+  code varchar(10) NOT NULL,
+  updated timestamptz NOT NULL,
+  update_import_id bigint NOT NULL,
+  migrate_id bigint NOT NULL
+);
+
+CREATE TABLE staging_subject_asmt_type (
+  asmt_type_id smallint NOT NULL,
+  subject_id smallint NOT NULL,
+  performance_level_count smallint NOT NULL,
+  performance_level_standard_cutoff smallint,
+  claim_score_performance_level_count smallint,
+  migrate_id bigint NOT NULL
+);
+
+CREATE TABLE staging_subject_claim_score (
+  id smallint NOT NULL PRIMARY KEY,
+  subject_id smallint NOT NULL,
+  asmt_type_id smallint NOT NULL,
+  code varchar(10) NOT NULL,
+  migrate_id bigint NOT NULL
+);
+
 CREATE TABLE staging_target (
   id smallint NOT NULL PRIMARY KEY,
+  subject_id smallint NOT NULL,
   natural_id varchar(20) NOT NULL,
-  claim_code varchar(10) NOT NULL
+  claim_code varchar(10) NOT NULL,
+  migrate_id bigint NOT NULL
 );
 
 CREATE TABLE staging_asmt (
@@ -53,8 +80,10 @@ CREATE TABLE staging_asmt (
   name varchar(250) NOT NULL,
   label varchar(255) NOT NULL,
   cut_point_1 smallint,
-  cut_point_2 smallint NOT NULL,
+  cut_point_2 smallint,
   cut_point_3 smallint,
+  cut_point_4 smallint,
+  cut_point_5 smallint,
   min_score float NOT NULL,
   max_score float NOT NULL,
   deleted boolean NOT NULL,
@@ -148,17 +177,17 @@ CREATE TABLE staging_exam (
   asmt_grade_id smallint,     -- this is updated later, not as part of loading into the staging
   asmt_grade_code varchar(2), -- this is updated later, not as part of loading into the staging
   school_id int NOT NULL,
-  iep smallint NOT NULL,
+  iep smallint,
   lep smallint,
   elas_id smallint,
   section504 smallint,
-  economic_disadvantage smallint NOT NULL,
+  economic_disadvantage smallint,
   migrant_status smallint,
   type_id smallint NOT NULL,
   school_year smallint NOT NULL,
   asmt_id int NOT NULL,
-  completeness_id smallint NOT NULL,
-  administration_condition_id smallint NOT NULL,
+  completeness_id smallint,
+  administration_condition_id smallint,
   scale_score float NOT NULL,
   performance_level smallint NOT NULL,
   deleted boolean NOT NULL,
@@ -197,11 +226,6 @@ CREATE TABLE school_year (
   year smallint NOT NULL PRIMARY KEY SORTKEY 
 ) DISTSTYLE ALL;
 
-CREATE TABLE exam_claim_score_mapping (
-  subject_claim_score_id smallint NOT NULL,
-  num smallint NOT NULL
-);
-
 -- dimensions
 CREATE TABLE strict_boolean (
   id smallint NOT NULL PRIMARY KEY SORTKEY,
@@ -213,10 +237,6 @@ CREATE TABLE boolean (
   code varchar(10) NOT NULL UNIQUE
 ) DISTSTYLE ALL;
 
-CREATE TABLE subject (
-  id smallint NOT NULL PRIMARY KEY SORTKEY,
-  code varchar(10) NOT NULL UNIQUE
-) DISTSTYLE ALL;
 
 CREATE TABLE grade (
   id smallint NOT NULL PRIMARY KEY SORTKEY,
@@ -237,6 +257,25 @@ CREATE TABLE completeness (
 CREATE TABLE administration_condition (
   id smallint NOT NULL PRIMARY KEY SORTKEY,
   code varchar(20) NOT NULL UNIQUE
+) DISTSTYLE ALL;
+
+CREATE TABLE subject (
+  id smallint NOT NULL PRIMARY KEY SORTKEY,
+  code varchar(10) NOT NULL UNIQUE,
+  updated timestamptz NOT NULL,
+  update_import_id bigint encode delta NOT NULL,
+  migrate_id bigint NOT NULL
+) DISTSTYLE ALL;
+
+CREATE TABLE subject_asmt_type (
+  asmt_type_id smallint NOT NULL,
+  subject_id smallint NOT NULL SORTKEY,
+  performance_level_count smallint NOT NULL,
+  performance_level_standard_cutoff smallint,
+  claim_score_performance_level_count smallint,
+  UNIQUE (asmt_type_id, subject_id),
+  CONSTRAINT fk__subject_asmt_type__type FOREIGN KEY(asmt_type_id) REFERENCES asmt_type(id),
+  CONSTRAINT fk__subject_asmt_type__subject FOREIGN KEY(subject_id) REFERENCES subject(id)
 ) DISTSTYLE ALL;
 
 CREATE TABLE subject_claim_score (
@@ -303,8 +342,10 @@ CREATE TABLE asmt (
   name varchar(250) NOT NULL,
   label varchar(255) NOT NULL,
   cut_point_1 smallint,
-  cut_point_2 smallint NOT NULL,
+  cut_point_2 smallint,
   cut_point_3 smallint,
+  cut_point_4 smallint,
+  cut_point_5 smallint,
   min_score float NOT NULL,
   max_score float NOT NULL,
   migrate_id bigint encode delta NOT NULL,
@@ -318,6 +359,7 @@ CREATE TABLE asmt (
 
 CREATE TABLE target (
   id smallint NOT NULL PRIMARY KEY SORTKEY,
+  subject_id smallint NOT NULL,
   natural_id varchar(20) NOT NULL,
   claim_code varchar(10) NOT NULL
 ) DISTSTYLE ALL;
@@ -381,8 +423,8 @@ CREATE TABLE exam (
   section504 smallint encode lzo NOT NULL,
   economic_disadvantage smallint encode lzo NOT NULL,
   migrant_status smallint encode lzo NOT NULL,
-  completeness_id smallint encode lzo NOT NULL,
-  administration_condition_id smallint encode lzo NOT NULL,
+  completeness_id smallint encode lzo,
+  administration_condition_id smallint encode lzo,
   scale_score float encode bytedict NOT NULL,
   performance_level smallint encode lzo NOT NULL,
   completed_at timestamptz encode lzo NOT NULL,
@@ -418,8 +460,8 @@ CREATE TABLE iab_exam (
   section504 smallint encode lzo NOT NULL,
   economic_disadvantage smallint encode lzo NOT NULL,
   migrant_status smallint encode lzo NOT NULL,
-  completeness_id smallint encode lzo NOT NULL,
-  administration_condition_id smallint encode lzo NOT NULL,
+  completeness_id smallint encode lzo,
+  administration_condition_id smallint encode lzo,
   scale_score float encode bytedict NOT NULL,
   performance_level smallint encode lzo NOT NULL,
   completed_at timestamptz encode lzo NOT NULL,
@@ -460,8 +502,8 @@ CREATE TABLE exam_longitudinal (
   section504 smallint encode lzo NOT NULL,
   economic_disadvantage smallint encode lzo NOT NULL,
   migrant_status smallint encode lzo NOT NULL,
-  completeness_id smallint encode lzo NOT NULL,
-  administration_condition_id smallint encode lzo NOT NULL,
+  completeness_id smallint encode lzo,
+  administration_condition_id smallint encode lzo,
   scale_score float encode bytedict NOT NULL,
   performance_level smallint encode lzo NOT NULL,
   completed_at timestamptz encode lzo NOT NULL,

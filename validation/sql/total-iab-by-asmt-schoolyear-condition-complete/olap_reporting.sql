@@ -2,10 +2,10 @@ SELECT
     count(*),
     e.asmt_id,
     e.school_year,
-    ac.code,
-    CASE WHEN e.completeness_id = 2 THEN 'TRUE' ELSE 'FALSE' END
-  FROM fact_student_iab_exam e
-    JOIN administration_condition ac ON e.administration_condition_id = ac.id
+    CASE WHEN ac.code IS NULL THEN 'NULL' ELSE ac.code END AS code,
+    CASE WHEN completeness_id IS NULL THEN 'NULL' WHEN completeness_id = 2 THEN 'TRUE' ELSE 'FALSE' END AS completeness_id
+  FROM iab_exam e
+    LEFT JOIN administration_condition ac ON e.administration_condition_id = ac.id
   GROUP BY
     e.asmt_id,
     e.school_year,
@@ -15,5 +15,5 @@ SELECT
     count(*),
     e.asmt_id,
     e.school_year,
-    ac.code,
-    e.completeness_id;
+    code,
+    completeness_id;

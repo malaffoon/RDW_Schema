@@ -1,7 +1,6 @@
 /*
 Initial data load for SBAC OLAP Reporting Data Warehouse 1.0.0
 */
-
 SET SEARCH_PATH to ${schemaName};
 
 INSERT INTO strict_boolean (id, code) VALUES
@@ -18,9 +17,11 @@ INSERT INTO asmt_type (id, code) VALUES
   (2, 'iab'),
   (3, 'sum');
 
-INSERT INTO subject (id, code) VALUES
-  (1, 'Math'),
-  (2, 'ELA');
+-- NOTE: this is done for the historical reason in order to load records ingested BEFORE configurable subjects
+-- It will be updated during the migrate
+INSERT INTO subject (id, code, updated, update_import_id, migrate_id) VALUES
+  (1, 'Math', now(), -1, -1),
+  (2, 'ELA',  now(), -1, -1);
 
 INSERT INTO subject_claim_score (id, subject_id, asmt_type_id, code) VALUES
   (1,  1, 1, '1'),
@@ -38,21 +39,13 @@ INSERT INTO subject_claim_score (id, subject_id, asmt_type_id, code) VALUES
   (13, 2, 3, '2-W'),
   (14, 2, 3, '4-CR');
 
-INSERT INTO exam_claim_score_mapping (subject_claim_score_id, num) VALUES
-  (1, 1),
-  (2, 2),
-  (3, 3),
-  (4, 1),
-  (5, 2),
-  (6, 3),
-  (7, 4),
-  (8, 1),
-  (9, 2),
-  (10, 3),
-  (11, 1),
-  (12, 2),
-  (13, 3),
-  (14, 4);
+INSERT INTO subject_asmt_type (asmt_type_id, subject_id, performance_level_count, performance_level_standard_cutoff, claim_score_performance_level_count) VALUES
+  (1,  1,  4, 3,    3),
+  (1,  2,  4, 3,    3),
+  (2,  1,  3, null, null),
+  (2,  2,  3, null, null),
+  (3,  1,  4, 3,    3),
+  (3,  2,  4, 3,    3);
 
 INSERT INTO status_indicator (id) VALUES
   (1);

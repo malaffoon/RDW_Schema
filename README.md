@@ -235,3 +235,30 @@ DELETE FROM schema_version WHERE installed_rank > 4;
 INSERT INTO schema_version VALUES
   (5, '1.2.0.0', 'update', 'SQL', 'V1_2_0_0__update.sql', 1999355730, 'root', '2018-06-18 12:00:00', 10000, 1);
 ```
+
+#### v1.2.1
+
+The V1_2_1 script(s) are patches to v1.2. They were condensed from the incremental scripts created during the
+development of the release. As noted above, a db instance may be reset so the flyway table represents as if
+this script had been used instead of incremental updates.
+```sql
+USE warehouse;
+-- query schema_version and make sure the applied scripts match the list of pre-condensed scripts
+-- as noted in the condensed script, the seventh entry should be V1_2_0_0__update.sql and the last
+-- entry should be for V1_2_1_4__config_subject_cleanup.sql:
+SELECT * FROM schema_version;
+-- if things look good, reset entries to match condensed scripts:
+DELETE FROM schema_version WHERE installed_rank > 7;
+INSERT INTO schema_version VALUES
+  (8, '1.2.1.0', 'update', 'SQL', 'V1_2_1_0__update.sql', 518721551, 'root', '2018-07-06 12:00:00', 10000, 1);
+
+USE reporting;
+-- query schema_version and make sure the applied scripts match the list of pre-condensed scripts
+-- as noted in the condensed script, the fifth entry should be V1_2_0_0__update.sql and the last
+-- entry should be for V1_2_1_5__config_subject_cleanup.sql
+SELECT * FROM schema_version;
+-- if things look good, reset entries to match condensed scripts:
+DELETE FROM schema_version WHERE installed_rank > 5;
+INSERT INTO schema_version VALUES
+  (6, '1.2.1.0', 'update', 'SQL', 'V1_2_1_0__update.sql', 1586448759, 'root', '2018-07-06 12:00:00', 10000, 1);
+```
