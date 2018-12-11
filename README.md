@@ -125,16 +125,12 @@ gradle \
 cleanAll_test migrateAll_test
 ```
 
-For the `awsqa` instance there are two Aurora databases and we should never be cleaning the data:
+For the `awsqa` instance there is one Aurora database and we should never be cleaning the data:
 ```bash
 gradle \
--Pdatabase_url=jdbc:mysql://rdw-aurora-qa-warehouse.cugsexobhx8t.us-west-2.rds.amazonaws.com:3306/ -Pdatabase_user=sbac -Pdatabase_password= \
+-Pdatabase_url=jdbc:mysql://rdw-aurora-qa.cugsexobhx8t.us-west-2.rds.amazonaws.com:3306/ -Pdatabase_user=sbac -Pdatabase_password= \
 -Predshift_url=jdbc:redshift://rdw-qa.cibkulpjrgtr.us-west-2.redshift.amazonaws.com:5439/qa -Predshift_user=awsqa -Predshift_password= \
-migrateWarehouse migrateMigrate_olap migrateReporting_olap
-
-gradle \
--Pdatabase_url=jdbc:mysql://rdw-aurora-qa-reporting.cugsexobhx8t.us-west-2.rds.amazonaws.com:3306/ -Pdatabase_user=sbac -Pdatabase_password= \
-migrateReporting
+migrateWarehouse migrateMigrate_olap migrateReporting_olap migrateReporting
 ```
 
 ### Developing
