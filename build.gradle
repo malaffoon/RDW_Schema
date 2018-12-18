@@ -6,7 +6,7 @@ buildscript {
         maven { url 'http://redshift-maven-repository.s3-website-us-east-1.amazonaws.com/release' }
     }
     dependencies {
-        classpath 'mysql:mysql-connector-java:5.1.47'
+        classpath 'mysql:mysql-connector-java:5.1.46'  // 5.1.47 causes problems (mostly in RDW_Reporting)
         classpath 'com.amazon.redshift:redshift-jdbc42-no-awssdk:1.2.16.1027'
     }
 }
