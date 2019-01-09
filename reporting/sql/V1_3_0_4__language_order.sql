@@ -11,10 +11,6 @@ UPDATE language
   WHERE altcode IS NOT NULL;
 DELETE FROM language WHERE display_order IS NULL;
 
-ALTER TABLE language
-  DROP COLUMN altcode;
-
 ALTER TABLE staging_language
-  ADD COLUMN display_order smallint NULL,
-  DROP COLUMN altcode;
+  ADD COLUMN display_order smallint NULL;
 
