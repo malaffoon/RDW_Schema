@@ -274,7 +274,7 @@ SELECT * FROM schema_version;
 -- if things look good, reset entries to match condensed scripts:
 DELETE FROM schema_version WHERE installed_rank > 8;
 INSERT INTO schema_version (installed_rank, version, description, type, script, checksum, installed_by, installed_on, execution_time, success) VALUES
-  (9, '1.3.0.0', 'update', 'SQL', 'V1_3_0_0__update.sql', -1620357095, 'root', '2019-01-23 12:00:00', 10000, 1);
+  (9, '1.3.0.0', 'update', 'SQL', 'V1_3_0_0__update.sql', 101076552, 'root', '2019-01-23 12:00:00', 10000, 1);
 
 USE reporting;
 -- query schema_version and make sure the applied scripts match the list of pre-condensed scripts
@@ -284,5 +284,5 @@ SELECT * FROM schema_version;
 -- if things look good, reset entries to match condensed scripts:
 DELETE FROM schema_version WHERE installed_rank > 6;
 INSERT INTO schema_version (installed_rank, version, description, type, script, checksum, installed_by, installed_on, execution_time, success) VALUES
-  (7, '1.3.0.0', 'update', 'SQL', 'V1_3_0_0__update.sql', -1390738348, 'root', '2019-01-23 12:00:00', 10000, 1);
+  (7, '1.3.0.0', 'update', 'SQL', 'V1_3_0_0__update.sql', 660781209, 'root', '2019-01-23 12:00:00', 10000, 1);
 ```

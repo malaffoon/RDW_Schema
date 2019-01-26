@@ -20,11 +20,7 @@
 --   V1_3_0_5__alias_name.sql
 --   military_connected was added during consolidation
 
-
 USE ${schemaName};
-
-INSERT IGNORE INTO school_year (year) VALUES (2019);
-
 
 CREATE TABLE IF NOT EXISTS military_connected (
   id TINYINT NOT NULL PRIMARY KEY,
