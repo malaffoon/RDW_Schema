@@ -10,7 +10,7 @@ UPDATE subject_claim_score SET data_order = 2 WHERE subject_id = 2 AND code = '2
 UPDATE subject_claim_score SET data_order = 3 WHERE subject_id = 2 AND code = 'SOCK_LS';
 
 UPDATE asmt SET claim2_score_code = '2-W', claim3_score_code = 'SOCK_LS'
-WHERE subject_id = 2 AND type_id IN (1,3) AND claim2_score_code = 'SOCK_LS' AND claim3_score_coode = '2-W';
+WHERE subject_id = 2 AND type_id IN (1,3) AND claim2_score_code = 'SOCK_LS' AND claim3_score_code = '2-W';
 
 -- MySQL doesn't do swaps like other databases, so some trickery.
 -- This effectively swaps the three claim2/claim3 column values.
