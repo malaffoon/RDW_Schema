@@ -29,9 +29,16 @@
 --   V1_3_0_3__acc_school_year.sql
 --   V1_3_0_4__language_order.sql
 --   V1_3_0_5__alias_name.sql
+-- After being created, two other changes were incorporated:
 --   military_connected was added during consolidation
+--   V1_3_0_7__claim_order.sql
 
 use ${schemaName};
+
+
+UPDATE subject_claim_score SET data_order = 2 WHERE subject_id = 2 AND code = '2-W';
+UPDATE subject_claim_score SET data_order = 3 WHERE subject_id = 2 AND code = 'SOCK_LS';
+
 
 CREATE TABLE IF NOT EXISTS military_connected (
   id tinyint NOT NULL PRIMARY KEY,
