@@ -125,16 +125,12 @@ gradle \
 cleanAll_test migrateAll_test
 ```
 
-For the `awsqa` instance there are two Aurora databases and we should never be cleaning the data:
+For the `awsqa` instance there is one Aurora database and we should never be cleaning the data:
 ```bash
 gradle \
--Pdatabase_url=jdbc:mysql://rdw-aurora-qa-warehouse.cugsexobhx8t.us-west-2.rds.amazonaws.com:3306/ -Pdatabase_user=sbac -Pdatabase_password= \
+-Pdatabase_url=jdbc:mysql://rdw-aurora-qa.cugsexobhx8t.us-west-2.rds.amazonaws.com:3306/ -Pdatabase_user=sbac -Pdatabase_password= \
 -Predshift_url=jdbc:redshift://rdw-qa.cibkulpjrgtr.us-west-2.redshift.amazonaws.com:5439/qa -Predshift_user=awsqa -Predshift_password= \
-migrateWarehouse migrateMigrate_olap migrateReporting_olap
-
-gradle \
--Pdatabase_url=jdbc:mysql://rdw-aurora-qa-reporting.cugsexobhx8t.us-west-2.rds.amazonaws.com:3306/ -Pdatabase_user=sbac -Pdatabase_password= \
-migrateReporting
+migrateWarehouse migrateMigrate_olap migrateReporting_olap migrateReporting
 ```
 
 ### Developing
@@ -261,4 +257,32 @@ SELECT * FROM schema_version;
 DELETE FROM schema_version WHERE installed_rank > 5;
 INSERT INTO schema_version VALUES
   (6, '1.2.1.0', 'update', 'SQL', 'V1_2_1_0__update.sql', 1586448759, 'root', '2018-07-06 12:00:00', 10000, 1);
+```
+
+#### v1.3.0
+
+The v1_3_0 script is a patch to v1.2.1. They were condensed from the incremental scripts created during the
+development of the release. As noted above, a db instance may be reset so the flyway table represents as if
+this script had been used instead of incremental updates.
+NOTE: the installed rank may vary (0-based vs. 1-based); modify the SQL to match what is in the schema table.
+```sql
+USE warehouse;
+-- query schema_version and make sure the applied scripts match the list of pre-condensed scripts
+-- as noted in the condensed script, the eighth entry should be V1_2_1_0__update.sql and the last
+-- entry should be for V1_3_0_5__alias_name.sql
+SELECT * FROM schema_version;
+-- if things look good, reset entries to match condensed scripts:
+DELETE FROM schema_version WHERE installed_rank > 8;
+INSERT INTO schema_version (installed_rank, version, description, type, script, checksum, installed_by, installed_on, execution_time, success) VALUES
+  (9, '1.3.0.0', 'update', 'SQL', 'V1_3_0_0__update.sql', 884309511, 'root', '2019-01-23 12:00:00', 10000, 1);
+
+USE reporting;
+-- query schema_version and make sure the applied scripts match the list of pre-condensed scripts
+-- as noted in the condensed script, the sixth entry should be V1_2_1_0__update.sql and the last
+-- entry should be for V1_3_0_5__alias_name.sql
+SELECT * FROM schema_version;
+-- if things look good, reset entries to match condensed scripts:
+DELETE FROM schema_version WHERE installed_rank > 6;
+INSERT INTO schema_version (installed_rank, version, description, type, script, checksum, installed_by, installed_on, execution_time, success) VALUES
+  (7, '1.3.0.0', 'update', 'SQL', 'V1_3_0_0__update.sql', -518988024, 'root', '2019-01-23 12:00:00', 10000, 1);
 ```

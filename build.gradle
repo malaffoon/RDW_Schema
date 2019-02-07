@@ -6,21 +6,26 @@ buildscript {
         maven { url 'http://redshift-maven-repository.s3-website-us-east-1.amazonaws.com/release' }
     }
     dependencies {
-        classpath 'mysql:mysql-connector-java:5.1.41'
-        classpath 'com.amazon.redshift:redshift-jdbc42-no-awssdk:1.2.8.1005'
+        classpath 'mysql:mysql-connector-java:5.1.46'  // 5.1.47 causes problems (mostly in RDW_Reporting)
+        classpath 'com.amazon.redshift:redshift-jdbc42-no-awssdk:1.2.16.1027'
     }
 }
 
 plugins {
-    id 'org.flywaydb.flyway' version '4.2.0'
-    id 'com.jfrog.artifactory' version '4.4.18'
+    id 'org.flywaydb.flyway' version '5.2.4'
+    id 'com.jfrog.artifactory' version '4.8.1'
+}
+
+flyway {
+    // we started with flyway 4.2 so force flyway 5.x to use the legacy schema table
+    table = 'schema_version'
 }
 
 apply plugin: 'distribution'
 apply plugin: 'maven-publish'
 
 group = 'org.opentestsystem.rdw.schema'
-version = '1.2.0-SNAPSHOT'
+version = '1.3.0-SNAPSHOT'
 
 if (project.hasProperty("buildNumber")) {
     project.setVersion(project.version.toString().replaceAll("SNAPSHOT", "${buildNumber}"))
