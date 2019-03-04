@@ -5,6 +5,7 @@ CREATE TABLE IF NOT EXISTS user_query (
   user_login varchar(255) NOT NULL,
   label varchar(255) NOT NULL,
   query text NOT NULL,
+  query_type varchar(100) NOT NULL,
   created timestamp(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
   updated timestamp(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6),
   INDEX idx__user_query__user_login (user_login)
