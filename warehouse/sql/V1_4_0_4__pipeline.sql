@@ -14,8 +14,8 @@ CREATE TABLE IF NOT EXISTS pipeline_script (
   created timestamp(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
   updated timestamp(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6),
   updated_by varchar(255) NOT NULL,
-  INDEX idx__pipeline_script__pipeline_id (pipeline_id),
-  CONSTRAINT fk__pipeline_script__pipeline_id FOREIGN KEY (pipeline_id) REFERENCES pipeline(id)
+  INDEX idx__pipeline_script__pipeline (pipeline_id),
+  CONSTRAINT fk__pipeline_script__pipeline FOREIGN KEY (pipeline_id) REFERENCES pipeline(id)
 );
 
 CREATE TABLE IF NOT EXISTS pipeline_test (
@@ -27,8 +27,8 @@ CREATE TABLE IF NOT EXISTS pipeline_test (
   created timestamp(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
   updated timestamp(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6),
   updated_by varchar(255) NOT NULL,
-  INDEX idx__pipeline_test__pipeline_id (pipeline_id),
-  CONSTRAINT fk__pipeline_test__pipeline_id FOREIGN KEY (pipeline_id) REFERENCES pipeline(id)
+  INDEX idx__pipeline_test__pipeline (pipeline_id),
+  CONSTRAINT fk__pipeline_test__pipeline FOREIGN KEY (pipeline_id) REFERENCES pipeline(id)
 );
 
 INSERT INTO pipeline (id, code) VALUES
