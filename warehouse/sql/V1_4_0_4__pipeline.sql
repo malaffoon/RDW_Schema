@@ -4,7 +4,7 @@ use ${schemaName};
 
 CREATE TABLE IF NOT EXISTS pipeline (
   id tinyint NOT NULL PRIMARY KEY,
-  code varchar(100) NOT NULL UNIQUE
+  code varchar(20) NOT NULL UNIQUE
 );
 
 CREATE TABLE IF NOT EXISTS pipeline_script (
