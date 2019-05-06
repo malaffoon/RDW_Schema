@@ -21,7 +21,7 @@ CREATE TABLE IF NOT EXISTS pipeline_script (
 CREATE TABLE IF NOT EXISTS pipeline_test (
   id int NOT NULL AUTO_INCREMENT PRIMARY KEY,
   pipeline_id tinyint NOT NULL,
-  name varchar(500),
+  name text,
   example_input text NOT NULL,
   expected_output text NOT NULL,
   created timestamp(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
