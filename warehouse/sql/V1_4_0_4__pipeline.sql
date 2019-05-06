@@ -22,7 +22,7 @@ CREATE TABLE IF NOT EXISTS pipeline_test (
   id int NOT NULL AUTO_INCREMENT PRIMARY KEY,
   pipeline_id tinyint NOT NULL,
   name varchar(500),
-  actual_input text NOT NULL,
+  example_input text NOT NULL,
   expected_output text NOT NULL,
   created timestamp(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
   updated timestamp(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6),
@@ -32,6 +32,6 @@ CREATE TABLE IF NOT EXISTS pipeline_test (
 );
 
 INSERT INTO pipeline (id, code) VALUES
-  (1, 'assessment'),
   (1, 'exam'),
-  (1, 'group');
+  (2, 'group'),
+  (3, 'assessment');
