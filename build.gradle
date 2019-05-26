@@ -117,6 +117,14 @@ flywayActions.keySet().each { action ->
     }
 }
 
+sourceSets {
+    main {
+        resources {
+            srcDir 'migrations'
+        }
+    }
+}
+
 //Setup distribution
 distributions {
     main {
