@@ -15,6 +15,7 @@ plugins {
     id 'org.flywaydb.flyway' version '5.2.4'
     id 'com.jfrog.artifactory' version '4.8.1'
     id 'java'
+    id 'idea'
 }
 
 repositories {
@@ -23,6 +24,10 @@ repositories {
 
 dependencies {
     compile "org.flywaydb:flyway-core:5.2.4"
+    testCompile 'junit:junit:4.12'
+    testCompile 'org.assertj:assertj-core:3.11.1'
+    testCompile 'mysql:mysql-connector-java:5.1.46'
+    testCompile 'org.apache.tomcat:tomcat-jdbc:8.5.35'
 }
 
 flyway {
