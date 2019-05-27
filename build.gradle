@@ -14,6 +14,20 @@ buildscript {
 plugins {
     id 'org.flywaydb.flyway' version '5.2.4'
     id 'com.jfrog.artifactory' version '4.8.1'
+    id 'java'
+    id 'idea'
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compile "org.flywaydb:flyway-core:5.2.4"
+    testCompile 'junit:junit:4.12'
+    testCompile 'org.assertj:assertj-core:3.11.1'
+    testCompile 'mysql:mysql-connector-java:5.1.46'
+    testCompile 'org.apache.tomcat:tomcat-jdbc:8.5.35'
 }
 
 flyway {
@@ -86,7 +100,7 @@ flywayActions.keySet().each { action ->
             }
         } else {
             schemaTask = task(taskName, type: flywayActions[action]) {
-                locations = ['filesystem:' + [rootDir.path, config[1], 'sql'].join('/')]
+                locations = ['filesystem:' + [rootDir.path, 'migrations', config[1], 'sql'].join('/')]
                 url = config[2]
                 schemas = [config[3]]
                 user = config[4]
@@ -116,16 +130,23 @@ flywayActions.keySet().each { action ->
     }
 }
 
+sourceSets {
+    main {
+        resources {
+            srcDir 'migrations'
+        }
+    }
+}
+
 //Setup distribution
 distributions {
     main {
         contents {
             from('.') {
-                include 'reporting/**'
-                include 'warehouse/**'
-                include 'migrate_olap/**'
-                include 'reporting_olap/**'
-                include 'legacy_load/**'
+                include 'migrations/reporting/**'
+                include 'migrations/warehouse/**'
+                include 'migrations/migrate_olap/**'
+                include 'migrations/reporting_olap/**'
                 include 'LICENSE'
                 include 'build.gradle'
                 include 'gradle.properties'
@@ -139,6 +160,7 @@ publishing {
     publications {
         schema(MavenPublication) {
             artifact distZip
+            artifact jar
         }
     }
 }
