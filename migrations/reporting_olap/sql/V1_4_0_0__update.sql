@@ -1,13 +1,32 @@
--- Modify schema for enhancements to configurable subjects
+-- Consolidated v1.3.0 -> v1.4.0 flyway script.
 --
--- The alt scores are not used in aggregate reporting ... yet. Because of that, the schema and
--- data changes only go to the subject level. Once new aggregate functionality is defined, more
--- changes will be needed to push things down to the asmt and exam level for real reporting.
+-- This script should be run against v1.3.x installations where the schema_version table looks like:
+-- +----------------+---------+------------------------------+--------+----------------------+-------------+---------+
+-- | installed_rank | version | description                  | type   | script               | checksum    | success |
+-- +----------------+---------+------------------------------+--------+----------------------+-------------+---------+
+-- |              1 | 1.0.0.0 | ddl                          | SQL    | V1_0_0_0__ddl.sql    |   121947982 |       1 |
+-- |              2 | 1.0.0.1 | dml                          | SQL    | V1_0_0_1__dml.sql    |  1594394019 |       1 |
+-- +----------------+---------+------------------------------+--------+----------------------+-------------+---------+
+--
+-- When first created, RDW_Schema was on build #422 and this incorporated:
+--   V1_4_0_2__alt_scoring.sql
+-- Changes made during consolidation:
+--   add school year 2019
 
 SET SEARCH_PATH to ${schemaName};
 
 SET client_encoding = 'UTF8';
 
+-- Redshift doesn't support INSERT IGNORE, UPSERT, etc.
+-- But neither does it enforce referential integrity, so we can do this:
+DELETE FROM school_year WHERE year = 2019;
+INSERT INTO school_year VALUES (2019);
+
+-- Modify schema for enhancements to configurable subjects
+--
+-- The alt scores are not used in aggregate reporting ... yet. Because of that, the schema and
+-- data changes only go to the subject level. Once new aggregate functionality is defined, more
+-- changes will be needed to push things down to the asmt and exam level for real reporting.
 
 CREATE TABLE score_type (
   id SMALLINT NOT NULL PRIMARY KEY SORTKEY,
