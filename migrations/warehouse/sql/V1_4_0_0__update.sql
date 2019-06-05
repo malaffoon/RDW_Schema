@@ -28,10 +28,13 @@
 -- Changes made during consolidation:
 --   pipeline.active_version was changed from an int to varchar(8)
 --   add school year 2019
+--   add import status PIPELINE_FAILURE
 
 use ${schemaName};
 
 INSERT IGNORE INTO school_year VALUES (2019);
+
+INSERT INTO import_status (id, name) VALUES (-7, 'PIPELINE_FAILURE');
 
 CREATE TABLE IF NOT EXISTS score_type (
     id tinyint NOT NULL PRIMARY KEY,
