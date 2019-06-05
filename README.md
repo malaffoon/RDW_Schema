@@ -301,6 +301,7 @@ USE warehouse;
 SELECT * FROM schema_version;
 -- if things look good, reset entries to match condensed scripts:
 ALTER TABLE pipeline MODIFY COLUMN active_version varchar(8);
+INSERT INTO import_status VALUES (-7, 'PIPELINE_FAILURE');
 DELETE FROM schema_version WHERE installed_rank > 9;
 INSERT INTO schema_version (installed_rank, version, description, type, script, checksum, installed_by, installed_on, execution_time, success) VALUES
   (10, '1.4.0.0', 'update', 'SQL', 'V1_4_0_0__update.sql', -1764526028, 'root', '2019-06-03 12:00:00', 10000, 1);
