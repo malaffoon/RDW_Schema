@@ -63,12 +63,12 @@ def configs = []
 // Only define the migrate olap config if the migrate olap schema is set.
 // Only define redshift config if the required redshift url/user is set.
 if (hasProperty('database_url') && database_url && hasProperty('database_user') && database_user) {
-    configs << ['reporting',         'reporting',    database_url, schema_prefix + 'reporting', database_user, database_password, 'com.mysql.jdbc.Driver']
-    configs << ['reporting_test',    'reporting',    database_url, schema_prefix + 'reporting_test', database_user, database_password, 'com.mysql.jdbc.Driver']
-    configs << ['warehouse',         'warehouse',    database_url, schema_prefix + 'warehouse', database_user, database_password, 'com.mysql.jdbc.Driver']
-    configs << ['warehouse_test',    'warehouse',    database_url, schema_prefix + 'warehouse_test', database_user, database_password, 'com.mysql.jdbc.Driver']
-    configs << ['migrate_olap',      'migrate_olap', database_url, schema_prefix + 'migrate_olap', database_user, database_password, 'com.mysql.jdbc.Driver']
-    configs << ['migrate_olap_test', 'migrate_olap', database_url, schema_prefix + 'migrate_olap_test', database_user, database_password, 'com.mysql.jdbc.Driver']
+    configs << ['reporting',         'reporting',    database_url, schema_prefix + 'reporting' + schema_suffix, database_user, database_password, 'com.mysql.jdbc.Driver']
+    configs << ['reporting_test',    'reporting',    database_url, schema_prefix + 'reporting_test' + schema_suffix, database_user, database_password, 'com.mysql.jdbc.Driver']
+    configs << ['warehouse',         'warehouse',    database_url, schema_prefix + 'warehouse' + schema_suffix, database_user, database_password, 'com.mysql.jdbc.Driver']
+    configs << ['warehouse_test',    'warehouse',    database_url, schema_prefix + 'warehouse_test' + schema_suffix, database_user, database_password, 'com.mysql.jdbc.Driver']
+    configs << ['migrate_olap',      'migrate_olap', database_url, schema_prefix + 'migrate_olap' + schema_suffix, database_user, database_password, 'com.mysql.jdbc.Driver']
+    configs << ['migrate_olap_test', 'migrate_olap', database_url, schema_prefix + 'migrate_olap_test' + schema_suffix, database_user, database_password, 'com.mysql.jdbc.Driver']
 } else {
     configs << ['reporting', 'database_url, database_user']
     configs << ['reporting_test', 'database_url, database_user']
@@ -78,8 +78,8 @@ if (hasProperty('database_url') && database_url && hasProperty('database_user') 
     configs << ['migrate_olap_test', 'database_url, database_user']
 }
 if (hasProperty('redshift_url') && redshift_url && hasProperty('redshift_user') && redshift_user) {
-    configs << ['reporting_olap',      'reporting_olap', redshift_url, schema_prefix + 'reporting', redshift_user, redshift_password, 'com.amazon.redshift.jdbc42.Driver']
-    configs << ['reporting_olap_test', 'reporting_olap', redshift_url, schema_prefix + 'reporting_test', redshift_user, redshift_password, 'com.amazon.redshift.jdbc42.Driver']
+    configs << ['reporting_olap',      'reporting_olap', redshift_url, schema_prefix + 'reporting' + schema_suffix, redshift_user, redshift_password, 'com.amazon.redshift.jdbc42.Driver']
+    configs << ['reporting_olap_test', 'reporting_olap', redshift_url, schema_prefix + 'reporting_test' + schema_suffix, redshift_user, redshift_password, 'com.amazon.redshift.jdbc42.Driver']
 } else {
     configs << ['reporting_olap', 'redshift_url, redshift_user']
     configs << ['reporting_olap_test', 'redshift_url, redshift_user']
