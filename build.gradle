@@ -14,6 +14,20 @@ buildscript {
 plugins {
     id 'org.flywaydb.flyway' version '5.2.4'
     id 'com.jfrog.artifactory' version '4.8.1'
+    id 'java'
+    id 'idea'
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compile "org.flywaydb:flyway-core:5.2.4"
+    testCompile 'junit:junit:4.12'
+    testCompile 'org.assertj:assertj-core:3.11.1'
+    testCompile 'mysql:mysql-connector-java:5.1.46'
+    testCompile 'org.apache.tomcat:tomcat-jdbc:8.5.35'
 }
 
 flyway {
@@ -25,7 +39,7 @@ apply plugin: 'distribution'
 apply plugin: 'maven-publish'
 
 group = 'org.opentestsystem.rdw.schema'
-version = '1.3.0-SNAPSHOT'
+version = '1.4.0-SNAPSHOT'
 
 if (project.hasProperty("buildNumber")) {
     project.setVersion(project.version.toString().replaceAll("SNAPSHOT", "${buildNumber}"))
@@ -49,12 +63,12 @@ def configs = []
 // Only define the migrate olap config if the migrate olap schema is set.
 // Only define redshift config if the required redshift url/user is set.
 if (hasProperty('database_url') && database_url && hasProperty('database_user') && database_user) {
-    configs << ['reporting',         'reporting',    database_url, schema_prefix + 'reporting', database_user, database_password, 'com.mysql.jdbc.Driver']
-    configs << ['reporting_test',    'reporting',    database_url, schema_prefix + 'reporting_test', database_user, database_password, 'com.mysql.jdbc.Driver']
-    configs << ['warehouse',         'warehouse',    database_url, schema_prefix + 'warehouse', database_user, database_password, 'com.mysql.jdbc.Driver']
-    configs << ['warehouse_test',    'warehouse',    database_url, schema_prefix + 'warehouse_test', database_user, database_password, 'com.mysql.jdbc.Driver']
-    configs << ['migrate_olap',      'migrate_olap', database_url, schema_prefix + 'migrate_olap', database_user, database_password, 'com.mysql.jdbc.Driver']
-    configs << ['migrate_olap_test', 'migrate_olap', database_url, schema_prefix + 'migrate_olap_test', database_user, database_password, 'com.mysql.jdbc.Driver']
+    configs << ['reporting',         'reporting',    database_url, schema_prefix + 'reporting' + schema_suffix, database_user, database_password, 'com.mysql.jdbc.Driver']
+    configs << ['reporting_test',    'reporting',    database_url, schema_prefix + 'reporting_test' + schema_suffix, database_user, database_password, 'com.mysql.jdbc.Driver']
+    configs << ['warehouse',         'warehouse',    database_url, schema_prefix + 'warehouse' + schema_suffix, database_user, database_password, 'com.mysql.jdbc.Driver']
+    configs << ['warehouse_test',    'warehouse',    database_url, schema_prefix + 'warehouse_test' + schema_suffix, database_user, database_password, 'com.mysql.jdbc.Driver']
+    configs << ['migrate_olap',      'migrate_olap', database_url, schema_prefix + 'migrate_olap' + schema_suffix, database_user, database_password, 'com.mysql.jdbc.Driver']
+    configs << ['migrate_olap_test', 'migrate_olap', database_url, schema_prefix + 'migrate_olap_test' + schema_suffix, database_user, database_password, 'com.mysql.jdbc.Driver']
 } else {
     configs << ['reporting', 'database_url, database_user']
     configs << ['reporting_test', 'database_url, database_user']
@@ -64,8 +78,8 @@ if (hasProperty('database_url') && database_url && hasProperty('database_user') 
     configs << ['migrate_olap_test', 'database_url, database_user']
 }
 if (hasProperty('redshift_url') && redshift_url && hasProperty('redshift_user') && redshift_user) {
-    configs << ['reporting_olap',      'reporting_olap', redshift_url, schema_prefix + 'reporting', redshift_user, redshift_password, 'com.amazon.redshift.jdbc42.Driver']
-    configs << ['reporting_olap_test', 'reporting_olap', redshift_url, schema_prefix + 'reporting_test', redshift_user, redshift_password, 'com.amazon.redshift.jdbc42.Driver']
+    configs << ['reporting_olap',      'reporting_olap', redshift_url, schema_prefix + 'reporting' + schema_suffix, redshift_user, redshift_password, 'com.amazon.redshift.jdbc42.Driver']
+    configs << ['reporting_olap_test', 'reporting_olap', redshift_url, schema_prefix + 'reporting_test' + schema_suffix, redshift_user, redshift_password, 'com.amazon.redshift.jdbc42.Driver']
 } else {
     configs << ['reporting_olap', 'redshift_url, redshift_user']
     configs << ['reporting_olap_test', 'redshift_url, redshift_user']
@@ -86,7 +100,7 @@ flywayActions.keySet().each { action ->
             }
         } else {
             schemaTask = task(taskName, type: flywayActions[action]) {
-                locations = ['filesystem:' + [rootDir.path, config[1], 'sql'].join('/')]
+                locations = ['filesystem:' + [rootDir.path, 'migrations', config[1], 'sql'].join('/')]
                 url = config[2]
                 schemas = [config[3]]
                 user = config[4]
@@ -116,16 +130,23 @@ flywayActions.keySet().each { action ->
     }
 }
 
+sourceSets {
+    main {
+        resources {
+            srcDir 'migrations'
+        }
+    }
+}
+
 //Setup distribution
 distributions {
     main {
         contents {
             from('.') {
-                include 'reporting/**'
-                include 'warehouse/**'
-                include 'migrate_olap/**'
-                include 'reporting_olap/**'
-                include 'legacy_load/**'
+                include 'migrations/reporting/**'
+                include 'migrations/warehouse/**'
+                include 'migrations/migrate_olap/**'
+                include 'migrations/reporting_olap/**'
                 include 'LICENSE'
                 include 'build.gradle'
                 include 'gradle.properties'
@@ -139,6 +160,7 @@ publishing {
     publications {
         schema(MavenPublication) {
             artifact distZip
+            artifact jar
         }
     }
 }
