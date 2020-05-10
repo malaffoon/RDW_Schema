@@ -43,12 +43,20 @@ Edit `/usr/local/Cellar/mysql@5.6/5.6.*/my.cnf` and add the following lines:
 explicit_defaults_for_timestamp=1
 default-time-zone='UTC'
 bind-address=*
+secure-file-priv=""
 ```
 Restart mysql and check the settings:
 ```bash
 brew services restart mysql@5.6
 echo 'SELECT @@explicit_defaults_for_timestamp;' | mysql -u root 
 echo 'SELECT @@system_time_zone, @@global.time_zone, @@session.time_zone;' | mysql -u root
+```
+
+Probably not needed, but some have mentioned they needed to grant all privileges to root from any location:
+```bash
+mysql -u root
+mysql> grant all privileges on *.* to 'root'@'%';
+mysql> quit
 ```
 
 #### Installing MySQL - Docker
