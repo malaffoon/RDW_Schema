@@ -37,7 +37,7 @@ echo 'export PATH="/usr/local/opt/mysql@5.6/bin:$PATH"' >> ~/.zshrc
 brew services start mysql@5.6
 mysql_tzinfo_to_sql /usr/share/zoneinfo | mysql -u root mysql
 ```
-Edit `/usr/local/Cellar/mysql@5.6/5.6.*/my.cnf` and add the following lines:
+Edit `/usr/local/etc/my.cnf` and add the following lines:
 ```
 [mysqld]
 explicit_defaults_for_timestamp=1
