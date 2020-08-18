@@ -1,4 +1,4 @@
--- v2.4.0_4 flyway script
+-- v2.4.0_5 flyway script
 --
 -- adds support for subject in audit_district_embargo and updates district_embargo triggers to populate it
 -- also adds previous status fields to audit_district_embargo
